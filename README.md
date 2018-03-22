@@ -20,3 +20,7 @@ ThermoRawFileParser.exe usage (use -option=value for the optional arguments)
                                collection has 2 or more MS runs with the same
                                name.
 ```
+
+## Build
+
+If you want to build the project using nuget, put the ThermoFisher.CommonCore.RawFileReader.4.0.26.nupkg package in your local nuget directory.
