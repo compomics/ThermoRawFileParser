@@ -11,12 +11,18 @@ ThermoRawFileParser.exe usage (use -option=value for the optional arguments)
   -h, --help                 Prints out the options.
   -i, --input=VALUE          The raw file input.
   -o, --output=VALUE         The metadata and mgf output directory.
+  -m, --metadata             Write the metadata output file if this flag is
+                               specified (without value).
   -c, --collection[=VALUE]   The optional collection identifier (PXD identifier
                                for example).
-  -m, --msrun[=VALUE]        The optional mass spectrometry run name used in
+  -r, --run[=VALUE]          The optional mass spectrometry run name used in
                                the spectrum title. The RAW file name will be
                                used if not specified.
   -s, --subfolder[=VALUE]    Optional, to disambiguate instances where the same
                                collection has 2 or more MS runs with the same
                                name.
 ```
+
+## Build
+
+If you want to build the project using nuget, put the ThermoFisher.CommonCore.RawFileReader.4.0.26.nupkg package in your local nuget directory.
