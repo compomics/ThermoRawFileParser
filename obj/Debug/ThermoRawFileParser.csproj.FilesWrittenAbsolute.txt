@@ -1,0 +1,11 @@
+/home/niels/Documents/Development/Projects/ThermoRawFileParser/obj/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/home/niels/Documents/Development/Projects/ThermoRawFileParser/bin/Debug/ThermoRawFileParser.pdb
+/home/niels/Documents/Development/Projects/ThermoRawFileParser/bin/Debug/ThermoRawFileParser.exe
+/home/niels/Documents/Development/Projects/ThermoRawFileParser/obj/Debug/ThermoRawFileParser.exe
+/home/niels/Documents/Development/Projects/ThermoRawFileParser/obj/Debug/ThermoRawFileParser.pdb
+/home/niels/Documents/Development/Projects/ThermoRawFileParser/bin/Debug/Mono.Options.dll
+/home/niels/Documents/Development/Projects/ThermoRawFileParser/bin/Debug/Newtonsoft.Json.dll
+/home/niels/Documents/Development/Projects/ThermoRawFileParser/bin/Debug/ThermoFisher.CommonCore.BackgroundSubtraction.dll
+/home/niels/Documents/Development/Projects/ThermoRawFileParser/bin/Debug/ThermoFisher.CommonCore.Data.dll
+/home/niels/Documents/Development/Projects/ThermoRawFileParser/bin/Debug/ThermoFisher.CommonCore.MassPrecisionEstimator.dll
+/home/niels/Documents/Development/Projects/ThermoRawFileParser/bin/Debug/ThermoFisher.CommonCore.RawFileReader.dll
