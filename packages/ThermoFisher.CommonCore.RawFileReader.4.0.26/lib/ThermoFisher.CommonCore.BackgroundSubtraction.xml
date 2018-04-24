@@ -1,0 +1,2266 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ThermoFisher.CommonCore.BackgroundSubtraction</name>
+    </assembly>
+    <members>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractionSettings">
+            <summary>
+            Settings for the background subtraction algorithm.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractionSettings.Range1EndTime">
+            <summary>
+            Gets or sets Background range 1 end time.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractionSettings.Range1StartTime">
+            <summary>
+            Gets or sets Background range 1 start time.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractionSettings.Range2EndTime">
+            <summary>
+            Gets or sets Background range 2 end time.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractionSettings.Range2StartTime">
+            <summary>
+            Gets or sets Background range 2 start time.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractionSettings.SelectedRange1">
+            <summary>
+            Gets or sets a value indicating whether Background range 1 will be used.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractionSettings.SelectedRange2">
+            <summary>
+            Gets or sets a value indicating whether Background range 1 will be used.
+            </summary>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractor">
+            <summary>
+            Computes and returns the average subtracted scan
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractor.Averager">
+            <summary>
+            Gets Averager.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractor.GetForeGroundAvgScan(System.Double,System.Double)">
+            <summary>
+            Calculate the foreground average scan.
+            </summary>
+            <param name="startTime">
+            The start time.
+            </param>
+            <param name="endTime">
+            The end time.
+            </param>
+            <returns>
+            The averaged scan
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractor.GetBackGroundAverageScan(ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractionSettings)">
+            <summary>
+            Calculate a background average scan.
+            </summary>
+            <param name="backSettings">
+            The background subtraction settings.
+            </param>
+            <returns>
+            The averaged background
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractor.GetScanStatistics(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Int32,System.Int32,System.String)">
+            <summary>
+            Get scan statistics.
+            </summary>
+            <param name="plus">
+            The plus.
+            </param>
+            <param name="start">
+            The start scan.
+            </param>
+            <param name="end">
+            The end scan.
+            </param>
+            <param name="filter">
+            The scan filter.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractor.GetBackgroundSubtraction(ThermoFisher.CommonCore.Data.Interfaces.IRawData,System.String,ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractionSettings,System.Double,System.Double)">
+            <summary>
+            Computes the average scan and then subtracts the background average scan and 
+            return the average subtracted scan.
+            </summary>
+            <param name="rawFile">
+            Raw file to read scans based on time.
+            </param>
+            <param name="filter">
+            scan filter
+            </param>
+            <param name="backSettings">
+            Background Information.
+            </param>
+            <param name="startTime">
+            Foreground StartTime.
+            </param>
+            <param name="endTime">
+            Foreground EndTime.
+            </param>
+            <returns>
+            Scan object containing the subtracted scan.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractor.GetBackgroundSubtraction(ThermoFisher.CommonCore.Data.Interfaces.IRawData,System.String,ThermoFisher.CommonCore.BackgroundSubtraction.BackgroundSubtractionSettings,ThermoFisher.CommonCore.Data.Business.Scan)">
+            <summary>
+            Computes the average scan and then subtracts the background average scan and 
+            return the average subtracted scan.
+            </summary>
+            <param name="rawFile">
+            Raw file to read scans based on time.
+            </param>
+            <param name="filter">
+            scan filter
+            </param>
+            <param name="backSettings">
+            Background Information.
+            </param>
+            <param name="foreAverageScan">
+            Scan which data is subtracted from
+            </param>
+            <returns>
+            The subtracted scan.
+            </returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint">
+            <summary>
+            This internal class is used to capture a point in the centroid scan.
+            It is specific to the algorithm (internal)
+            as it includes values such as "index" used for certain sorting features.
+            Also:
+            Noise and baseline values are not included in this data structure.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint.Position">
+            <summary>
+            Gets or sets the mass to charge ratio
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint.Intensity">
+            <summary>
+            Gets or sets the intensity
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint.Resolution">
+            <summary>
+            Gets or sets the resolution
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint.Charge">
+            <summary>
+            Gets or sets the charge
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint.Index">
+            <summary>
+            Gets or sets the index into the mass ordered list
+            </summary>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.ChargeResult">
+            <summary>
+            The charge result, represents a proposed set of isotopes 
+            which have a charge
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.ChargeResult.Charge">
+            <summary>
+            Gets or sets the charge.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.ChargeResult.Isotopes">
+            <summary>
+            Gets or sets the isotopes.
+            </summary>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.NamespaceDoc">
+            <summary>
+            This namespace contains code related to averaging and background
+            subtraction of scans. When data is available via the IRawDataPlus interface
+            it is often simpler to use these features by extension methods on IRawDataPlus
+            which are published in the CommonCore.Data namespace, in the Extensions class.
+            </summary>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.NoisePackets">
+            <summary>
+            The noise packets.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.NoisePackets.Mass">
+            <summary>
+            Gets or sets the mass.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.NoisePackets.Noise">
+            <summary>
+            Gets or sets the noise.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.NoisePackets.BaseLine">
+            <summary>
+            Gets or sets the base line.
+            </summary>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator">
+             <summary>
+             <code>
+             This is a variant of the Patterson algorithm for calculating the charge from
+             a given set of measured points in a mass segment. The original algorithm
+             operates on profile points. Because this degrades the performance of the 
+             algorithm significantly for FTMS data (due to their high sampling rate), this
+             variant operates on the detected centroids in a given mass segment instead.
+            
+             The algorithm steps through the given centroid segment and calculates the 
+             corresponding charge state for each two neighbors in the segment from their
+             mass distance. The calculation is made according to:
+            
+                 charge_i,n = dM_iso / (m(i+n) - m(i)) 
+            
+             where dM_iso is the general average delta mass between two isotopic peaks.
+             
+             For each calculated charge a score is calculated according to:
+            
+                 score_i,n = y(i+n) * y(i) / y2
+            
+             where y(i), and y(i+n) are the intensities of the i-th, and the i-th plus one 
+             centroid, respectively, and y2 is the intensity of the most intense centroid
+             in between them.
+            
+             All calculated scores are multiplied to the corresponding entry in the 
+             provided charge map.
+            
+             The number of comparisons done in the Patterson charge calculation increases 
+             with the square of the number of centroids contained in the segment (exactly 
+             this is 0.5 * n * (n-1). To speed up the Patterson charge calculation in 
+             those cases where we have a large number of centroids, an intensity threshold 
+             is calculated that limits the number of centroid whose intensity is lying 
+             above. The ratio behind this is, that the more intense peaks should be the 
+             more important ones for the isotopic cluster.
+            
+            
+             POSSIBLE ENHANCEMENTS:
+            
+             Currently the algorithm does not make benefit of the specific centroids that
+             have contributed to the score of a certain charge state in the charge map.
+             This information is available, but thrown away once that a charge is entered
+             into the map. After determining the charge we have to identify the isotopic 
+             cluster to which the charge should be applied. In this step we need again
+             the information about the position of the peaks that make up the isotopic 
+             cluster. Thus is might be beneficial if we would combine both.
+             </code>
+             </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.AverageIsotopicDelta">
+            <summary>
+            The average isotopic delta.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.AverageIsotopicDeltaDeviation">
+            <summary>
+            The average isotopic delta deviation.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.ChargeMapDensity">
+            <summary>
+            The charge map density.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.DeltaCharge">
+            <summary>
+            The delta charge.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.MaxCentroidsForPattersonCharge">
+            <summary>
+            The max centroids for patterson charge.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.MaxChargeState">
+            <summary>
+            The max charge state.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.PattersonHighChargeUpscaleFactor">
+            <summary>
+            The patterson high charge upscale factor.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator"/> class.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.CalculatePattersonCharge(System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},System.Int32,System.Int32,System.Double,System.Double)">
+            <summary>
+            Calculates a distribution of possible charge states based upon
+            the pairwise distances between the centroid peaks.
+            </summary>
+            <param name="centroids">
+                data for scan
+            </param>
+            <param name="beginRangeIndex">
+                The start of the centroid segment to analyze.
+            </param>
+            <param name="endRangeIndex">
+                The end of the centroid segment to analyze.
+            </param>
+            <param name="profileSpacing">
+                The spacing of profile points. This spacing is used to calculate the maximum theoretical charge for which the isotopic pattern could be resolved.
+            </param>
+            <param name="massAccuracy">
+                The mass accuracy to apply for the identification of the isotopic cluster peaks.
+            </param>
+            <returns>
+            The calculated patterson charge.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.FastMax(System.Double[])">
+            <summary>
+            Find the max value in an array of doubles.
+            (don't use slow LINQ extension Max() )
+            </summary>
+            <param name="arrayOfDoubles">Numbers to examine</param>
+            <returns>max, or 0 if empty</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.CalculateIntensityThreshold(System.Int32,System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},System.Int32,System.Int32)">
+            <summary>
+            Calculate an intensity threshold for a given range of centroids.
+            </summary>
+            <param name="maxCentroidsAboveThreshold">
+            The maximum number of centroids that should lie above the calculated  threshold.
+            </param>
+            <param name="centroids">
+            data for scan
+            </param>
+            <param name="beginRangeIndex">
+            begin of the centroid
+            </param>
+            <param name="endRangeIndex">
+            end of the centroid
+            </param>
+            <returns>
+            The calculated intensity threshold.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.FindCount(System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},System.Int32,System.Int32,System.Double)">
+            <summary>
+            Finds the count of values above the threshold
+            </summary>
+            <param name="centroids">
+            List of Centroids
+            </param>
+            <param name="startIndex">
+            Start of array slice to analyze
+            </param>
+            <param name="endIndex">
+            End of array slice to analyze
+            </param>
+            <param name="intensityThreshold">The smallest counted value
+            </param>
+            <returns>
+            The count above threshold
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.GetChargeMapIndexForCharge(System.Double)">
+            <summary>
+            Get the charge map index for a specific charge.
+            </summary>
+            <param name="charge">
+            The charge.
+            </param>
+            <returns>
+            The charge map index for this charge.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.IndexOfMax(System.Double[])">
+            <summary>
+            Find the index of max value in an array of doubles
+            </summary>
+            <param name="arrayOfDoubles">Numbers to examine</param>
+            <returns>Index of max, or -1 if list is empty</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PattersonChargeCalculator.NormalizeChargeMap(System.Double[])">
+            <summary>
+            Smooth, normalize and transfer the local map to the result charge map.
+            </summary>
+            <param name="localChargeMap">
+            The local charge map.
+            </param>
+            <returns>
+            The smoothed map.
+            </returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator">
+            <summary>
+            The peak charge calculator.
+            Calculates charge for one peak in the centroid list.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.AverageIsotopicDelta">
+            <summary>
+            The average isotopic delta.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.AverageIsotopicDeltaDeviation">
+            <summary>
+            The average isotopic delta deviation.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.ChargeEvaluationScoreSepartion">
+            <summary>
+            The charge evaluation score separation.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.ChargeEvaluationTolerance">
+            <summary>
+            The charge evaluation tolerance.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.ChargeMapDensity">
+            <summary>
+            The charge map density.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.DefaultMassAccuracy">
+            <summary>
+            The default mass accuracy. PPM.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.DeltaCharge">
+            <summary>
+            The delta charge.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.MaxHighMassRangeForChargeDetermination">
+            <summary>
+            The max high mass range for charge determination.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.MaxIsotopicPeaksPerCluster">
+            <summary>
+            The max isotopic peaks per cluster.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.MaxLowMassRangeForChargeDetermination">
+            <summary>
+            The max low mass range for charge determination.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.MaxOrder">
+            <summary>
+            The max order for FT.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.MinOrder">
+            <summary>
+            The min order for FT.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator" /> class.
+            Default constructor
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.MassAccuracy">
+            <summary>
+            Gets or sets the mass accuracy, in PPM. Default 5 PPM.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.CentroidBegin(System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CentroidPositionComparer,ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint)">
+            <summary>
+            Find index of first mass in range.
+            </summary>
+            <param name="massSortedCentroidList">
+            The mass sorted centroid list.
+            </param>
+            <param name="centroidPositionComparer">
+            The centroid position comparer.
+            </param>
+            <param name="lowerCentroid">
+            The lower centroid.
+            </param>
+            <returns>
+            The index of first mass in range.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.CalculateChargeForPeak(ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData,System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CentroidPositionComparer,ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint)">
+            <summary>
+            Calculate charge for peak.
+            </summary>
+            <param name="segmentList">
+            The segment list.
+            </param>
+            <param name="massSortedCentroidList">
+            The mass sorted centroid list.
+            </param>
+            <param name="centroidPositionComparer">
+            The centroid position comparer.
+            </param>
+            <param name="centroid">
+            The peak whose charge is needed.
+            </param>
+            <returns>
+            The <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.ChargeResult"/>.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.CalculateChargeMapScores(System.Double[],System.Int32,System.Double,System.Double[])">
+            <summary>
+            The calculate charge map scores.
+            </summary>
+            <param name="fftVector">
+            The FFT vector.
+            </param>
+            <param name="halfSize">
+            The half size.
+            </param>
+            <param name="fftSpacing">
+            The FFT spacing.
+            </param>
+            <param name="localChargeMap">
+            The local charge map.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.CalculateComplexModulus(System.Double[],System.Int32)">
+            <summary>
+            The calculate complex modulus.
+            </summary>
+            <param name="fftVector">
+            The FFT vector.
+            </param>
+            <param name="halfSize">
+            The half size.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.CalculateFftCharge(System.Double[],ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData,System.Int32,System.Int32,System.Double)">
+            <summary>
+            Calculates a distribution of possible charge states based upon
+            an FFT analysis of the input profile spectrum.
+            </summary>
+            <param name="chargeMap">
+            charge map object to fill the scores for the Patterson calculation info
+            </param>
+            <param name="segments">
+            Profile data to be analyzed
+            </param>
+            <param name="startIndex">
+            start of the profile segment to analyze
+            </param>
+            <param name="endIndex">
+            end of the profile segment to analyze.
+            </param>
+            <param name="profileSpacing">
+            The spacing of profile points. This spacing is used to calculate the maximum theoretical charge
+            for which the isotopic pattern could be resolved.
+            </param>
+            <returns>
+            The map
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.CentroidEnd(System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CentroidPositionComparer,ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint)">
+            <summary>
+            Find the centroid end.
+            </summary>
+            <param name="massSortedCentroidList">
+            The mass sorted centroid list.
+            </param>
+            <param name="centroidPositionComparer">
+            The centroid position comparer.
+            </param>
+            <param name="upperCentroid">
+            The upper centroid.
+            </param>
+            <returns>
+            The centroid end.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.EvaluateChargeMap(System.Double[])">
+            <summary>
+            Evaluate the given charge map and report the best scored charge
+            if it is both, valid and significant.
+            </summary>
+            <param name="chargeMapList">
+            charge map list to evaluate.
+            </param>
+            <returns>
+            highest scored charge in the map
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.FindProfileSpacing(ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData,System.Int32,System.Int32)">
+            <summary>
+            find profile spacing.
+            </summary>
+            <param name="segmentList">
+            The segment list.
+            </param>
+            <param name="begin">
+            The begin.
+            </param>
+            <param name="end">
+            The end.
+            </param>
+            <returns>
+            The profile spacing.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.IdentifyIsotopicCluster(System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},System.Int32,System.Int32,System.Double)">
+            <summary>
+            Identifies a possible isotopic cluster.
+            </summary>
+            <param name="centroidList">
+            The list of centroids to process
+            </param>
+            <param name="centerPointer">
+            The center of the isotopic cluster to identify
+            </param>
+            <param name="charge">
+            The charge of the isotopic cluster.
+            </param>
+            <param name="massAccuracy">
+            The mass accuracy to apply for the identification of the isotopic cluster peaks.
+            </param>
+            <returns>
+            The identify isotopic cluster and assign charge.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.IndexOfMax(System.Double[],System.Int32,System.Int32)">
+            <summary>
+            The index of max element.
+            </summary>
+            <param name="listofDoubles">
+            The list of doubles.
+            </param>
+            <param name="from">
+            The from.
+            </param>
+            <param name="to">
+            The to.
+            </param>
+            <returns>
+            The index.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.IndexOfMax(System.Double[])">
+            <summary>
+            Find the index of max value in a list of doubles
+            </summary>
+            <param name="listofDoubles">Numbers to examine</param>
+            <returns>Index of max, or -1 if list is empty</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.IndexOfMinimum(System.Double[],System.Int32,System.Int32)">
+            <summary>
+            Gets the index of minimum.
+            </summary>
+            <param name="listofDoubles">
+            The list of doubles.
+            </param>
+            <param name="from">
+            The from index.
+            </param>
+            <param name="to">
+            The to index.
+            </param>
+            <returns>
+            The index of min.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.LookAboveCenterMass(System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},System.Int32,System.Int32,System.Int32,System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32},System.Double,System.Double,System.Double)">
+            <summary>
+            Look above center mass.
+            </summary>
+            <param name="centroidList">
+            The centroid list.
+            </param>
+            <param name="charge">
+            The charge.
+            </param>
+            <param name="endPointer">
+            The end pointer.
+            </param>
+            <param name="centerPointer">
+            The center pointer.
+            </param>
+            <param name="isotopes">
+            The isotopes.
+            </param>
+            <param name="tempIsotopes">
+            The temp isotopes.
+            </param>
+            <param name="maxStep">
+            The max step.
+            </param>
+            <param name="massAccuracy">
+            The mass accuracy.
+            </param>
+            <param name="minStep">
+            The min step.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.LookBelowCenterMass(System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},System.Int32,System.Int32,System.Int32,System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32},System.Double,System.Double,System.Double)">
+            <summary>
+            Look below the center mass.
+            </summary>
+            <param name="centroidList">
+            The centroid list.
+            </param>
+            <param name="charge">
+            The charge.
+            </param>
+            <param name="beginPointer">
+            The begin pointer.
+            </param>
+            <param name="centerPointer">
+            The center pointer.
+            </param>
+            <param name="isotopes">
+            The isotopes.
+            </param>
+            <param name="tempIsotopes">
+            The temp isotopes.
+            </param>
+            <param name="maxStep">
+            The max step.
+            </param>
+            <param name="massAccuracy">
+            The mass accuracy.
+            </param>
+            <param name="minStep">
+            The min step.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.LowerBound(ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData,System.Double)">
+            <summary>
+            Lower bound. This method returns the first value which is within range
+            </summary>
+            <param name="segmentList">
+            The segment list.
+            </param>
+            <param name="lower">
+            The lower.
+            </param>
+            <returns>
+            The lower bound.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.NormalizeChargeMap(System.Double[],System.Double[])">
+            <summary>
+            Normalize the charge map.
+            </summary>
+            <param name="chargeMap">
+            The charge map.
+            </param>
+            <param name="localChargeMap">
+            The local charge map.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.UpperBound(ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData,System.Double)">
+            <summary>
+            Upper bound. This method returns the first value which is out of range
+            </summary>
+            <param name="segmentList">
+            The segment list.
+            </param>
+            <param name="upper">
+            The upper mass limit.
+            </param>
+            <returns>
+            The upper bound.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.PeakChargeCalculator.CalculateCharge(ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData,System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},System.Int32,System.Int32,System.Double,System.Int32,System.Double,System.Int32)">
+            <summary>
+            Calculate the charge.
+            </summary>
+            <param name="segmentList">
+                The segment list.
+            </param>
+            <param name="massSortedCentroidList">
+                The mass sorted centroid list.
+            </param>
+            <param name="end">
+                The end.
+            </param>
+            <param name="begin">
+                The begin.
+            </param>
+            <param name="profileSpacing">
+                The profile spacing.
+            </param>
+            <param name="centroidBegin">
+                The centroid begin.
+            </param>
+            <param name="massAccuracy">
+                The mass accuracy.
+            </param>
+            <param name="centroidEnd">
+                The centroid end.
+            </param>
+            <returns>
+            The calculated charge.
+            </returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager">
+            <summary>
+            This class owns and manages a Scan that is produced by averaging a list of scans.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.RawFilePlus">
+            <summary>
+            Gets the raw file plus.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.ScanCreator">
+            <summary>
+            Gets or sets the scan reader.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.CacheLimit">
+            <summary>
+            Gets or sets the limit to the number of scans which may be kept in a cache.
+            This is valuable when many scan averages are requested from a raw file, with overlapping scan ranges.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.FromFile(ThermoFisher.CommonCore.Data.Interfaces.IRawData,System.Int32)">
+            <summary>
+            Factory Method to return the IScanAverage interface.
+            </summary>
+            <param name="data">
+            Access to the raw data, to read the scans.
+            </param>
+            <param name="cacheLimit">
+            Permits the FT averaging algorithm to cache a number of scans. Default 20 
+            </param>
+            <returns>
+            An interface to average scans.
+            </returns>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.FtOptions">
+            <summary>
+            Gets or sets options For FT or Orbitrap data.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.GetAverageScanInTimeRange(System.Double,System.Double,System.String)">
+            <summary>
+            Gets the average scan between the given times.
+            Mass tolerance is taken from default values in the raw file
+            If "PermitRedirection" and the supplied raw file reader supports IScanAverage,
+            then the averaging is performed by the file reading tool.
+            </summary>
+            <param name="startTime">
+            start time
+            </param>
+            <param name="endTime">
+            end time
+            </param>
+            <param name="filter">
+            filter string
+            </param>
+            <returns>
+            returns the averaged scan.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.GetAverageScanInTimeRange(System.Double,System.Double,System.String,System.Double,ThermoFisher.CommonCore.Data.Business.ToleranceMode)">
+            <summary>
+            Gets the average scan between the given times.
+            If "PermitRedirection" and the supplied raw file reader supports IScanAverage,
+            then the averaging is performed by the file reading tool.
+            </summary>
+            <param name="startTime">
+            start time
+            </param>
+            <param name="endTime">
+            end time
+            </param>
+            <param name="filter">
+            filter string
+            </param>
+            <param name="tolerance">
+            mass tolerance
+            </param>
+            <param name="toleranceMode">
+            unit of tolerance
+            </param>
+            <returns>
+            returns the averaged scan.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.ScanRangeFromTimeRange(System.Tuple{System.Double,System.Double})">
+            <summary>
+            Convert a time range to a scan range
+            </summary>
+            <param name="timeRange">
+            The time range.
+            </param>
+            <returns>
+            The scan range.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.AverageScanInScanRange(System.String,System.Double,ThermoFisher.CommonCore.Data.Business.ToleranceMode,System.Tuple{System.Int32,System.Int32})">
+            <summary>
+            Average scan in a given scan range.
+            </summary>
+            <param name="filter">
+            The filter.
+            </param>
+            <param name="tolerance">
+            The tolerance.
+            </param>
+            <param name="toleranceMode">
+            The tolerance mode.
+            </param>
+            <param name="scans">
+            The start scan (Item1) and end scan (Item2).
+            </param>
+            <returns>
+            The average of the scans in range which match the filter.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.GetAverageScanInScanRange(System.Int32,System.Int32,System.String)">
+            <summary>
+            Gets the average scan between the given times.
+            Mass tolerance is taken from default values in the raw file
+            If "PermitRedirection" and the supplied raw file reader supports IScanAverage,
+            then the averaging is performed by the file reading tool.
+            </summary>
+            <param name="startScan">
+            start scan
+            </param>
+            <param name="endScan">
+            end scan
+            </param>
+            <param name="filter">
+            filter string
+            </param>
+            <returns>
+            returns the averaged scan.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.GetAverageScanInScanRange(System.Int32,System.Int32,System.String,System.Double,ThermoFisher.CommonCore.Data.Business.ToleranceMode)">
+            <summary>
+            Gets the average scan between the given times.
+            If "PermitRedirection" and the supplied raw file reader supports IScanAverage,
+            then the averaging is performed by the file reading tool.
+            </summary>
+            <param name="startScan">
+            start scan
+            </param>
+            <param name="endScan">
+            end scan
+            </param>
+            <param name="filter">
+            filter string
+            </param>
+            <param name="tolerance">
+            mass tolerance
+            </param>
+            <param name="toleranceMode">
+            unit of tolerance
+            </param>
+            <returns>
+            returns the averaged scan.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.AverageSpectra(System.Collections.Generic.List{ThermoFisher.CommonCore.Data.Business.ScanStatistics})">
+            <summary>
+            Calculates the average spectra based upon the list supplied.
+            If "PermitRedirection" and the supplied raw file reader supports IScanAverage,
+            then the averaging is performed by the file reading tool.
+            </summary>
+            <param name="scanStatsList">
+            list of ScanStatistics
+            </param>
+            <returns>
+            The average of all scans in the list
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.#ctor(ThermoFisher.CommonCore.Data.Interfaces.IRawData)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager"/> class.
+            </summary>
+            <param name="data">
+            The data.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.AverageScans(System.Boolean,System.Double,ThermoFisher.CommonCore.Data.Business.ToleranceMode)">
+            <summary>
+            Calculates the average scan given the list of scans.
+            </summary>
+            <param name="userTolerance">
+            To use User Tolerance or not
+            </param>
+            <param name="tolerance">
+            Tolerance value
+            </param>
+            <param name="unitType">
+            Types of Tolerance units (MMU,PPM...)
+            </param>
+            <returns>
+            The averaged scans.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.AverageFtProfiles(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Interfaces.IScanCreator)">
+            <summary>
+            Average ft profiles.
+            </summary>
+            <param name="firstScan">
+                The first scan.
+            </param>
+            <param name="ftmsScanCreator">tool to read and cache scans</param>
+            <returns>
+            The average of the listed scans.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.AddAllScansToAverage(System.Int32,ThermoFisher.CommonCore.Data.Business.Scan,System.Int32@)">
+            <summary>
+            Add all scans to the average.
+            </summary>
+            <param name="scanInList">
+            The scan in list.
+            </param>
+            <param name="averageScan">
+            The average scan so far.
+            </param>
+            <param name="scanCount">
+            The scan count.
+            </param>
+            <returns>
+            The averaged scan.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.AddScanToAverage(ThermoFisher.CommonCore.Data.Business.Scan,System.Int32@,System.Int32)">
+            <summary>
+            Add a scan to the average, provided it can be merged (is compatible) with the
+            average so far.
+            </summary>
+            <param name="averageScan">
+            Average so far
+            </param>
+            <param name="scanCount">
+            Count of scans successfully added to the average
+            </param>
+            <param name="indexOfScanToAdd">
+            Index into table of scans
+            </param>
+            <returns>
+            The updated scan
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.GetIndexOfScanWithHighestTic(System.Int32)">
+            <summary>
+            Find the scan number with the highest TIC value
+            </summary>
+            <param name="scansInList">
+            number of scans to search
+            </param>
+            <returns>
+            index into ScanStatsList with largest TIC
+            </returns>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.RawFileToleranceMode">
+            <summary>
+            Gets RawFileToleranceMode.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.ConvertToleranceMode(ThermoFisher.CommonCore.Data.ToleranceUnits)">
+            <summary>
+            convert tolerance mode.
+            </summary>
+            <param name="unit">
+            The unit.
+            </param>
+            <returns>
+            The <see cref="T:ThermoFisher.CommonCore.Data.Business.ToleranceMode"/>.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.GetScanStatistics(System.Int32,System.Int32,System.String)">
+            <summary>
+            Get the scan statistics.
+            </summary>
+            <param name="start">
+            The start scan.
+            </param>
+            <param name="end">
+            The end scan.
+            </param>
+            <param name="filter">
+            The filter.
+            </param>
+            <returns>
+            The list of scan statistics for scans matching the filter.
+            </returns>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAverager.ScansCached">
+            <summary>
+            Gets or sets the number of scans which may be cached.
+            Setting ScansCached &gt;0 will enable caching of recently read scans.
+            This is useful if averaging multiple overlapping ranges of scans.
+            </summary>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAveragerPlus">
+            <summary>
+            Implements the IScanAveragePlus interface against a raw file
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAveragerPlus.#ctor(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAveragerPlus"/> class.
+            </summary>
+            <param name="data">
+            The data.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAveragerPlus.FromFile(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus)">
+            <summary>
+            Factory Method to return the IScanAverage interface.
+            </summary>
+            <param name="data">
+            Access to the raw data, to read the scans.
+            </param>
+            <returns>
+            An interface to average scans.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAveragerPlus.AverageScansInTimeRange(System.Double,System.Double,System.String,ThermoFisher.CommonCore.Data.Business.MassOptions)">
+            <summary>
+            Gets the average scan between the given times.
+            </summary>
+            <param name="startTime">
+            start time
+            </param>
+            <param name="endTime">
+            end time
+            </param>
+            <param name="filter">
+            filter string
+            </param>
+            <param name="options">mass tolerance settings. If not supplied, these are default from the raw file</param>
+            <returns>
+            the averaged scan. Use Scan.ScansCombined to find how many scans were averaged.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAveragerPlus.AverageScansInTimeRange(System.Double,System.Double,ThermoFisher.CommonCore.Data.Interfaces.IScanFilter,ThermoFisher.CommonCore.Data.Business.MassOptions)">
+            <summary>
+            Gets the average scan between the given times.
+            </summary>
+            <param name="startTime">
+            start time
+            </param>
+            <param name="endTime">
+            end time
+            </param>
+            <param name="filter">
+            filter rules
+            </param>
+            <param name="options">mass tolerance settings. If not supplied, these are default from the raw file</param>
+            <returns>
+            the averaged scan. Use Scan.ScansCombined to find how many scans were averaged.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAveragerPlus.AverageScansInScanRange(System.Int32,System.Int32,System.String,ThermoFisher.CommonCore.Data.Business.MassOptions)">
+            <summary>
+            Gets the average scan between the given times.
+            </summary>
+            <param name="startScan">
+            start scan
+            </param>
+            <param name="endScan">
+            end scan
+            </param>
+            <param name="filter">
+            filter string
+            </param>
+            <param name="options">mass tolerance settings. If not supplied, these are default from the raw file</param>
+            <returns>
+            the averaged scan. Use Scan.ScansCombined to find how many scans were averaged.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAveragerPlus.AverageScansInScanRange(System.Int32,System.Int32,ThermoFisher.CommonCore.Data.Interfaces.IScanFilter,ThermoFisher.CommonCore.Data.Business.MassOptions)">
+            <summary>
+            Gets the average scan between the given times.
+            </summary>
+            <param name="startScan">
+            start scan
+            </param>
+            <param name="endScan">
+            end scan
+            </param>
+            <param name="filter">
+            filter rules
+            </param>
+            <param name="options">mass tolerance settings. If not supplied, these are default from the raw file</param>
+            <returns>
+            the averaged scan. Use Scan.ScansCombined to find how many scans were averaged.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAveragerPlus.MakeScanStatsListPlus(System.Int32,System.Int32,ThermoFisher.CommonCore.Data.Business.ScanFilterHelper)">
+            <summary>
+            Make scan stats list plus.
+            </summary>
+            <param name="startScan">
+            The start scan.
+            </param>
+            <param name="endScan">
+            The end scan.
+            </param>
+            <param name="filterHelper">
+            The filter helper.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAveragerPlus.AverageScans(System.Collections.Generic.List{ThermoFisher.CommonCore.Data.Business.ScanStatistics},ThermoFisher.CommonCore.Data.Business.MassOptions)">
+            <summary>
+            Calculates the average spectra based upon the list supplied.
+            The application should filter the data before making this code, to ensure that
+            the scans are of equivalent format. The result, when the list contains scans of 
+            different formats (such as linear trap MS centroid data added to orbitrap MS/MS profile data) is undefined.
+            If the first scan in the list contains "FT Profile",
+            then the FT data profile is averaged for each
+            scan in the list. The combined profile is then centroided.
+            If the first scan is profile data, but not orbitrap data:
+            All scans are summed, starting from the final scan in this list, moving back to the first scan in
+            the list, and the average is then computed.
+            For simple centroid data formats: The scan stats "TIC" value is used to find the "most abundant scan".
+            This scan is then used as the "first scan of the average".
+            Scans are then added to this average, taking scans alternatively before and after
+            the apex, merging data within tolerance.
+            </summary>
+            <param name="scanStatsList">
+            list of ScanStatistics
+            </param>
+            <param name="options">mass tolerance settings. If not supplied, these are default from the raw file</param>
+            <returns>
+            The average of the listed scans. Use Scan.ScansCombined to find how many scans were averaged.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAveragerPlus.AverageScans(System.Collections.Generic.List{System.Int32},ThermoFisher.CommonCore.Data.Business.MassOptions)">
+            <summary>
+            Calculates the average spectra based upon the list supplied.
+            The application should filter the data before making this code, to ensure that
+            the scans are of equivalent format. The result, when the list contains scans of 
+            different formats (such as linear trap MS centroid data added to orbitrap MS/MS profile data) is undefined.
+            If the first scan in the list contains "FT Profile",
+            then the FT data profile is averaged for each
+            scan in the list. The combined profile is then centroided.
+            If the first scan is profile data, but not orbitrap data:
+            All scans are summed, starting from the final scan in this list, moving back to the first scan in
+            the list, and the average is then computed.
+            For simple centroid data formats: The scan stats "TIC" value is used to find the "most abundant scan".
+            This scan is then used as the "first scan of the average".
+            Scans are then added to this average, taking scans alternatively before and after
+            the apex, merging data within tolerance.
+            </summary>
+            <param name="scans">
+            list of scans to average
+            </param>
+            <param name="options">mass tolerance settings. If not supplied, these are default from the raw file</param>
+            <returns>
+            The average of the listed scans. Use Scan.ScansCombined to find how many scans were averaged.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAveragerPlus.SubtractScans(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Business.MassOptions)">
+            <summary>
+            Subtracts the background scan from the foreground scan
+            </summary>
+            <param name="foreground">Foreground data (Left of "scan-scan" operation</param>
+            <param name="background">Background data (right of"scan-scan" operation)</param>
+            <param name="options">(optional) mass tolerance options. If this is null,
+            tolerance which is already configured in "foreground" is used</param>
+            <returns>The result of foreground-background</returns>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.ScanAveragerPlus.ScanReader">
+            <summary>
+            Gets or sets the scan reader.
+            </summary>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromFileCreator">
+            <summary>
+            Get scan data from a file, based on a know list of scans.
+            Can avoid getting the same can multiple times, using a cache.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromFileCreator.CacheLimit">
+            <summary>
+            Gets or sets the cache limit.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromFileCreator.Initialize(System.Collections.Generic.List{System.Int32},System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromFileCreator.#ctor(ThermoFisher.CommonCore.Data.Interfaces.IRawData)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromFileCreator"/> class.
+            </summary>
+            <param name="rawFile">
+            The raw file.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromFileCreator.CreateSegmentedScan(System.Int32)">
+            <summary>
+            create segmented scan.
+            </summary>
+            <param name="index">
+            The index into the supplied table of scans (on construction)
+            </param>
+            <returns>
+            The <see cref="T:ThermoFisher.CommonCore.Data.Business.SegmentedScan"/>.
+            </returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">when index is outside of the scan numbers array
+            </exception>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromFileCreator.CreateCentroidStream(System.Int32)">
+            <summary>
+            Create a centroid stream.
+            </summary>
+            <param name="index">
+            The index into the supplied table of scans (on construction)
+            </param>
+            <returns>
+            The <see cref="T:ThermoFisher.CommonCore.Data.Business.CentroidStream"/>.
+            </returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">when index is outside of the scan numbers array
+            </exception>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromListCreator">
+            <summary>
+            Class to support background subtract, which uses a scan list, instead of a raw file for a data
+            source. 
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromListCreator.#ctor(System.Collections.Generic.List{ThermoFisher.CommonCore.Data.Business.Scan})">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromListCreator"/> class.
+            </summary>
+            <param name="scanList">
+            The scan list.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromListCreator.CreateSegmentedScan(System.Int32)">
+            <summary>
+            create segmented scan.
+            </summary>
+            <param name="index">
+            The index into the scan table.
+            </param>
+            <returns>
+            The <see cref="T:ThermoFisher.CommonCore.Data.Business.SegmentedScan"/>.
+            </returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">when index is out of range for the scan list
+            </exception>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromListCreator.CreateCentroidStream(System.Int32)">
+            <summary>
+            create centroid stream.
+            </summary>
+            <param name="index">
+            The index into the scan list.
+            </param>
+            <returns>
+            The <see cref="T:ThermoFisher.CommonCore.Data.Business.CentroidStream"/>.
+            </returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">when index is out of range
+            </exception>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromThreadedFileCreator">
+            <summary>
+            Get scan data from a file, based on a known list of scans.
+            Using multiple threads read scans in parallel, up to the cache limit.
+            If multiple passes over data are needed,
+            this can avoid getting the same scan more than once from the raw file, 
+            if the cache is large enough.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromThreadedFileCreator.#ctor(ThermoFisher.CommonCore.Data.Interfaces.IRawFileThreadManager,ThermoFisher.CommonCore.Data.Business.InstrumentSelection,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromThreadedFileCreator"/> class.
+            </summary>
+            <param name="rawFile">
+                The raw file.
+            </param>
+            <param name="requiredInstrument">Instrument whole scans are to be read</param>
+            <param name="includeReferencePeaks">set if reference and exception peaks must be read. Default false</param>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromThreadedFileCreator.CacheLimit">
+            <summary>
+            Gets or sets the cache limit.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromThreadedFileCreator.CreateCentroidStream(System.Int32)">
+            <summary>
+            Create a centroid stream.
+            </summary>
+            <param name="index">
+            The index into the supplied table of scans (on construction)
+            </param>
+            <returns>
+            The <see cref="T:ThermoFisher.CommonCore.Data.Business.CentroidStream"/>.
+            </returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">when index is outside of the scan numbers array
+            </exception>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromThreadedFileCreator.CreateSegmentedScan(System.Int32)">
+            <summary>
+            create segmented scan.
+            </summary>
+            <param name="index">
+            The index into the supplied table of scans (on construction)
+            </param>
+            <returns>
+            The <see cref="T:ThermoFisher.CommonCore.Data.Business.SegmentedScan"/>.
+            </returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">when index is outside of the scan numbers array
+            </exception>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromThreadedFileCreator.Initialize(System.Collections.Generic.List{System.Int32},System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.ScanFromThreadedFileCreator.CacheScans(System.Collections.Generic.List{System.Int32},System.Int32,System.Int32)">
+            <summary>
+            Add some scans to the cache.
+            </summary>
+            <param name="scanNumbers">
+            The scan numbers.
+            </param>
+            <param name="startCacheIndex">
+            The start cache index. Cache from this index in the scan numbers.
+            </param>
+            <param name="endCacheIndexExclusive">
+            The end cache index exclusive. Cache up to but not including this index in scan numbers.
+            </param>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager">
+            <summary>
+            Class for averaging a set of spectra.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FtOptions">
+            <summary>
+            Gets or sets Options which can be used to control the Ft / Orbitrap averaging
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager"/> class. 
+            Default constructor
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.MaxPeakSamplesForDetection">
+            <summary>
+            The max peak samples for detection.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ZeroPointCompressionLimit">
+            <summary>
+            The zero point compression limit.
+            </summary>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FindSegmentedScan">
+            <summary>
+            Find a segmented scan.
+            </summary>
+            <param name="scanNumber">
+            The scan number.
+            </param>
+            <returns>The found scan</returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FindCentroids">
+            <summary>
+            Find centroid data.
+            </summary>
+            <param name="scanNumber">
+            The scan number.
+            </param>
+            <returns>The found centroids.</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.GetAverage(ThermoFisher.CommonCore.Data.Interfaces.IRawData,System.Collections.Generic.List{ThermoFisher.CommonCore.Data.Business.ScanStatistics},ThermoFisher.CommonCore.Data.Business.Scan,System.Int32,ThermoFisher.CommonCore.Data.Interfaces.IScanCreator)">
+            <summary>
+            Create the average scan from a collection of raw scans.
+            </summary>
+            <param name="rawFile">The file containing scans to average.
+            </param>
+            <param name="scanStatistics">
+            The collection of raw scans to average
+            </param>
+            <param name="firstScan">
+            The first scan in the set to average.
+            </param>
+            <param name="cacheLimit">
+            (optional) set the number of items which can be internally cached (default 20)  
+            </param>
+            <param name="scanCreator">optional tool to provide scans. 
+            If this is not supplied, then scan data is read in a single threaded manner using the supplied raw
+            data interface, and cached as per the supplied cache limits. </param>
+            <returns>
+            The averaged scan. 
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            <c>rawFile</c> is null.
+            </exception>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.GetAverage(ThermoFisher.CommonCore.Data.Interfaces.IRawData,System.Collections.Generic.List{System.Int32},ThermoFisher.CommonCore.Data.Business.Scan,System.Int32)">
+            <summary>
+            Create the average scan from a collection of raw scans.
+            </summary>
+            <param name="rawFile">The file containing scans to average
+            </param>
+            <param name="scanNumbers">
+            The collection of raw scans to average
+            </param>
+            <param name="firstScan">
+            The first scan in the set to average.
+            </param>
+            <param name="cacheLimit">
+            (optional) set the number of items which can be internally cached (default 20)  
+            </param>
+            <returns>
+            The averaged scan.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            <c>rawFile</c> is null.
+            </exception>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData">
+            <summary>
+            Internal representation of re-sampled data
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData"/> class.
+            </summary>
+            <param name="totalPoints">
+            The total points.
+            </param>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData.Masses">
+            <summary>
+            Gets or sets Masses.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData.Intensities">
+            <summary>
+            Gets or sets Intensities.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData.Length">
+            <summary>
+            Gets Length.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.GetAverage(ThermoFisher.CommonCore.Data.Interfaces.IRawData,ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FindSegmentedScan,System.Collections.Generic.List{System.Int32},ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FindCentroids)">
+            <summary>
+            Create the average scan from a collection of raw scans.
+            </summary>
+            <param name="rawFile">file which has data to average</param>
+            <param name="segmentedScanCreator">
+            method to return segmented scans when requested (by scan list index)
+            </param>
+            <param name="scanNumbers">
+            The collection of raw scans to average
+            </param>
+            <param name="firstScan">
+            The first scan in the set to average.
+            </param>
+            <param name="centroidStreamCreator">
+            method to return centroids streams from the list of scans when requested
+            </param>
+            <returns>
+            The number of scans that were actually averaged.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            <c>rawFile</c> is null.
+            </exception>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.Subtract(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Business.Scan)">
+            <summary>
+            Creates a difference of two raw scans.
+            The returned scans count of "scans combined" is
+            the total number of scans combined in each of the
+            foreground and background scans.
+            </summary>
+            <param name="foregroundScan">
+            The scan containing signal.
+            </param>
+            <param name="backgroundScan">
+            The scan containing background
+            </param>
+            <returns>
+            foregroundScan - backgroundScan
+            </returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.PartProfileMasses">
+            <summary>
+            The part profile masses.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.PartProfileMasses.Mass">
+            <summary>
+            Gets or sets a set of masses for profile points.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.PartProfileMasses.Filled">
+            <summary>
+            Gets or sets number of filled array points.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CreateTargetSpectrum(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FindSegmentedScan,System.Int32,ThermoFisher.CommonCore.Data.Business.MassToFrequencyConverter@)">
+            <summary>
+            Create the target array for keeping the averaged profile points.
+            </summary>
+            <param name="firstScan">
+            The first Scan.
+            </param>
+            <param name="findSegmentedScan">
+            The find Segmented Scan.
+            </param>
+            <param name="scans">
+            The scans.
+            </param>
+            <param name="massToFrequencyConverter">
+            The target Spectrum Parameters.
+            </param>
+            <returns>
+            The created target spectrum.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CreateProfilePoints(System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.PartProfileMasses})">
+            <summary>
+            create profile points.
+            </summary>
+            <param name="massTable">
+            The mass table.
+            </param>
+            <returns>
+            Points containing masses and 0 intensity
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CreateMassTable(ThermoFisher.CommonCore.Data.Business.MassToFrequencyConverter)">
+            <summary>
+            The create mass table.
+            </summary>
+            <param name="massToFrequencyConverter">
+            The target spectrum parameters.
+            </param>
+            <returns>
+            The masses for each profile point.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.SumUpSpectraResampled(ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FindSegmentedScan,ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData,System.Int32)">
+            <summary>
+            Create the average profile spectrum.
+            </summary>
+            <param name="scanCreator">
+            tool to return scans
+            </param>
+            <param name="segmentList">
+            segment List
+            </param>
+            <param name="scans">
+            The number of scans to sum
+            </param>
+            <returns>
+            The summed up spectra.
+            </returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.Resampler">
+            <summary>
+            The re-sampler.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.Resampler.#ctor(System.Double[],ThermoFisher.CommonCore.Data.Business.SegmentedScan,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.Resampler"/> class.
+            </summary>
+            <param name="masses">
+            The masses.
+            </param>
+            <param name="scanData">
+            The scan data.
+            </param>
+            <param name="scans">
+            The scans.
+            </param>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.Resampler.Result">
+            <summary>
+            Gets Result.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.Resampler.Execute">
+            <summary>
+            Method executed in parallel
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.Resampler.ResampleScan(System.Double[],ThermoFisher.CommonCore.Data.Business.SegmentedScan,System.Int32)">
+            <summary>
+            re-sample a scan.
+            </summary>
+            <param name="resampledMasses">
+            The re-sampled masses.
+            </param>
+            <param name="scanData">
+            The scan data.
+            </param>
+            <param name="scansAveraged">
+            The scans averaged.
+            </param>
+            <returns>
+            The set of resampled peaks, which must be merged into the final scan.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.SumUpSpectraResampledParallel2(ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FindSegmentedScan,ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData,System.Int32,System.Int32)">
+            <summary>
+            Create the average profile spectrum.
+            Each scan is analyzed: Determining mass regions which contain non-zero data,
+            and re-sampling the intensity data aligned to a set of output bins.
+            After all scans have been re-sampled, the re-sampled data has to be merged into the final output.
+            </summary>
+            <param name="scanCreator">
+            tool to return scans
+            </param>
+            <param name="segmentList">
+            segment List
+            </param>
+            <param name="scans">
+            The number of scans to sum
+            </param>
+            <param name="taskBatching">
+            The minimum number of Resample tasks per thread.
+            Creating resampled data for profiles is a fairly fast task. It may be inefficient to queue workers to
+            created the merged data for each scan in the batch.
+            Setting this >1 will reduce threading overheads, when averaging small batches of scans with low intensity peaks.
+            This parameter only affects the re-sampling, as the final merge of the re-sampled data is single threaded.
+            </param>
+            <returns>
+            The re-sampled and summed up spectra.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.MergeData(ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.MergeActions,ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData)">
+            <summary>
+            The merge data.
+            </summary>
+            <param name="toMerge">
+            The to merge.
+            </param>
+            <param name="resampled">
+            The resampled.
+            </param>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.MergeActions">
+            <summary>
+            private class to hold an index/value pair.
+            This records the data which needs to be added to the re-sampled total.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.MergeActions.Indexes">
+            <summary>
+            Gets or sets Indexes.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.MergeActions.Values">
+            <summary>
+            Gets or sets Values.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.MergeActions.Filed">
+            <summary>
+            Gets or sets Filed.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.SubtractSpectraResampled(System.Collections.Generic.List{ThermoFisher.CommonCore.Data.Business.Scan},ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData)">
+            <summary>
+            Create the Subtracted profile spectrum.
+            </summary>
+            <param name="scanList">
+            The foreground and background scans
+            </param>
+            <param name="segmentList">The re-sampled mass and intensity arrays.
+            </param>
+            <returns>
+            The subtracted profile
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CentroidizeProfileSpectrum(ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData)">
+             <summary>
+             Determines the centroids of all peaks in the given spectrum.
+             <para>
+             For the centroid the position, intensity and resolution are calculated.
+             The resolution is the calculated as the quotient of the position and the 
+             width of the peak.
+             </para>
+             <para>
+             The following algorithm calculates the centroid as the vertex of a second 
+             order parabola laid through the top three points of a peak. If the width 
+             cannot be determined directly from the profile peak (e.g. because of 
+             overlapping peaks), the full width at half height (FWHH) of the parabola
+             fitted to determine the centroid position is used (see below). This width
+             is usually smaller than the real peak width for FT data.
+             </para>
+             <para>
+             This algorithm simplifies the calculation by moving the x coordinate of the 
+             top three points to -1, 0 and +1, respectively. This is only applicable if 
+             the points are equidistant, which would be exactly true for the spectrum
+             in frequency domain, and is a valid approximation for the spectrum in mass
+             domain.
+             </para>
+             <code>
+             Parabola: y = a(x-xv)^2 + yv
+            
+             1. Find maximum and two surrounding points:
+                Given  p1(x1,y1); p2(x2,y2); p3(x3,y3) 
+            
+                if     dx = x2 - x1 = x3 - x2
+                and    x2 = n * dx
+            
+             2. Map the three points to the unity interval [-1, 1]:
+                p1'(-1,y1);p2'(0,y2);p3'(1,y3) - This simplifies the calculations.
+            
+             3. Calculate center offset dxc', height yc, and width w'
+                (dxc' and w' are in unity units):
+            
+                a    = 0.5 * (y1+y3) - y2;
+                dxc' = (y1-y3) / 4a
+                yc   = y2 - a * dxc'^2
+                w'   = 2.0 * sqrt(yc/2|a|)
+            
+             4. Calculate center and width:
+                xc = x2 + dxc' * dx
+                w  = w' * dx
+             </code>
+             </summary>
+             <param name="segmentScan">
+             List of segments to be converted to centroids
+             </param>
+             <returns>
+             The centroids detected.
+             </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CalculateNoiseInfo(ThermoFisher.CommonCore.Data.Interfaces.IRawData,ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FindCentroids,System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},System.Collections.Generic.List{System.Int32},System.Boolean)">
+            <summary>
+            Recalculates the baseline and noise information for the averaged spectrum.
+            </summary>
+            <param name="rawData">Raw file reader</param>
+            <param name="scanCreator">
+            The scan Creator.
+            </param>
+            <param name="centroidStream">
+            The centroid Stream.
+            </param>
+            <param name="scanNumbers">
+            The scans.
+            </param>
+            <param name="useOriginalNoiseAlgorithm">If true, use noise algorithm from Xcalibur</param>
+            <returns>
+            The calculated noise packets.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CalculateNoiseInfo(ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FindCentroids,System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},System.Collections.Generic.List{System.Int32})">
+            <summary>
+            Recalculates the baseline and noise information for the averaged spectrum.
+            </summary>
+            <param name="scanCreator">
+            The scan Creator.
+            </param>
+            <param name="centroidStream">
+            The centroid Stream.
+            </param>
+            <param name="scanNumbers">
+            The scans.
+            </param>
+            <returns>
+            The calculated noise packets.
+            </returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.NoiseInformation">
+            <summary>
+            The noise information.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.NoiseInformation.ScanAlignedNoise">
+            <summary>
+            Gets or sets the scan aligned noise.
+            This is data for each mass in the centroid scan
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.NoiseInformation.RawFileNoise">
+            <summary>
+            Gets or sets the noise data as recorded in a raw file.
+            This data need not be aligned with the scan masses.
+            Values for each mass can be interpolated from this table.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CalculateNoiseInfoUsingNoiseTable(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},System.Collections.Generic.List{System.Int32})">
+            <summary>
+            Recalculates the baseline and noise information for the averaged spectrum.
+            </summary>
+            <param name="filePlus">Tool to read noise data</param>
+            <param name="centroidStream">
+            The centroid Stream.
+            </param>
+            <param name="scanNumbers">
+            The scans.
+            </param>
+            <returns>
+            The calculated noise packets.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.BuildNoiseDataForScan(System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},ThermoFisher.CommonCore.Data.Business.NoiseAndBaseline[])">
+            <summary>
+            build noise data for scan.
+            Applies the noise and baseline data to a scan, making a noise table.
+            </summary>
+            <param name="centroidStream">
+            The centroid stream.
+            </param>
+            <param name="noiseAndBaselines">
+            The noise and baselines (input).
+            </param>
+            <returns>
+            The <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.NoisePackets"/>.
+            </returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.NoiseFromScans">
+            <summary>
+            Class to obtain noise from a 2 scan: foreground (0) or background (1).
+            Designed to create a function delegate, needed by
+            the noise generation algorithm.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.NoiseFromScans.#ctor(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Business.Scan)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.NoiseFromScans"/> class.
+            </summary>
+            <param name="foreground">
+            The scan to subtract from.
+            </param>
+            <param name="background">
+            The (background) scan to be subtracted.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.NoiseFromScans.NoiseAndBaselinesFromScan(System.Int32)">
+            <summary>
+            Get The noise and baselines from a file.
+            </summary>
+            <param name="index">
+            The index.
+            </param>
+            <returns>
+            The Noise data based on the index
+            </returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.NoiseFromFile">
+            <summary>
+            Class to obtain noise from a file.
+            Designed to create a function delegate, needed by
+            the noise generation algorithm.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.NoiseFromFile.#ctor(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Collections.Generic.List{System.Int32})">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.NoiseFromFile"/> class.
+            </summary>
+            <param name="file">
+            The file.
+            </param>
+            <param name="scanNumbers">
+            The scan numbers.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.NoiseFromFile.NoiseAndBaselinesFromFile(System.Int32)">
+            <summary>
+            Get The noise and baselines from a file.
+            </summary>
+            <param name="index">
+            The index.
+            </param>
+            <returns>
+            The Noise data based on the index
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CreateNoiseAndBaselines(System.Func{System.Int32,ThermoFisher.CommonCore.Data.Business.NoiseAndBaseline[]},System.Int32)">
+            <summary>
+            create noise and baselines.
+            </summary>
+            <param name="noiseReader">
+            The noise Reader.
+            </param>
+            <param name="scans">
+            The scans.
+            </param>
+            <returns>
+            The noise and baselines (averaged)
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.InterpolateValues(System.Double,System.Double,System.Double,System.Double,System.Double@)">
+            <summary>
+            Interpolate noise or baseline value.
+            </summary>
+            <param name="currentValue">
+            The current value.
+            </param>
+            <param name="previousValue">
+            The previous value.
+            </param>
+            <param name="currentMass">
+            The current mass.
+            </param>
+            <param name="previousMass">
+            The previous mass.
+            </param>
+            <param name="slope">
+            The slope.
+            </param>
+            <returns>
+            The interpolated value.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CalculateAndAssignChargeStates(ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData,System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint})">
+            <summary>
+            The function determines the charge state of the peaks in    
+            the spectrum and assign the calculated charge to the 
+            centroids of the corresponding isotopic cluster.
+            <para>
+            The functions tries to determine the charge states of the peaks in the 
+            spectrum and to assign the calculated charges to the centroids of the 
+            corresponding isotopic clusters in the spectrum.
+            The algorithm tries to determine charges for the top peaks in the spectrum. 
+            The algorithm tries at most MaxChargeDeterminations, or until the peak 
+            intensity falls below a calculated noise level in the spectrum, whichever 
+            comes first.
+            </para>
+            <para>
+            The charge determination is done by going through the spectrum starting with
+            the most intense peak. The calculation is done on a small interval around the 
+            peak centroid ([centroid - 1.5 Da/1200.0, centroid + 1.5 Da]).
+            Two independent approaches are used for the charge calculation: 
+            </para>
+            <code>
+            1. Calculation of an FFT on the profile points, and
+            2. Calculation by considering the centroid distances (Patterson charge 
+               calculations).
+            </code>
+            <para>
+            The two charge calculation algorithms fill a charge histogram map. This 
+            histogram is then analyzed for exhibiting a top scored charge that has a 
+            clear separation from the second best hit.
+            If there is a clear best hit for the charge, this charge is assigned to the 
+            corresponding isotopic cluster. This is the most difficult part of the charge
+            assignment. For details how the isotopic cluster is identified see the 
+            description on the charge assignment routine (-> AssignCharge()).
+            </para>
+            </summary>
+            <param name="segmentList">
+            The profile for the scan.
+            </param>
+            <param name="massSortedCentroidList">
+            List of centroids to assign charges to
+            </param>
+            <returns>
+            The points with charge states.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.AssignCharge(ThermoFisher.CommonCore.BackgroundSubtraction.ChargeResult,System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint})">
+            <summary>
+            assign charge.
+            </summary>
+            <param name="result">
+            The result of charge calculation.
+            </param>
+            <param name="massSortedCentroidList">
+            The mass sorted centroid list.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CompressProfileSpectrum(ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData)">
+            <summary>
+            Compress the averaged profile spectrum to reduce its memory footprint.
+            The sampling rate of the FT instruments is very high. Due to the very high
+            resolution of these instruments, the spectra are often quite empty. i.e. 
+            that there are large areas of zero intensities between the two peaks.
+            It is sufficient that we keep only a small number of consecutive zero intensity 
+            points. We do not remove them entirely because this will have strange effects 
+            on smoothing routines (currently we keep at most eight consecutive zero 
+            intensity points. This is sufficient to enable 15-point smoothing over the 
+            spectrum).
+            </summary>
+            <param name="segmentList">
+            The segment list.
+            </param>
+            <returns>
+            The compressed data.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FillAverageScan(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData,System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.NoiseInformation,ThermoFisher.CommonCore.Data.Business.MassToFrequencyConverter)">
+            <summary>
+            Fill the target raw scan provided by the caller with the result of the average calculation.
+            </summary>
+            <param name="firstScan">
+            the first scan in the set to average
+            </param>
+            <param name="segmentScan">
+            List holding the averaged segmented scan
+            </param>
+            <param name="centroidStream">
+            Holding the averaged centroid stream
+            </param>
+            <param name="noiseInformation">
+            Noise and baseline data
+            </param>
+            <param name="massToFrequencyConverter">
+            Mass calibration for target scan
+            </param>
+            <returns>
+            The filled average scan.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.GetTic(ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.ProfileData,System.Double[])">
+            <summary>
+            get tic.
+            </summary>
+            <param name="segmentScan">
+            The segment scan.
+            </param>
+            <param name="resampledIntensities">
+            The re-sampled intensities.
+            </param>
+            <returns>
+            The Tic of the intensities
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FindMaxElement(System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint})">
+            <summary>
+            find max element.
+            </summary>
+            <param name="centroids">
+            The centroids.
+            </param>
+            <returns>
+            The CentroidStreamPoint object which has the largest intensity
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CalculateTargetSpectrumParameters(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FindSegmentedScan,System.Int32)">
+            <summary>
+            Calculates and retrieves the necessary parameters for creating 
+            the averaged scan from the the given set of raw scans to average.
+            </summary>
+            <param name="firstScan">
+            The first Scan.
+            </param>
+            <param name="findSegmentedScan">
+            The find Segmented Scan.
+            </param>
+            <param name="scans">
+            The scans.
+            </param>
+            <returns>
+            The calculated target spectrum parameters.
+            </returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CentroidPositionComparer">
+            <summary>
+            The centroid position comparer.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CentroidPositionComparer.Compare(ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint,ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint)">
+            <summary>
+            Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
+            </summary>
+            <returns>
+            Value               Condition 
+            Less than zero      <paramref name="x"/> is less than <paramref name="y"/>.
+            Zero                <paramref name="x"/> equals <paramref name="y"/>.
+            Greater than zero   <paramref name="x"/> is greater than <paramref name="y"/>.
+            </returns>
+            <param name="x">
+            The first object to compare.
+            </param>
+            <param name="y">
+            The second object to compare.
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CompareIntenisities(ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint,ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint)">
+            <summary>
+            Compare intensities.
+            </summary>
+            <param name="left">
+            The left point.
+            </param>
+            <param name="right">
+            The right point.
+            </param>
+            <returns>
+            1 if left less than right
+            -1 if left greater than right
+            0 if left and right are equal
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.FindMaxElement(System.Collections.Generic.List{ThermoFisher.CommonCore.BackgroundSubtraction.CentroidStreamPoint},System.Int32,System.Int32)">
+            <summary>
+            Finds the CentroidStreamPoint object which contains the maximum Intensity
+            </summary>
+            <param name="centroids">
+            List of Centroids
+            </param>
+            <param name="startIndex">
+            Start of array slice to analyze
+            </param>
+            <param name="endIndex">
+            End of array slice to analyze
+            </param>
+            <returns>
+            The CentroidStreamPoint object which has the largest intensity
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CalculateDeltaFrequency(ThermoFisher.CommonCore.Data.Business.SegmentedScan,ThermoFisher.CommonCore.Data.Business.MassToFrequencyConverter)">
+            <summary>
+            Calculates the delta frequency for the given DataPeaks.
+            </summary>
+            <param name="scan">
+            Segmented Scan
+            </param>
+            <param name="massToFrequencyConverter">
+            Calibration data for target scan
+            </param>
+            <returns>
+            The calculated delta frequency.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CreateCentroidStream(System.Int32)">
+            <summary>
+            Create the CentroidStream object with the given size.
+            </summary>
+            <param name="size">The number of peaks in this stream.
+            </param>
+            <returns>
+            An empty centroid stream, with arrays allocated to the indicated size.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.BackgroundSubtraction.SpectrumAverager.CreateSegmentedScan(System.Int32,System.Double[],System.Double[],ThermoFisher.CommonCore.Data.Business.Range)">
+            <summary>
+            Create the <see cref="T:ThermoFisher.CommonCore.Data.Business.SegmentedScan"/> object withe given size, and attach the mass and intensity arrays.
+            </summary>
+            <param name="size">The number of mass/intensity pairs.
+            </param>
+            <param name="masses">
+            Mass data for scan 
+            </param>
+            <param name="intensities">
+            Intensity data for scan 
+            </param>
+            <param name="segmentRange">Mass range of the scan.</param>
+            <returns>
+            An scan with the mass and intensity data attached.
+            </returns>
+        </member>
+    </members>
+</doc>

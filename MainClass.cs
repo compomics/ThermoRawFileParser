@@ -11,6 +11,7 @@ namespace ThermoRawFileParser
         {
             string rawFilePath = null;
             string outputDirectory = null;
+            Boolean outputMetadata = false;
             string collection = null;
             string msRun = null;
             string subFolder = null;
@@ -18,7 +19,10 @@ namespace ThermoRawFileParser
 
             var optionSet = new OptionSet()
             {
-                {"h|help", "Prints out the options.", h => help = h != null},
+                {
+                    "h|help", "Prints out the options.",
+                    h => help = h != null
+                },
                 {
                     "i=|input=", "The raw file input.",
                     v => rawFilePath = v
@@ -28,11 +32,15 @@ namespace ThermoRawFileParser
                     v => outputDirectory = v
                 },
                 {
-                    "c:|collection:", "The optional collection identifier (PXD identifier for example).",
+                    "m|metadata", "Write the metadata output file if this flag is specified (without value).",
+                    v => outputMetadata = v != null
+                },                
+                {
+                    "c:|collection", "The optional collection identifier (PXD identifier for example).",
                     v => collection = v
                 },
                 {
-                    "m:|msrun:",
+                    "r:|run:",
                     "The optional mass spectrometry run name used in the spectrum title. The RAW file name will be used if not specified.",
                     v => msRun = v
                 },
@@ -69,7 +77,7 @@ namespace ThermoRawFileParser
                 try
                 {
                     CentroidedMgfExtractor centroidedMgfExtractor =
-                        new CentroidedMgfExtractor(rawFilePath, outputDirectory, collection, msRun, subFolder);
+                        new CentroidedMgfExtractor(rawFilePath, outputDirectory, outputMetadata, collection, msRun, subFolder);
                     centroidedMgfExtractor.Extract();
                 }
                 catch (Exception ex)

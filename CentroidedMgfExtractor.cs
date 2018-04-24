@@ -14,16 +14,19 @@ namespace ThermoRawFileParser
         private readonly string rawFilePath;
         private readonly string outputDirectory;
         private readonly string collection;
+        private readonly bool outputMetadata;
         private readonly string msRun;
         private readonly string subFolder;
         private static string rawFileName;
         private static string rawFileNameWithoutExtension;
 
-        public CentroidedMgfExtractor(string rawFilePath, string outputDirectory, string collection, string msRun,
+        public CentroidedMgfExtractor(string rawFilePath, string outputDirectory, Boolean outputMetadata,
+            string collection, string msRun,
             string subFolder)
         {
             this.rawFilePath = rawFilePath;
             this.outputDirectory = outputDirectory;
+            this.outputMetadata = outputMetadata;
             this.collection = collection;
             this.msRun = msRun;
             this.subFolder = subFolder;
@@ -56,12 +59,14 @@ namespace ThermoRawFileParser
                 rawFileNameWithoutExtension = Path.GetFileNameWithoutExtension(rawFileName);
             }
 
+            Console.WriteLine("Started parsing " + rawFilePath);
+
             // Create the IRawDataPlus object for accessing the RAW file
             //var rawFile = RawFileReaderAdapter.FileFactory(rawFilePath);
             IRawDataPlus rawFile;
             using (rawFile = RawFileReaderFactory.ReadFile(rawFilePath))
             {
-                if (!rawFile.IsOpen || rawFile.IsError)
+                if (!rawFile.IsOpen)
                 {
                     Console.WriteLine("Unable to access the RAW file using the RawFileReader class!");
 
@@ -92,16 +97,21 @@ namespace ThermoRawFileParser
 
                 // Get the first and last scan from the RAW file
                 int firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
-                int lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;                
+                int lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
 
-                WriteMetada(rawFile, firstScanNumber, lastScanNumber);
+                if (outputMetadata)
+                {
+                    WriteMetada(rawFile, firstScanNumber, lastScanNumber);
+                }
 
                 rawFile.SelectInstrument(Device.MS, 2);
 
                 WriteSpectraToMgf(rawFile, firstScanNumber, lastScanNumber);
+
+                Console.WriteLine("Finished parsing " + rawFilePath);
             }
         }
-   
+
         /// <summary>
         /// Write the RAW file metadata to file.
         /// <param name="rawFile">the RAW file object</param>
@@ -197,7 +207,7 @@ namespace ThermoRawFileParser
                             double precursorMass = reaction.PrecursorMass;
                             mgfFile.WriteLine(
                                 $"PEPMASS={precursorMass:F4}");
-                                //$"PEPMASS={precursorMass:F2} {GetPrecursorIntensity(rawFile, scanNumber)}");
+                            //$"PEPMASS={precursorMass:F2} {GetPrecursorIntensity(rawFile, scanNumber)}");
                             double collisionEnergy = reaction.CollisionEnergy;
                             mgfFile.WriteLine($"COLLISIONENERGY={collisionEnergy}");
                             var ionizationMode = scanFilter.IonizationMode;
@@ -264,7 +274,8 @@ namespace ThermoRawFileParser
             ChromatogramTraceSettings settings = new ChromatogramTraceSettings(TraceType.BasePeak);
 
             // Get the chromatogram from the RAW file. 
-            var data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, scanNumber - 1, scanNumber - 1);
+            var data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, scanNumber - 1,
+                scanNumber - 1);
 
             // Split the data into the chromatograms
             var trace = ChromatogramSignal.FromChromatogramData(data);
