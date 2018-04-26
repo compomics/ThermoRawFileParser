@@ -30,7 +30,7 @@ If you want to build the project using nuget, put the ThermoFisher.CommonCore.Ra
 
 ## Docker
 
-Use the docker file to build an image. It fetches to source code from githhub and builds it.
+Use the docker file to build an image. It fetches to source code from github and builds it.
 ```
 sudo docker build -t thermorawparser .
 ```
