@@ -5,6 +5,7 @@ Wrapper around the .net (C#) ThermoFisher ThermoRawFileReader library for runnin
 RawFileReader reading tool. Copyright © 2016 by Thermo Fisher Scientific, Inc. All rights reserved
 
 ## Usage
+The optional parameters only work in the -option=value format. The metadata file is only created when the `-m` is specified. 
 
 ```
 ThermoRawFileParser.exe usage (use -option=value for the optional arguments)
@@ -26,3 +27,16 @@ ThermoRawFileParser.exe usage (use -option=value for the optional arguments)
 ## Build
 
 If you want to build the project using nuget, put the ThermoFisher.CommonCore.RawFileReader.4.0.26.nupkg package in your local nuget directory.
+
+## Docker
+
+Use the docker file to build an image. It fetches to source code from githhub and builds it.
+```
+sudo docker build -t thermorawparser .
+```
+Run example:
+```
+sudo docker run -v /home/user//raw:/data_input -i -t thermorawparser mono /src/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -m -c=PXD00001
+```
+
+
