@@ -32,11 +32,11 @@ If you want to build the project using nuget, put the ThermoFisher.CommonCore.Ra
 
 Use the docker file to build an image. It fetches to source code from github and builds it.
 ```
-sudo docker build -t thermorawparser .
+docker build -t thermorawparser .
 ```
 Run example:
 ```
-sudo docker run -v /home/user//raw:/data_input -i -t thermorawparser mono /src/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -m -c=PXD00001
+docker run -v /home/user/raw:/data_input -i -t thermorawparser mono /src/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -m -c=PXD00001
 ```
 
 
