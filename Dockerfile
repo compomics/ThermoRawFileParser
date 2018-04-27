@@ -9,7 +9,7 @@ LABEL software.version="1.0.0"
 LABEL about.summary="A software to convert Thermo RAW files to mgf and mzML"
 LABEL about.home="https://github.com/compomics/ThermoRawFileParser"
 LABEL about.documentation="https://github.com/compomics/ThermoRawFileParser"
-LABEL about.license_file="http://cruxtoolkit.sourceforge.net/"
+LABEL about.license_file="https://github.com/compomics/ThermoRawFileParser"
 LABEL about.license="SPDX:Unknown"
 LABEL about.tags="Proteomics"
 
