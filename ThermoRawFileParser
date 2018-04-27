@@ -1,0 +1,2 @@
+﻿#!/bin/bash
+exec mono /home/biodocker/bin/bin/Debug/ThermoRawFileParser.exe "$@"
