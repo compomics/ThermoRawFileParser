@@ -28,6 +28,10 @@ ThermoRawFileParser.exe usage (use -option=value for the optional arguments)
 
 If you want to build the project using nuget, put the ThermoFisher.CommonCore.RawFileReader.4.0.26.nupkg package in your local nuget directory.
 
+## Logging
+
+The default log file is `ThermoRawFileParser.log`. The log settings can be changed in `log4net.config`.
+
 ## Docker
 
 Use the docker file to build an image. It fetches to source code from github and builds it.
