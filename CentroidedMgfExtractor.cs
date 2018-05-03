@@ -11,25 +11,28 @@ namespace ThermoRawFileParser
 {
     internal class CentroidedMgfExtractor
     {
-        private readonly string rawFilePath;
-        private readonly string outputDirectory;
-        private readonly string collection;
-        private readonly bool outputMetadata;
-        private readonly string msRun;
-        private readonly string subFolder;
-        private static string rawFileName;
-        private static string rawFileNameWithoutExtension;
+        private static readonly log4net.ILog Log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        private readonly string _rawFilePath;
+        private readonly string _outputDirectory;
+        private readonly string _collection;
+        private readonly bool _outputMetadata;
+        private readonly string _msRun;
+        private readonly string _subFolder;
+        private static string _rawFileName;
+        private static string _rawFileNameWithoutExtension;
 
         public CentroidedMgfExtractor(string rawFilePath, string outputDirectory, Boolean outputMetadata,
             string collection, string msRun,
             string subFolder)
         {
-            this.rawFilePath = rawFilePath;
-            this.outputDirectory = outputDirectory;
-            this.outputMetadata = outputMetadata;
-            this.collection = collection;
-            this.msRun = msRun;
-            this.subFolder = subFolder;
+            _rawFilePath = rawFilePath;
+            _outputDirectory = outputDirectory;
+            _outputMetadata = outputMetadata;
+            _collection = collection;
+            _msRun = msRun;
+            _subFolder = subFolder;
         }
 
         /// <summary>
@@ -38,37 +41,37 @@ namespace ThermoRawFileParser
         public void Extract()
         {
             // Check to see if the RAW file name was supplied as an argument to the program
-            if (string.IsNullOrEmpty(rawFilePath))
+            if (string.IsNullOrEmpty(_rawFilePath))
             {
-                Console.WriteLine("No RAW file specified!");
+                Log.Error("No RAW file specified!");
 
                 return;
             }
 
             // Check to see if the specified RAW file exists
-            if (!File.Exists(rawFilePath))
+            if (!File.Exists(_rawFilePath))
             {
-                Console.WriteLine(@"The file doesn't exist in the specified location - " + rawFilePath);
+                Log.Error(@"The file doesn't exist in the specified location - " + _rawFilePath);
 
                 return;
             }
             else
             {
-                string[] splittedPath = rawFilePath.Split('/');
-                rawFileName = splittedPath[splittedPath.Length - 1];
-                rawFileNameWithoutExtension = Path.GetFileNameWithoutExtension(rawFileName);
+                string[] splittedPath = _rawFilePath.Split('/');
+                _rawFileName = splittedPath[splittedPath.Length - 1];
+                _rawFileNameWithoutExtension = Path.GetFileNameWithoutExtension(_rawFileName);
             }
 
-            Console.WriteLine("Started parsing " + rawFilePath);
+            Log.Info("Started parsing " + _rawFilePath);
 
             // Create the IRawDataPlus object for accessing the RAW file
             //var rawFile = RawFileReaderAdapter.FileFactory(rawFilePath);
             IRawDataPlus rawFile;
-            using (rawFile = RawFileReaderFactory.ReadFile(rawFilePath))
+            using (rawFile = RawFileReaderFactory.ReadFile(_rawFilePath))
             {
                 if (!rawFile.IsOpen)
                 {
-                    Console.WriteLine("Unable to access the RAW file using the RawFileReader class!");
+                    Log.Error("Unable to access the RAW file using the RawFileReader class!");
 
                     return;
                 }
@@ -76,7 +79,7 @@ namespace ThermoRawFileParser
                 // Check for any errors in the RAW file
                 if (rawFile.IsError)
                 {
-                    Console.WriteLine($"Error opening ({rawFile.FileError}) - {rawFilePath}");
+                    Log.Error($"Error opening ({rawFile.FileError}) - {_rawFilePath}");
 
                     return;
                 }
@@ -84,22 +87,20 @@ namespace ThermoRawFileParser
                 // Check if the RAW file is being acquired
                 if (rawFile.InAcquisition)
                 {
-                    Console.WriteLine("RAW file still being acquired - " + rawFilePath);
+                    Log.Error("RAW file still being acquired - " + _rawFilePath);
 
                     return;
                 }
 
                 // Get the number of instruments (controllers) present in the RAW file and set the 
                 // selected instrument to the MS instrument, first instance of it
-                //Console.WriteLine("The RAW file has data from {0} instruments", rawFile.InstrumentCount);
-
                 rawFile.SelectInstrument(Device.MS, 1);
 
                 // Get the first and last scan from the RAW file
                 int firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
                 int lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
 
-                if (outputMetadata)
+                if (_outputMetadata)
                 {
                     WriteMetada(rawFile, firstScanNumber, lastScanNumber);
                 }
@@ -108,7 +109,7 @@ namespace ThermoRawFileParser
 
                 WriteSpectraToMgf(rawFile, firstScanNumber, lastScanNumber);
 
-                Console.WriteLine("Finished parsing " + rawFilePath);
+                Log.Info("Finished parsing " + _rawFilePath);
             }
         }
 
@@ -138,17 +139,16 @@ namespace ThermoRawFileParser
                 "Serialnumber=" + rawFile.GetInstrumentData().SerialNumber,
                 "Softwareversion=" + rawFile.GetInstrumentData().SoftwareVersion,
                 "Firmwareversion=" + rawFile.GetInstrumentData().HardwareVersion,
-                "Units=" + rawFile.GetInstrumentData().Units
+                "Units=" + rawFile.GetInstrumentData().Units,
+                $"Massresolution={rawFile.RunHeaderEx.MassResolution:F3}",
+                $"Numberofscans={rawFile.RunHeaderEx.SpectraCount}",
+                $"Scan range={firstScanNumber},{lastScanNumber}",
+                $"Time range={startTime:F2},{endTime:F2}",
+                $"Mass range={rawFile.RunHeaderEx.LowMass:F4},{rawFile.RunHeaderEx.HighMass:F4}"
             };
 
-            output.Add($"Massresolution={rawFile.RunHeaderEx.MassResolution:F3}");
-            output.Add($"Numberofscans={rawFile.RunHeaderEx.SpectraCount}");
-            output.Add($"Scan range={firstScanNumber},{lastScanNumber}");
-            output.Add($"Time range={startTime:F2},{endTime:F2}");
-            output.Add($"Mass range={rawFile.RunHeaderEx.LowMass:F4},{rawFile.RunHeaderEx.HighMass:F4}");
-
             // Write the meta data to file
-            File.WriteAllLines(outputDirectory + "/" + rawFileNameWithoutExtension + "_metadata", output.ToArray());
+            File.WriteAllLines(_outputDirectory + "/" + _rawFileNameWithoutExtension + "_metadata", output.ToArray());
         }
 
         /// <summary>
@@ -161,58 +161,57 @@ namespace ThermoRawFileParser
         {
             // Test centroid (high resolution/label) data
             using (var mgfFile =
-                File.CreateText(outputDirectory + "//" + rawFileNameWithoutExtension + ".mgf"))
+                File.CreateText(_outputDirectory + "//" + _rawFileNameWithoutExtension + ".mgf"))
             {
                 for (int scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
                 {
                     // Get each scan from the RAW file
                     var scan = Scan.FromFile(rawFile, scanNumber);
 
-                    if (scan.HasCentroidStream)
+                    // Check to see if the RAW file contains label (high-res) data and if it is present
+                    // then look for any data that is out of order
+                    double time = rawFile.RetentionTimeFromScanNumber(scanNumber);
+
+                    // Get the scan filter for this scan number
+                    var scanFilter = rawFile.GetFilterForScanNumber(scanNumber);
+
+                    // Get the scan event for this scan number
+                    var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
+
+                    // Get the ionizationMode, MS2 precursor mass, collision energy, and isolation width for each scan
+                    if (scanFilter.MSOrder == ThermoFisher.CommonCore.Data.FilterEnums.MSOrderType.Ms2)
                     {
-                        // Check to see if the RAW file contains label (high-res) data and if it is present
-                        // then look for any data that is out of order
-                        double time = rawFile.RetentionTimeFromScanNumber(scanNumber);
+                        mgfFile.WriteLine("BEGIN IONS");
+                        mgfFile.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
+                        mgfFile.WriteLine($"SCAN={scanNumber}");
+                        mgfFile.WriteLine($"RTINSECONDS={time * 60}");
+                        // Get the reaction information for the first precursor
+                        var reaction = scanEvent.GetReaction(0);
+                        double precursorMass = reaction.PrecursorMass;
+                        mgfFile.WriteLine($"PEPMASS={precursorMass:F7}");
 
-                        // Get the scan filter for this scan number
-                        var scanFilter = rawFile.GetFilterForScanNumber(scanNumber);
+                        // trailer extra data list
+                        var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
 
-                        // Get the scan event for this scan number
-                        var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
-
-                        // Get the ionizationMode, MS2 precursor mass, collision energy, and isolation width for each scan
-                        if (scanFilter.MSOrder == ThermoFisher.CommonCore.Data.FilterEnums.MSOrderType.Ms2)
+                        for (int i = 0; i < trailerData.Length; i++)
                         {
-                            mgfFile.WriteLine("BEGIN IONS");
-                            mgfFile.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
-                            mgfFile.WriteLine($"SCAN={scanNumber}");
-                            mgfFile.WriteLine($"RTINSECONDS={time * 60}");
-
-                            // trailer extra data list
-                            var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
-
-                            for (int i = 0; i < trailerData.Length; i++)
+                            if ((trailerData.Labels[i] == "Charge State:"))
                             {
-                                if ((trailerData.Labels[i] == "Charge State:"))
+                                if (Convert.ToInt32(trailerData.Values[i]) > 0)
                                 {
-                                    if (Convert.ToInt32(trailerData.Values[i]) > 0)
-                                    {
-                                        mgfFile.WriteLine($"CHARGE={trailerData.Values[i]}+");
-                                    }
+                                    mgfFile.WriteLine($"CHARGE={trailerData.Values[i]}+");
                                 }
                             }
+                        }
 
-                            // Get the reaction information for the first precursor
-                            var reaction = scanEvent.GetReaction(0);
-                            double precursorMass = reaction.PrecursorMass;
-                            mgfFile.WriteLine(
-                                $"PEPMASS={precursorMass:F4}");
-                            //$"PEPMASS={precursorMass:F2} {GetPrecursorIntensity(rawFile, scanNumber)}");
-                            double collisionEnergy = reaction.CollisionEnergy;
-                            mgfFile.WriteLine($"COLLISIONENERGY={collisionEnergy}");
-                            var ionizationMode = scanFilter.IonizationMode;
-                            mgfFile.WriteLine($"IONMODE={ionizationMode}");
+                        //$"PEPMASS={precursorMass:F2} {GetPrecursorIntensity(rawFile, scanNumber)}");
+                        //double collisionEnergy = reaction.CollisionEnergy;
+                        //mgfFile.WriteLine($"COLLISIONENERGY={collisionEnergy}");
+                        //var ionizationMode = scanFilter.IonizationMode;
+                        //mgfFile.WriteLine($"IONMODE={ionizationMode}");
 
+                        if (scan.HasCentroidStream)
+                        {
                             var centroidStream = rawFile.GetCentroidStream(scanNumber, false);
                             if (scan.CentroidScan.Length > 0)
                             {
@@ -222,9 +221,22 @@ namespace ThermoRawFileParser
                                         $"{centroidStream.Masses[i]:F7} {centroidStream.Intensities[i]:F10}");
                                 }
                             }
-
-                            mgfFile.WriteLine("END IONS");
                         }
+                        else
+                        {
+                            // Get the scan statistics from the RAW file for this scan number
+                            var scanStatistics = rawFile.GetScanStatsForScanNumber(scanNumber);
+
+                            // Get the segmented (low res and profile) scan data
+                            var segmentedScan = rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
+                            for (int i = 0; i < segmentedScan.Positions.Length; i++)
+                            {
+                                mgfFile.WriteLine(
+                                    $"{segmentedScan.Positions[i]:F7} {segmentedScan.Intensities[i]:F10}");
+                            }
+                        }
+
+                        mgfFile.WriteLine("END IONS");
                     }
                 }
             }
@@ -238,23 +250,23 @@ namespace ThermoRawFileParser
         {
             StringBuilder spectrumTitle = new StringBuilder("mzspec:");
 
-            if (collection != null)
+            if (_collection != null)
             {
-                spectrumTitle.Append(collection).Append(":");
+                spectrumTitle.Append(_collection).Append(":");
             }
 
-            if (subFolder != null)
+            if (_subFolder != null)
             {
-                spectrumTitle.Append(subFolder).Append(":");
+                spectrumTitle.Append(_subFolder).Append(":");
             }
 
-            if (msRun != null)
+            if (_msRun != null)
             {
-                spectrumTitle.Append(msRun).Append(":");
+                spectrumTitle.Append(_msRun).Append(":");
             }
             else
             {
-                spectrumTitle.Append(rawFileName).Append(":");
+                spectrumTitle.Append(_rawFileName).Append(":");
             }
 
             spectrumTitle.Append("scan:");

@@ -1,21 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Mono.Options;
 using ThermoFisher.CommonCore.Data;
 
 namespace ThermoRawFileParser
 {
     public class MainClass
-    {       
+    {
+        private static readonly log4net.ILog Log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public static void Main(string[] args)
         {
             string rawFilePath = null;
             string outputDirectory = null;
-            Boolean outputMetadata = false;
+            bool outputMetadata = false;
             string collection = null;
             string msRun = null;
             string subFolder = null;
-            Boolean help = false;
+            bool help = false;
 
             var optionSet = new OptionSet()
             {
@@ -34,7 +38,7 @@ namespace ThermoRawFileParser
                 {
                     "m|metadata", "Write the metadata output file if this flag is specified (without value).",
                     v => outputMetadata = v != null
-                },                
+                },
                 {
                     "c:|collection", "The optional collection identifier (PXD identifier for example).",
                     v => collection = v
@@ -50,7 +54,7 @@ namespace ThermoRawFileParser
                     v => subFolder = v
                 },
             };
-            
+
             try
             {
                 List<string> extra;
@@ -69,7 +73,8 @@ namespace ThermoRawFileParser
 
             if (help)
             {
-                const string usageMessage = "ThermoRawFileParser.exe usage (use -option=value for the optional arguments)";
+                const string usageMessage =
+                    "ThermoRawFileParser.exe usage (use -option=value for the optional arguments)";
                 ShowHelp(usageMessage, optionSet);
             }
             else
@@ -77,12 +82,15 @@ namespace ThermoRawFileParser
                 try
                 {
                     CentroidedMgfExtractor centroidedMgfExtractor =
-                        new CentroidedMgfExtractor(rawFilePath, outputDirectory, outputMetadata, collection, msRun, subFolder);
+                        new CentroidedMgfExtractor(rawFilePath, outputDirectory, outputMetadata, collection, msRun,
+                            subFolder);
                     centroidedMgfExtractor.Extract();
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("An unexpected error occured: " + ex.Message);
+                    Log.Error("An unexpected error occured:");
+                    Log.Error(ex.ToString());
+
                     Environment.Exit(-1);
                 }
             }
