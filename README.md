@@ -40,7 +40,7 @@ docker build -t thermorawparser .
 ```
 Run example:
 ```
-docker run -v /home/user/raw:/data_input -i -t thermorawparser mono /src/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -m -c=PXD00001
+docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser mono /home/biodocker/bin/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -m -c=PXD00001
 ```
 
 
