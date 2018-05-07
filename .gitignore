@@ -2,4 +2,6 @@
 bin/
 obj/
 *.log
+ThermoRawFileParser.sln
+ThermoRawFileParser.sln.DotSettings.user
 
