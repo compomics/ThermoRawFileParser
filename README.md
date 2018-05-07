@@ -36,7 +36,7 @@ The default log file is `ThermoRawFileParser.log`. The log settings can be chang
 
 Use the docker file to build an image. It fetches to source code from github and builds it.
 ```
-docker build -t thermorawparser .
+docker build --no-cache -t thermorawparser .
 ```
 Run example:
 ```
