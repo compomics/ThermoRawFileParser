@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 echo "Analysing Thermo RW file input"
 exec mono /home/biodocker/bin/bin/Debug/ThermoRawFileParser.exe "$@"
 
