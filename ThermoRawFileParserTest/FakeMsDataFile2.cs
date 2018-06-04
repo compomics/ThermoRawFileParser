@@ -6,11 +6,11 @@ using MassSpectrometry;
 
 namespace ThermoRawFileParserTest
 {
-    public class FakeMsDataFile : MsDataFile<IMzmlScan>, IMsStaticDataFile<IMzmlScan>
+    public class FakeMsDataFile2 : MsDataFile<IMzmlScan>
     {
         #region Public Constructors
 
-        public FakeMsDataFile(IMzmlScan[] FakeScans) : base(FakeScans,
+        public FakeMsDataFile2(IMzmlScan[] FakeScans) : base(FakeScans,
             new SourceFile(@"scan number only nativeID format", "mzML format", null, "SHA-1", @"C:\fake.mzML", null))
         {
             this.Scans = FakeScans;

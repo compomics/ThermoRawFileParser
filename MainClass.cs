@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Mono.Options;
 using ThermoFisher.CommonCore.Data;
+using ThermoFisher.CommonCore.Data.Business;
 
 namespace ThermoRawFileParser
 {
@@ -81,10 +82,10 @@ namespace ThermoRawFileParser
             {
                 try
                 {
-                    CentroidedMgfExtractor centroidedMgfExtractor =
-                        new CentroidedMgfExtractor(rawFilePath, outputDirectory, outputMetadata, collection, msRun,
+                    RawFileParser rawFileParser
+                        = new RawFileParser(rawFilePath, outputDirectory, outputMetadata, collection, msRun,
                             subFolder);
-                    centroidedMgfExtractor.Extract();
+                    rawFileParser.Parse();
                 }
                 catch (Exception ex)
                 {

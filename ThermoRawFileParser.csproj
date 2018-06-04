@@ -129,10 +129,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CentroidedMgfExtractor.cs" />
+    <Compile Include="FakeMsDataFile.cs" />
+    <Compile Include="ISpectrumWriter.cs" />
+    <Compile Include="mzML1_1_1_idx.cs" />
+    <Compile Include="MzmlMethods.cs" />
+    <Compile Include="MzMlSpectrumWriter.cs" />
+    <Compile Include="SpectrumWriter.cs" />
+    <Compile Include="MgfSpectrumWriter.cs" />
     <Compile Include="MainClass.cs" />
+    <Compile Include="MetadataWriter.cs" />
     <Compile Include="MzMLExporter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RawFileParser.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -141,6 +149,13 @@
     <Content Include="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="mzML1.1.1_idx.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="ThermoRawFileParserTest\ThermoRawFileParserTest.csproj">
+      <Project>{825604e5-e6e0-461b-ad2a-e2210abefe59}</Project>
+      <Name>ThermoRawFileParserTest</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
