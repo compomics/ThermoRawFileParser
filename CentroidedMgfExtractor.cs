@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using IO.MzML.Generated;
 using Mono.Options;
 using ThermoFisher.CommonCore.Data.Business;
+using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
 using ThermoFisher.CommonCore.RawFileReader;
 
@@ -192,7 +194,7 @@ namespace ThermoRawFileParser
                     var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
 
                     // Get the ionizationMode, MS2 precursor mass, collision energy, and isolation width for each scan
-                    if (scanFilter.MSOrder == ThermoFisher.CommonCore.Data.FilterEnums.MSOrderType.Ms2)
+                    if (scanEvent.ScanData == ScanDataType.Centroid && scanFilter.MSOrder == ThermoFisher.CommonCore.Data.FilterEnums.MSOrderType.Ms2)
                     {
                         mgfFile.WriteLine("BEGIN IONS");
                         mgfFile.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
@@ -238,8 +240,8 @@ namespace ThermoRawFileParser
                         else
                         {
                             // Get the scan statistics from the RAW file for this scan number
-                            var scanStatistics = rawFile.GetScanStatsForScanNumber(scanNumber);
-
+                            var scanStatistics = rawFile.GetScanStatsForScanNumber(scanNumber);                            
+                            
                             // Get the segmented (low res and profile) scan data
                             var segmentedScan = rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
                             for (int i = 0; i < segmentedScan.Positions.Length; i++)
