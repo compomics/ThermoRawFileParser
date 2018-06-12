@@ -15,6 +15,7 @@ LABEL about.tags="Proteomics"
 
 ################## MAINTAINER ######################
 MAINTAINER Niels Hulstaert <niels.hulstaert@ugent.be>
+MAINTAINER Yasset PErez-Riverol <ypriverol@gmail.com>
 
 ################## INSTALLATION ######################
 
@@ -47,6 +48,7 @@ COPY ThermoRawFileParser /home/biodocker/bin/bin/Debug/
 
 USER root
 RUN chmod +x /home/biodocker/bin/bin/Debug/ThermoRawFileParser
+RUN chmod +x /home/biodocker/bin/bin/Debug/ThermoRawFileParser.exe
 RUN chown biodocker:biodocker /home/biodocker/bin/bin/Debug/ThermoRawFileParser
 
 USER biodocker
