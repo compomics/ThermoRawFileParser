@@ -2,6 +2,7 @@
 using System.IO;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
+using ThermoRawFileParser.Writer;
 
 namespace ThermoRawFileParser
 {
@@ -10,25 +11,11 @@ namespace ThermoRawFileParser
         private static readonly log4net.ILog Log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly string _rawFilePath;
-        private readonly string _outputDirectory;
-        private readonly string _collection;
-        private readonly bool _outputMetadata;
-        private readonly string _msRun;
-        private readonly string _subFolder;
-        private static string _rawFileName;
-        private static string _rawFileNameWithoutExtension;
+        private readonly ParseInput _parseInput;
 
-        public RawFileParser(string rawFilePath, string outputDirectory, bool outputMetadata,
-            string collection, string msRun,
-            string subFolder)
+        public RawFileParser(ParseInput parseInput)
         {
-            _rawFilePath = rawFilePath;
-            _outputDirectory = outputDirectory;
-            _outputMetadata = outputMetadata;
-            _collection = collection;
-            _msRun = msRun;
-            _subFolder = subFolder;
+            _parseInput = parseInput;
         }
 
         /// <summary>
@@ -37,7 +24,7 @@ namespace ThermoRawFileParser
         public void Parse()
         {
             // Check to see if the RAW file name was supplied as an argument to the program
-            if (string.IsNullOrEmpty(_rawFilePath))
+            if (string.IsNullOrEmpty(_parseInput.RawFilePath))
             {
                 Log.Error("No RAW file specified!");
 
@@ -45,25 +32,19 @@ namespace ThermoRawFileParser
             }
 
             // Check to see if the specified RAW file exists
-            if (!File.Exists(_rawFilePath))
+            if (!File.Exists(_parseInput.RawFilePath))
             {
-                Log.Error(@"The file doesn't exist in the specified location - " + _rawFilePath);
+                Log.Error(@"The file doesn't exist in the specified location - " + _parseInput.RawFilePath);
 
                 return;
             }
-            else
-            {
-                string[] splittedPath = _rawFilePath.Split('/');
-                _rawFileName = splittedPath[splittedPath.Length - 1];
-                _rawFileNameWithoutExtension = Path.GetFileNameWithoutExtension(_rawFileName);
-            }
 
-            Log.Info("Started parsing " + _rawFilePath);
+            Log.Info("Started parsing " + _parseInput.RawFilePath);
 
             // Create the IRawDataPlus object for accessing the RAW file
             //var rawFile = RawFileReaderAdapter.FileFactory(rawFilePath);
             IRawDataPlus rawFile;
-            using (rawFile = RawFileReaderFactory.ReadFile(_rawFilePath))
+            using (rawFile = RawFileReaderFactory.ReadFile(_parseInput.RawFilePath))
             {
                 if (!rawFile.IsOpen)
                 {
@@ -75,7 +56,7 @@ namespace ThermoRawFileParser
                 // Check for any errors in the RAW file
                 if (rawFile.IsError)
                 {
-                    Log.Error($"Error opening ({rawFile.FileError}) - {_rawFilePath}");
+                    Log.Error($"Error opening ({rawFile.FileError}) - {_parseInput.RawFilePath}");
 
                     return;
                 }
@@ -83,7 +64,7 @@ namespace ThermoRawFileParser
                 // Check if the RAW file is being acquired
                 if (rawFile.InAcquisition)
                 {
-                    Log.Error("RAW file still being acquired - " + _rawFilePath);
+                    Log.Error("RAW file still being acquired - " + _parseInput.RawFilePath);
 
                     return;
                 }
@@ -96,19 +77,28 @@ namespace ThermoRawFileParser
                 int firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
                 int lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
 
-                if (_outputMetadata)
+                if (_parseInput.OutputMetadata)
                 {
-                    MetadataWriter metadataWriter = new MetadataWriter(_outputDirectory, _rawFileNameWithoutExtension);
+                    MetadataWriter metadataWriter = new MetadataWriter(_parseInput.OutputDirectory,
+                        _parseInput.RawFileNameWithoutExtension);
                     metadataWriter.WriteMetada(rawFile, firstScanNumber, lastScanNumber);
                 }
 
                 rawFile.SelectInstrument(Device.MS, 2);
 
-                SpectrumWriter spectrumWriter = new MzMlSpectrumWriter(_rawFilePath, _outputDirectory,
-                    _collection, _msRun, _subFolder);
+                SpectrumWriter spectrumWriter = null;
+                switch (_parseInput.OutputFormat)
+                {
+                    case OutputFormat.Mgf:
+                        spectrumWriter = new MgfSpectrumWriter(_parseInput);
+                        break;
+                    case OutputFormat.Mzml:
+                        spectrumWriter = new MzMlSpectrumWriter(_parseInput);
+                        break;
+                }
                 spectrumWriter.WriteSpectra(rawFile, firstScanNumber, lastScanNumber);
 
-                Log.Info("Finished parsing " + _rawFilePath);
+                Log.Info("Finished parsing " + _parseInput.RawFilePath);
             }
         }
     }

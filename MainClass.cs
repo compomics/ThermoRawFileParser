@@ -16,7 +16,10 @@ namespace ThermoRawFileParser
         {
             string rawFilePath = null;
             string outputDirectory = null;
+            string outputFormatString = null;
+            OutputFormat outputFormat = OutputFormat.Mgf;
             bool outputMetadata = false;
+            bool includeProfileData = false;
             string collection = null;
             string msRun = null;
             string subFolder = null;
@@ -37,8 +40,16 @@ namespace ThermoRawFileParser
                     v => outputDirectory = v
                 },
                 {
+                    "f=|format=", "The output format (0 for MGF, 1 for MzMl)",
+                    v => outputFormatString = v
+                },
+                {
                     "m|metadata", "Write the metadata output file if this flag is specified (without value).",
                     v => outputMetadata = v != null
+                },
+                {
+                    "p|profiledata", "Include MS2 profile data if this flag is specified (without value).",
+                    v => includeProfileData = v != null
                 },
                 {
                     "c:|collection", "The optional collection identifier (PXD identifier for example).",
@@ -62,29 +73,40 @@ namespace ThermoRawFileParser
                 //parse the command line
                 extra = optionSet.Parse(args);
 
+                int outPutFormatInt = Int32.Parse(outputFormatString);
+                if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt))
+                {
+                    outputFormat = (OutputFormat) outPutFormatInt;
+                }
+                else
+                {
+                    throw new OptionException("unknown output format", "-f, --format");
+                }
+
                 if (!extra.IsNullOrEmpty())
                 {
-                    throw new OptionException("unexpected extra arguments", "N/A");
+                    throw new OptionException("unexpected extra arguments", null);
                 }
             }
-            catch (OptionException)
+            catch (OptionException optionException)
             {
-                ShowHelp("Error - usage is (use -option=value for the optional arguments):", optionSet);
+                ShowHelp("Error - usage is (use -option=value for the optional arguments):", optionException,
+                    optionSet);
             }
 
             if (help)
             {
                 const string usageMessage =
                     "ThermoRawFileParser.exe usage (use -option=value for the optional arguments)";
-                ShowHelp(usageMessage, optionSet);
+                ShowHelp(usageMessage, null, optionSet);
             }
             else
             {
                 try
                 {
-                    RawFileParser rawFileParser
-                        = new RawFileParser(rawFilePath, outputDirectory, outputMetadata, collection, msRun,
-                            subFolder);
+                    ParseInput parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, outputMetadata,
+                        includeProfileData, collection, msRun, subFolder);
+                    RawFileParser rawFileParser = new RawFileParser(parseInput);
                     rawFileParser.Parse();
                 }
                 catch (Exception ex)
@@ -97,8 +119,16 @@ namespace ThermoRawFileParser
             }
         }
 
-        private static void ShowHelp(string message, OptionSet optionSet)
+        private static void ShowHelp(string message, OptionException optionException, OptionSet optionSet)
         {
+            if (optionException != null)
+            {
+                if (!optionException.OptionName.IsNullOrEmpty())
+                {
+                    Console.Error.Write(optionException.OptionName + ": ");
+                }                
+                Console.Error.WriteLine(optionException.Message);
+            }
             Console.Error.WriteLine(message);
             optionSet.WriteOptionDescriptions(Console.Error);
             Environment.Exit(-1);

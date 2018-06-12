@@ -3,24 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using IO.MzML;
-using IO.Thermo;
 using MassSpectrometry;
 using MzLibUtil;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
-using ThermoRawFileParserTest;
 using Polarity = MassSpectrometry.Polarity;
 
-namespace ThermoRawFileParser
+namespace ThermoRawFileParser.Writer
 {
     public class MzMlSpectrumWriter : SpectrumWriter
     {
         private static readonly Regex PolarityRegex = new Regex(@"\+ ", RegexOptions.Compiled);
 
-        public MzMlSpectrumWriter(string rawFilePath, string outputDirectory, string collection,
-            string msRun, string subFolder) : base(rawFilePath, outputDirectory, collection, msRun,
-            subFolder)
+        public MzMlSpectrumWriter(ParseInput parseInput) : base(parseInput)
         {
             //create temp file for loading the periodic table elements from the mzLib library
             String tempElements = Path.GetTempPath() + "elements.dat";
@@ -44,8 +40,7 @@ namespace ThermoRawFileParser
 
                 // Get the scan event for this scan number
                 var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
-
-                int previousMS1ScanNumber = 0;
+                
                 // Get the ionizationMode, MS2 precursor mass, collision energy, and isolation width for each scan
                 //if (scanFilter.MSOrder == ThermoFisher.CommonCore.Data.FilterEnums.MSOrderType.Ms2)
                 //{
@@ -258,11 +253,12 @@ namespace ThermoRawFileParser
                 }
             }
 
-            FakeMsDataFile f = new FakeMsDataFile(_rawFilePath, _rawFileNameWithoutExtension, scans.ToArray());
+            FakeMsDataFile f = new FakeMsDataFile(ParseInput.RawFilePath, ParseInput.RawFileNameWithoutExtension,
+                scans.ToArray());
             try
             {
                 MzmlMethods.CreateAndWriteMyMzmlWithCalibratedSpectra(f,
-                    _outputDirectory + "/" + _rawFileNameWithoutExtension + ".mzml", false);
+                    ParseInput.OutputDirectory + "/" + ParseInput.RawFileNameWithoutExtension + ".mzml", false);
             }
             catch (Exception e)
             {
@@ -270,8 +266,7 @@ namespace ThermoRawFileParser
                 throw;
             }
 
-            var mzML = new ThermoRawFileParser.mzMLType();
-            
+            var mzML = new global::ThermoRawFileParser.mzMLType();
         }
     }
 }

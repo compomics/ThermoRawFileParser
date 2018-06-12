@@ -130,17 +130,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FakeMsDataFile.cs" />
-    <Compile Include="ISpectrumWriter.cs" />
-    <Compile Include="mzML1_1_1_idx.cs" />
     <Compile Include="MzmlMethods.cs" />
-    <Compile Include="MzMlSpectrumWriter.cs" />
-    <Compile Include="SpectrumWriter.cs" />
-    <Compile Include="MgfSpectrumWriter.cs" />
+    <Compile Include="OutputFormat.cs" />
+    <Compile Include="ParseInput.cs" />
     <Compile Include="MainClass.cs" />
-    <Compile Include="MetadataWriter.cs" />
     <Compile Include="MzMLExporter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RawFileParser.cs" />
+    <Compile Include="Writer\ISpectrumWriter.cs" />
+    <Compile Include="Writer\MetadataWriter.cs" />
+    <Compile Include="Writer\MgfSpectrumWriter.cs" />
+    <Compile Include="Writer\MzMLSpectrumWriter.cs" />
+    <Compile Include="Writer\MzMlSpectrumWriter_old.cs" />
+    <Compile Include="Writer\MzML\mzML1_1_1_idx.cs" />
+    <Compile Include="Writer\SpectrumWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -149,7 +152,7 @@
     <Content Include="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="mzML1.1.1_idx.xsd" />
+    <Content Include="Writer\MzML\mzML1.1.1_idx.xsd" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="ThermoRawFileParserTest\ThermoRawFileParserTest.csproj">

@@ -2,7 +2,7 @@
 using System.IO;
 using ThermoFisher.CommonCore.Data.Interfaces;
 
-namespace ThermoRawFileParser
+namespace ThermoRawFileParser.Writer
 {
     public class MetadataWriter
     {

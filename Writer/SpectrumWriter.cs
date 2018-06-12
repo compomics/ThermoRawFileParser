@@ -1,40 +1,20 @@
-﻿using System;
-using System.IO;
-using System.Text;
+﻿using System.Text;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
 
-namespace ThermoRawFileParser
+namespace ThermoRawFileParser.Writer
 {
     public abstract class SpectrumWriter : ISpectrumWriter
     {
-        protected readonly string _rawFilePath;
-        protected readonly string _outputDirectory;
-        protected readonly string _collection;
-        protected readonly string _msRun;
-        protected readonly string _subFolder;
-        protected static string _rawFileName;
-        protected static string _rawFileNameWithoutExtension;
+        protected readonly ParseInput ParseInput;        
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="rawFilePath">the RAW file path</param>
-        /// <param name="outputDirectory">the output directory</param>
-        /// <param name="collection">the collection identifier</param>
-        /// <param name="msRun">the MS run identifier</param>
-        /// <param name="subFolder">the sub folder directory</param>
-        protected SpectrumWriter(string rawFilePath, string outputDirectory, string collection, string msRun,
-            string subFolder)
+        protected SpectrumWriter(ParseInput parseInput)
         {
-            _rawFilePath = rawFilePath;
-            string[] splittedPath = _rawFilePath.Split('/');
-            _rawFileName = splittedPath[splittedPath.Length - 1];
-            _rawFileNameWithoutExtension = Path.GetFileNameWithoutExtension(_rawFileName);
-            _outputDirectory = outputDirectory;
-            _collection = collection;
-            _msRun = msRun;
-            _subFolder = subFolder;
+            ParseInput = parseInput;           
         }
 
         /// <inheritdoc />
@@ -48,23 +28,23 @@ namespace ThermoRawFileParser
         {
             StringBuilder spectrumTitle = new StringBuilder("mzspec:");
 
-            if (_collection != null)
+            if (ParseInput.Collection != null)
             {
-                spectrumTitle.Append(_collection).Append(":");
+                spectrumTitle.Append(ParseInput.Collection).Append(":");
             }
 
-            if (_subFolder != null)
+            if (ParseInput.SubFolder != null)
             {
-                spectrumTitle.Append(_subFolder).Append(":");
+                spectrumTitle.Append(ParseInput.SubFolder).Append(":");
             }
 
-            if (_msRun != null)
+            if (ParseInput.MsRun != null)
             {
-                spectrumTitle.Append(_msRun).Append(":");
+                spectrumTitle.Append(ParseInput.MsRun).Append(":");
             }
             else
             {
-                spectrumTitle.Append(_rawFileName).Append(":");
+                spectrumTitle.Append(ParseInput.RawFileName).Append(":");
             }
 
             spectrumTitle.Append("scan:");

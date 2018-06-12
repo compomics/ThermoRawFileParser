@@ -1,6 +1,6 @@
 ﻿using ThermoFisher.CommonCore.Data.Interfaces;
 
-namespace ThermoRawFileParser
+namespace ThermoRawFileParser.Writer
 {
     public interface ISpectrumWriter
     {
