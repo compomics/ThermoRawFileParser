@@ -266,7 +266,7 @@ namespace ThermoRawFileParser.Writer
                 throw;
             }
 
-            var mzML = new global::ThermoRawFileParser.mzMLType();
+            //var mzML = new global::ThermoRawFileParser.mzMLType();
         }
     }
 }

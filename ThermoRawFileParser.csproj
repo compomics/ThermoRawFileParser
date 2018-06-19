@@ -130,7 +130,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FakeMsDataFile.cs" />
-    <Compile Include="MzmlMethods.cs" />
     <Compile Include="OutputFormat.cs" />
     <Compile Include="ParseInput.cs" />
     <Compile Include="MainClass.cs" />
