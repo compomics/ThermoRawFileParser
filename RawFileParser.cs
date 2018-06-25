@@ -84,8 +84,6 @@ namespace ThermoRawFileParser
                     metadataWriter.WriteMetada(rawFile, firstScanNumber, lastScanNumber);
                 }
 
-                rawFile.SelectInstrument(Device.MS, 2);
-
                 SpectrumWriter spectrumWriter = null;
                 switch (_parseInput.OutputFormat)
                 {

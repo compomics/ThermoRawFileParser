@@ -106,7 +106,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     var centroidStream = rawFile.GetCentroidStream(scanNumber, false);
                     if (scan.CentroidScan.Length > 0)
-                    {
+                    {                        
                         mzmlMzSpectrum = new MzmlMzSpectrum(centroidStream.Masses, centroidStream.Intensities,
                             false);
                     }

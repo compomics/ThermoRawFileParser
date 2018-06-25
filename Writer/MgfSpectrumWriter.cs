@@ -29,13 +29,15 @@ namespace ThermoRawFileParser.Writer
 
                     // Check to see if the RAW file contains label (high-res) data and if it is present
                     // then look for any data that is out of order
-                    double time = rawFile.RetentionTimeFromScanNumber(scanNumber);
+                    double time = rawFile.RetentionTimeFromScanNumber(scanNumber);                                      
 
                     // Get the scan filter for this scan number
-                    var scanFilter = rawFile.GetFilterForScanNumber(scanNumber);
-
+                    var scanFilter = rawFile.GetFilterForScanNumber(scanNumber);                        
+                    
                     // Get the scan event for this scan number
                     var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
+                    
+                    //scanFilter.S
 
                     // Get the ionizationMode, MS2 precursor mass, collision energy, and isolation width for each scan
                     if (scanFilter.MSOrder == ThermoFisher.CommonCore.Data.FilterEnums.MSOrderType.Ms2)

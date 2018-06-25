@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
 
 namespace ThermoRawFileParser.Writer
@@ -32,6 +33,11 @@ namespace ThermoRawFileParser.Writer
             double startTime = rawFile.RunHeaderEx.StartTime;
             double endTime = rawFile.RunHeaderEx.EndTime;
 
+            var instrumentData = rawFile.GetInstrumentData();
+            //var instrumentMethod = rawFile.GetInstrumentMethod(0);
+            //Device device = rawFile.GetInstrumentType(0);
+            //var instrumentCountOfType = rawFile.GetInstrumentCountOfType(device);
+
             // Collect the metadata
             List<string> output = new List<string>
             {
@@ -45,7 +51,7 @@ namespace ThermoRawFileParser.Writer
                 $"Instrument model=[MS, MS:1000494, Thermo Scientific instrument model, {rawFile.GetInstrumentData().Model}]",
                 "Instrument name=" + rawFile.GetInstrumentData().Name,
                 $"Instrument serial number=[MS, MS:1000529, instrument serial number, {rawFile.GetInstrumentData().SerialNumber}]",
-                $"Software version=[MS, MS:1000529, instrument serial number, {rawFile.GetInstrumentData().SoftwareVersion}]",
+                $"Software version=[NCIT, NCIT:C111093, Software Version, {rawFile.GetInstrumentData().SoftwareVersion}]",
                 "Firmware version=" + rawFile.GetInstrumentData().HardwareVersion,
                 "Units=" + rawFile.GetInstrumentData().Units,
                 $"Mass resolution=[MS, MS:1000011, mass resolution, {rawFile.RunHeaderEx.MassResolution:F3}]",
