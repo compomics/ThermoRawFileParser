@@ -91,7 +91,7 @@ namespace ThermoRawFileParser
                         spectrumWriter = new MgfSpectrumWriter(_parseInput);
                         break;
                     case OutputFormat.Mzml:
-                        spectrumWriter = new MzMlSpectrumWriter(_parseInput);
+                        spectrumWriter = new MzMLSpectrumWriter(_parseInput);
                         break;
                 }
                 spectrumWriter.WriteSpectra(rawFile, firstScanNumber, lastScanNumber);

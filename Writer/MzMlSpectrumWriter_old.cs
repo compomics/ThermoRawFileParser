@@ -12,11 +12,11 @@ using Polarity = MassSpectrometry.Polarity;
 
 namespace ThermoRawFileParser.Writer
 {
-    public class MzMlSpectrumWriter : SpectrumWriter
+    public class MzMlSpectrumWriter_old : SpectrumWriter
     {
         private static readonly Regex PolarityRegex = new Regex(@"\+ ", RegexOptions.Compiled);
 
-        public MzMlSpectrumWriter(ParseInput parseInput) : base(parseInput)
+        public MzMlSpectrumWriter_old(ParseInput parseInput) : base(parseInput)
         {
             //create temp file for loading the periodic table elements from the mzLib library
             String tempElements = Path.GetTempPath() + "elements.dat";
