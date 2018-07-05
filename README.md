@@ -4,7 +4,13 @@ Wrapper around the .net (C#) ThermoFisher ThermoRawFileReader library for runnin
 
 RawFileReader reading tool. Copyright © 2016 by Thermo Fisher Scientific, Inc. All rights reserved
 
+## Requirements
+[Mono](https://www.mono-project.com/download/stable/#download-lin) (install mono-complete if you encounter "assembly not found" errors).
+
 ## Usage
+```
+mono ThermoRawFileParser.exe -i=/home/user/data_input/raw_file.raw -o=/home/niels/data_input/output/ -m -c=PXD00001
+```
 The optional parameters only work in the -option=value format. The metadata file is only created when the `-m` is specified. 
 
 ```
