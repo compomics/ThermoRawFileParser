@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Numerics;
@@ -14,6 +16,7 @@ using ThermoFisher.CommonCore.Data.Interfaces;
 using ThermoRawFileParser.Writer.MzML;
 using CVParamType = ThermoRawFileParser.Writer.MzML.CVParamType;
 using SourceFileType = ThermoRawFileParser.Writer.MzML.SourceFileType;
+using UserParamType = ThermoRawFileParser.Writer.MzML.UserParamType;
 
 namespace ThermoRawFileParser.Writer
 {
@@ -51,7 +54,7 @@ namespace ThermoRawFileParser.Writer
                         cvRef = "MS",
                         value = "",
                     }
-                },                
+                },
                 {
                     MassAnalyzerType.MassAnalyzerTOFMS, new CVParamType
                     {
@@ -134,6 +137,15 @@ namespace ThermoRawFileParser.Writer
                     {
                         accession = "MS:1000239",
                         name = "atmospheric pressure matrix-assisted laser desorption ionization",
+                        cvRef = "MS",
+                        value = "",
+                    }
+                },
+                {
+                    IonizationModeType.NanoSpray, new CVParamType
+                    {
+                        accession = "MS:1000398",
+                        name = "nanoelectrospray",
                         cvRef = "MS",
                         value = "",
                     }
@@ -248,16 +260,25 @@ namespace ThermoRawFileParser.Writer
                         value = "",
                     }
                 },
+                {
+                    "Q Exactive Orbitrap", new CVParamType
+                    {
+                        accession = "MS:1001911",
+                        name = "Q Exactive",
+                        cvRef = "MS",
+                        value = "",
+                    }
+                }
             };
 
         private IRawDataPlus rawFile;
-
-        private readonly Dictionary<MassAnalyzerType, CVParamType> _massAnalyzers =
-            new Dictionary<MassAnalyzerType, CVParamType>();
+        // Use ordered dictionary because the order of the analyzers is of importance        
+        private readonly OrderedDictionary _massAnalyzers =
+            new OrderedDictionary();
 
         private readonly Dictionary<IonizationModeType, CVParamType> _ionizationTypes =
             new Dictionary<IonizationModeType, CVParamType>();
-        
+
         private readonly XmlSerializer mzmlSerializer = new XmlSerializer(typeof(mzMLType));
 
         public MzMLSpectrumWriter(ParseInput parseInput) : base(parseInput)
@@ -269,13 +290,20 @@ namespace ThermoRawFileParser.Writer
             this.rawFile = rawFile;
             var mzMl = InitializeMz();
 
+            List<SpectrumType> spectra = new List<SpectrumType>();
             for (int scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
             {
-                constructSpectrum(rawFile, scanNumber);
+                SpectrumType spectrum = constructSpectrum(rawFile, scanNumber);
+                if (spectrum != null)
+                {
+                    spectra.Add(spectrum);
+                }
             }
+
             constructInstrumentConfigurationList(mzMl);
-            
-            using (TextWriter writer = new StreamWriter(ParseInput.OutputDirectory + "//" + ParseInput.RawFileNameWithoutExtension + ".mzml"))
+
+            using (TextWriter writer =
+                new StreamWriter(ParseInput.OutputDirectory + "//" + ParseInput.RawFileNameWithoutExtension + ".mzml"))
             {
                 mzmlSerializer.Serialize(writer, mzMl);
             }
@@ -298,18 +326,18 @@ namespace ThermoRawFileParser.Writer
 
             mzMl.cvList.cv[0] = new CVType()
             {
-                URI = @"https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo",
-                fullName = "Proteomics Standards Initiative Mass Spectrometry Ontology",
+                URI = @"http://purl.obolibrary.org/obo/ms.owl",
+                fullName = "Mass spectrometry ontology",
                 id = "MS",
-                version = "4.0.1"
+                version = "20-06-2018"
             };
 
             mzMl.cvList.cv[1] = new CVType()
             {
-                URI = @"http://obo.cvs.sourceforge.net/*checkout*/obo/obo/ontology/phenotype/unit.obo",
+                URI = @"http://purl.obolibrary.org/obo/uo.owl",
                 fullName = "Unit Ontology",
                 id = "UO",
-                version = "12:10:2011"
+                version = "2018-03-24"
             };
 
             mzMl.cvList.cv[2] = new CVType()
@@ -380,16 +408,17 @@ namespace ThermoRawFileParser.Writer
                 value = ""
             };
 
+            // Software
             mzMl.softwareList = new SoftwareListType
             {
-                count = "2",
+                count = "1",
                 software = new SoftwareType[2]
             };
 
             mzMl.softwareList.software[0] = new SoftwareType
             {
                 id = "ThermoRawFileParser",
-                version = "1",
+                version = "1.0.0",
                 cvParam = new CVParamType[1]
             };
 
@@ -401,9 +430,38 @@ namespace ThermoRawFileParser.Writer
                 cvRef = "MS"
             };
 
+            // Data processing
+            mzMl.dataProcessingList = new DataProcessingListType
+            {
+                count = "1",
+                dataProcessing = new DataProcessingType[1]
+            };
+            mzMl.dataProcessingList.dataProcessing[0] = new DataProcessingType
+            {
+                id = "ThermoRawFileParserProcessing",
+                processingMethod = new ProcessingMethodType[1],
+            };
+            mzMl.dataProcessingList.dataProcessing[0].processingMethod[0] = new ProcessingMethodType
+            {
+                order = "0",
+                softwareRef = "ThermoRawFileParser",
+                cvParam = new CVParamType[1],
+            };
+            mzMl.dataProcessingList.dataProcessing[0].processingMethod[0].cvParam[0] = new CVParamType
+            {
+                accession = "MS:1000544",
+                cvRef = "MS",
+                name = "Conversion to mzML",
+                value = ""
+            };
+
             mzMl.run = new RunType()
             {
+                id = ParseInput.RawFileNameWithoutExtension,
                 spectrumList = new SpectrumListType()
+                {
+                    defaultDataProcessingRef = "ThermoRawFileParserProcessing"
+                }
             };
 
             return mzMl;
@@ -413,56 +471,81 @@ namespace ThermoRawFileParser.Writer
         {
             var instrumentData = rawFile.GetInstrumentData();
 
+            // Referenceable param group for common instrument properties
+            mzMl.referenceableParamGroupList = new ReferenceableParamGroupListType()
+            {
+                count = "1",
+                referenceableParamGroup = new ReferenceableParamGroupType[1]
+            };
+            mzMl.referenceableParamGroupList.referenceableParamGroup[0] = new ReferenceableParamGroupType()
+            {
+                id = "commonInstrumentParams",
+                cvParam = new CVParamType[3]
+            };
+
+            // Instrument model
+            CVParamType instrumentModel;
+            if (!InstrumentModels.TryGetValue(instrumentData.Name, out instrumentModel))
+            {
+                instrumentModel = new CVParamType()
+                {
+                    accession = "MS:1000483",
+                    name = "Thermo Fisher Scientific instrument model",
+                    cvRef = "MS",
+                    value = "",
+                };
+            }
+
+            mzMl.referenceableParamGroupList.referenceableParamGroup[0].cvParam[0] = instrumentModel;
+
+            // Instrument serial number
+            mzMl.referenceableParamGroupList.referenceableParamGroup[0].cvParam[1] = new CVParamType
+            {
+                cvRef = "MS",
+                accession = "MS:1000529",
+                name = "instrument serial number",
+                value = instrumentData.SerialNumber
+            };
+
+            // Instrument software version
+            mzMl.referenceableParamGroupList.referenceableParamGroup[0].cvParam[2] = new CVParamType
+            {
+                cvRef = "NCIT",
+                accession = "NCIT:C111093",
+                name = "Software Version",
+                value = instrumentData.SoftwareVersion
+            };
+
+            if (_massAnalyzers.Count == 0)
+            {
+                _massAnalyzers.Add(MassAnalyzerType.Any, MassAnalyzerTypes[MassAnalyzerType.Any]);
+            }
+
             InstrumentConfigurationListType instrumentConfigurationList = new InstrumentConfigurationListType()
             {
-                count = rawFile.InstrumentCount.ToString(),
-                instrumentConfiguration = new InstrumentConfigurationType[rawFile.InstrumentCount]
+                count = _massAnalyzers.Count.ToString(),
+                instrumentConfiguration = new InstrumentConfigurationType[_massAnalyzers.Count]
             };
-            for (int i = 0; i < rawFile.InstrumentCount; i++)
+            // make a new instrument configuration for each analyzer
+            for (int i = 0; i < _massAnalyzers.Count; i++)
             {
                 instrumentConfigurationList.instrumentConfiguration[i] = new InstrumentConfigurationType
                 {
                     id = instrumentData.Name,
+                    referenceableParamGroupRef = new ReferenceableParamGroupRefType[1],
                     componentList = new ComponentListType(),
                     cvParam = new CVParamType[3]
                 };
-
-                // Instrument model
-                CVParamType instrumentModel;
-                if (!InstrumentModels.TryGetValue(instrumentData.Name, out instrumentModel))
-                {
-                    instrumentModel = new CVParamType()
+                instrumentConfigurationList.instrumentConfiguration[i].referenceableParamGroupRef[0] =
+                    new ReferenceableParamGroupRefType()
                     {
-                        accession = "MS:1000483",
-                        name = "Thermo Fisher Scientific instrument model",
-                        cvRef = "MS",
-                        value = "",
+                        @ref = "commonInstrumentParams"
                     };
-                }                
-                instrumentConfigurationList.instrumentConfiguration[i].cvParam[0] = instrumentModel;
-
-                // Instrument serial number
-                instrumentConfigurationList.instrumentConfiguration[i].cvParam[1] = new CVParamType
-                {
-                    cvRef = "MS",
-                    accession = "MS:1000529",
-                    name = "instrument serial number",
-                    value = instrumentData.SerialNumber
-                };
-
-                // Instrument software version
-                instrumentConfigurationList.instrumentConfiguration[i].cvParam[2] = new CVParamType
-                {
-                    cvRef = "NCIT",
-                    accession = "NCIT:C111093",
-                    name = "Software Version",
-                    value = instrumentData.SoftwareVersion
-                };
 
                 instrumentConfigurationList.instrumentConfiguration[i].componentList =
                     new ComponentListType
                     {
-                        count = 3.ToString(),
+                        count = "3",
                         source = new SourceComponentType[1],
                         analyzer = new AnalyzerComponentType[1],
                         detector = new DetectorComponentType[1],
@@ -480,41 +563,34 @@ namespace ThermoRawFileParser.Writer
                         order = 1,
                         cvParam = new CVParamType[_ionizationTypes.Count]
                     };
+
                 int index = 0;
                 // Ionization type
                 foreach (KeyValuePair<IonizationModeType, CVParamType> ionizationType in _ionizationTypes)
                 {
-                    instrumentConfigurationList.instrumentConfiguration[0].componentList.source[0].cvParam[index] =
+                    instrumentConfigurationList.instrumentConfiguration[i].componentList.source[0].cvParam[index] =
                         ionizationType.Value;
                     index++;
                 }
 
-                // Instrument analyzer
-                if (_massAnalyzers.IsNullOrEmpty())
-                {
-                    _massAnalyzers.Add(MassAnalyzerType.Any, MassAnalyzerTypes[MassAnalyzerType.Any]);
-                }
+                // Instrument analyzer             
+                // Mass analyer type                    
                 instrumentConfigurationList.instrumentConfiguration[i].componentList.analyzer[0] =
                     new AnalyzerComponentType
                     {
-                        order = 2,
-                        cvParam = new CVParamType[_massAnalyzers.Count]
+                        order = (index + 1),
+                        cvParam = new CVParamType[1]
                     };
-                index = 0;
-                // Mass analyer type
-                foreach (KeyValuePair<MassAnalyzerType, CVParamType> massAnalyzer in _massAnalyzers)
-                {
-                    instrumentConfigurationList.instrumentConfiguration[0].componentList.analyzer[0].cvParam[index] =
-                        massAnalyzer.Value;
-                    index++;
-                }
+                instrumentConfigurationList.instrumentConfiguration[i].componentList.analyzer[0].cvParam[0] =
+                    (CVParamType) _massAnalyzers[i];
+                index++;
 
                 // Instrument detector
                 // TODO find a detector type
                 instrumentConfigurationList.instrumentConfiguration[i].componentList.detector[0] =
                     new DetectorComponentType
                     {
-                        order = 3,
+                        order = (index + 1),
                         cvParam = new CVParamType[1]
                     };
                 instrumentConfigurationList.instrumentConfiguration[i].componentList.detector[0].cvParam[0] =
@@ -526,9 +602,8 @@ namespace ThermoRawFileParser.Writer
                         value = ""
                     };
             }
-
             mzMl.instrumentConfigurationList = instrumentConfigurationList;
-        }
+        }      
 
         private SpectrumType constructSpectrum(IRawDataPlus rawFile, int scanNumber)
         {
@@ -542,21 +617,62 @@ namespace ThermoRawFileParser.Writer
             var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
             SpectrumType spectrum = new SpectrumType()
             {
-                cvParam = new CVParamType[9]
+                cvParam = new CVParamType[8]
             };
 
             // MS level
-            spectrum.cvParam[1] = new CVParamType
+            spectrum.cvParam[0] = new CVParamType
             {
                 name = "ms level",
                 accession = "MS:1000511",
                 value = ((int) scanFilter.MSOrder).ToString(CultureInfo.InvariantCulture),
                 cvRef = "MS"
             };
+            
+            // trailer extra data list
+            var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
+            int? charge = null;
+            double? monoisotopicMass = null;
+            double? ionInjectionTime = null;
+            double? ms2IsolationWidth = null;
+            int? masterScanIndex = null;
+            for (int i = 0; i < trailerData.Length; i++)
+            {
+                if ((trailerData.Labels[i] == "Charge State:"))
+                {
+                    if (Convert.ToInt32(trailerData.Values[i]) > 0)
+                    {
+                        charge = Convert.ToInt32(trailerData.Values[i]);
+                    }
+                }
+
+                if ((trailerData.Labels[i] == "Monoisotopic M/Z:"))
+                {
+                    monoisotopicMass = double.Parse(trailerData.Values[i]);
+                }
+
+                if ((trailerData.Labels[i] == "Ion Injection Time (ms):"))
+                {
+                    ionInjectionTime = double.Parse(trailerData.Values[i]);
+                }
+
+                if ((trailerData.Labels[i] == "MS2 Isolation Width:"))
+                {
+                    ms2IsolationWidth = double.Parse(trailerData.Values[i]);
+                }
+
+                if ((trailerData.Labels[i] == "Master Index:"))
+                {
+                    if (Convert.ToInt32(trailerData.Values[i]) > 0)
+                    {
+                        masterScanIndex = Convert.ToInt32(trailerData.Values[i]);
+                    }
+                }
+            }
 
             if (scanFilter.MSOrder == MSOrderType.Ms)
             {
-                spectrum.cvParam[0] = new CVParamType
+                spectrum.cvParam[1] = new CVParamType
                 {
                     accession = "MS:1000579",
                     cvRef = "MS",
@@ -566,7 +682,7 @@ namespace ThermoRawFileParser.Writer
             }
             else if (scanFilter.MSOrder == MSOrderType.Ms2)
             {
-                spectrum.cvParam[0] = new CVParamType
+                spectrum.cvParam[1] = new CVParamType
                 {
                     accession = "MS:1000580",
                     cvRef = "MS",
@@ -622,48 +738,7 @@ namespace ThermoRawFileParser.Writer
                     unitCvRef = "MS",
                     unitAccession = "MS:1000040",
                     unitName = "m/z"
-                };
-
-                // trailer extra data list
-                var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
-                int? charge = null;
-                double? monoisotopicMass = null;
-                double? ionInjectionTime = null;
-                double? ms2IsolationWidth = null;
-                int? masterScanIndex = null;
-                for (int i = 0; i < trailerData.Length; i++)
-                {
-                    if ((trailerData.Labels[i] == "Charge State:"))
-                    {
-                        if (Convert.ToInt32(trailerData.Values[i]) > 0)
-                        {
-                            charge = Convert.ToInt32(trailerData.Values[i]);
-                        }
-                    }
-
-                    if ((trailerData.Labels[i] == "Monoisotopic M/Z:"))
-                    {
-                        monoisotopicMass = double.Parse(trailerData.Values[i]);
-                    }
-
-                    if ((trailerData.Labels[i] == "Ion Injection Time (ms):"))
-                    {
-                        ionInjectionTime = double.Parse(trailerData.Values[i]);
-                    }
-
-                    if ((trailerData.Labels[i] == "MS2 Isolation Width:"))
-                    {
-                        ms2IsolationWidth = double.Parse(trailerData.Values[i]);
-                    }
-
-                    if ((trailerData.Labels[i] == "Master Index:"))
-                    {
-                        if (Convert.ToInt32(trailerData.Values[i]) > 0)
-                        {
-                            masterScanIndex = Convert.ToInt32(trailerData.Values[i]);
-                        }
-                    }
-                }
+                };                
 
                 spectrum.precursorList.precursor[0].selectedIonList.selectedIon[0]
                     .cvParam[1] = new CVParamType
@@ -749,22 +824,10 @@ namespace ThermoRawFileParser.Writer
                 }
 
                 spectrum.precursorList.precursor[0].activation.cvParam[1] = activation;
-            }
-
-            // Retention time            
-            spectrum.cvParam[3] = new CVParamType
-            {
-                name = "scan start time",
-                accession = "MS:1000016",
-                value = rawFile.RetentionTimeFromScanNumber(scanNumber).ToString(CultureInfo.InvariantCulture),
-                unitCvRef = "UO",
-                unitAccession = "UO:0000031",
-                unitName = "minute",
-                cvRef = "MS",
-            };
+            }           
 
             // Lowest observed mz
-            spectrum.cvParam[4] = new CVParamType
+            spectrum.cvParam[3] = new CVParamType
             {
                 name = "lowest observed m/z",
                 accession = "MS:1000528",
@@ -776,7 +839,7 @@ namespace ThermoRawFileParser.Writer
             };
 
             // Highest observed mz
-            spectrum.cvParam[5] = new CVParamType
+            spectrum.cvParam[4] = new CVParamType
             {
                 name = "highest observed m/z",
                 accession = "MS:1000527",
@@ -788,7 +851,7 @@ namespace ThermoRawFileParser.Writer
             };
 
             // Total ion current
-            spectrum.cvParam[6] = new CVParamType
+            spectrum.cvParam[5] = new CVParamType
             {
                 name = "total ion current",
                 accession = "MS:1000285",
@@ -822,7 +885,7 @@ namespace ThermoRawFileParser.Writer
             // Base peak m/z
             if (basePeakMass != null)
             {
-                spectrum.cvParam[7] = new CVParamType
+                spectrum.cvParam[6] = new CVParamType
                 {
                     name = "base peak m/z",
                     accession = "MS:1000504",
@@ -837,7 +900,7 @@ namespace ThermoRawFileParser.Writer
             //base peak intensity
             if (basePeakMass != null)
             {
-                spectrum.cvParam[8] = new CVParamType
+                spectrum.cvParam[7] = new CVParamType
                 {
                     name = "base peak intensity",
                     accession = "MS:1000505",
@@ -847,16 +910,28 @@ namespace ThermoRawFileParser.Writer
                     unitAccession = "MS:1000131",
                     cvRef = "MS"
                 };
+            }                       
+            
+            // Ionization type
+            if (!_ionizationTypes.ContainsKey(scanFilter.IonizationMode))
+            {
+                _ionizationTypes.Add(scanFilter.IonizationMode, IonizationTypes[scanFilter.IonizationMode]);
             }
 
+            // Mass analyzer
+            if (!_massAnalyzers.Contains(scanFilter.MassAnalyzer) && MassAnalyzerTypes.ContainsKey(scanFilter.MassAnalyzer))
+            {
+                _massAnalyzers.Add(scanFilter.MassAnalyzer, MassAnalyzerTypes[scanFilter.MassAnalyzer]);
+            }
+                        
             // Scan list
             spectrum.scanList = new ScanListType
             {
                 count = "1",
                 scan = new ScanType[1],
-                cvParam = new CVParamType[1]
-            };
-
+                cvParam = new CVParamType[1],                
+            }; 
+            
             spectrum.scanList.cvParam[0] = new CVParamType
             {
                 accession = "MS:1000795",
@@ -864,20 +939,77 @@ namespace ThermoRawFileParser.Writer
                 name = "no combination",
                 value = ""
             };
-
-
-            // Mass analyzer
-            if (!_massAnalyzers.ContainsKey(scanFilter.MassAnalyzer))
+            
+            // Reference the right instrument configuration
+            string instrumentConfigurationRef = "IC1";            
+            if (scanFilter.MSOrder == MSOrderType.Ms2 && _massAnalyzers.Count > 1)
             {
-                _massAnalyzers.Add(scanFilter.MassAnalyzer, MassAnalyzerTypes[scanFilter.MassAnalyzer]);
+                instrumentConfigurationRef = "IC2";
+            }
+            spectrum.scanList.scan[0] = new ScanType()
+            {
+                instrumentConfigurationRef = instrumentConfigurationRef,
+                cvParam = new CVParamType[2],                
+            };
+
+            spectrum.scanList.scan[0].cvParam[0] = new CVParamType
+            {
+                name = "scan start time",
+                accession = "MS:1000016",
+                value = rawFile.RetentionTimeFromScanNumber(scanNumber).ToString(CultureInfo.InvariantCulture),
+                unitCvRef = "UO",
+                unitAccession = "UO:0000031",
+                unitName = "minute",
+                cvRef = "MS",
+            };
+            
+            spectrum.scanList.scan[0].cvParam[1] = new CVParamType
+            {
+                name = "filter string",
+                accession = "MS:1000512",
+                value = scanEvent.ToString(),
+                cvRef = "MS",
+            };
+
+            if (monoisotopicMass.HasValue)
+            {
+                spectrum.scanList.scan[0].userParam = new UserParamType[1];
+                spectrum.scanList.scan[0].userParam[0] = new UserParamType()
+                {
+                    name = "[Thermo Trailer Extra]Monoisotopic M/Z:",
+                    value = monoisotopicMass.ToString()
+                };
             }
             
-            // Ionization type
-            if (!_ionizationTypes.ContainsKey(scanFilter.IonizationMode))
+            // Scan window list
+            spectrum.scanList.scan[0].scanWindowList = new ScanWindowListType()
             {
-                _ionizationTypes.Add(scanFilter.IonizationMode, IonizationTypes[scanFilter.IonizationMode]);
-            }
+                count = 1,
+                scanWindow = new ParamGroupType[1]
+            };            
+            spectrum.scanList.scan[0].scanWindowList.scanWindow[0] = new ParamGroupType()
+            {
+                cvParam = new CVParamType[2]
+                
+            };
+            spectrum.scanList.scan[0].scanWindowList.scanWindow[0].cvParam[0] = new CVParamType()
+            {
+                name = "scan window lower limit",
+                accession = "MS:1000501",
+                value = scan.ScanStatistics.LowMass.ToString(CultureInfo.InvariantCulture),
+                cvRef = "MS",
+            };
+            spectrum.scanList.scan[0].scanWindowList.scanWindow[0].cvParam[1] = new CVParamType()
+            {
+                name = "scan window upper limit",
+                accession = "MS:1000500",
+                value = scan.ScanStatistics.HighMass.ToString(CultureInfo.InvariantCulture),
+                cvRef = "MS",
+            };
             
+            // Add the mass analyzer ref           
+
+
 //            if (myMsDataFile.GetOneBasedScan(i).MzAnalyzer.Equals(analyzersInThisFile[0]))
 //            {
 //                mzML.run.spectrumList.spectrum[i - 1].scanList.scan[0] = new Generated.ScanType
@@ -1233,7 +1365,7 @@ namespace ThermoRawFileParser.Writer
 //                        value = "noise intensity",
 //                    };
 //            }
-            return null;
+            return spectrum;
         }
     }
 }
