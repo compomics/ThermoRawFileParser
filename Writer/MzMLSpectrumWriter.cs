@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
-using System.Numerics;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Xml.Serialization;
-using IO.MzML;
-using mzIdentML120.Generated;
-using MassSpectrometry;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
@@ -275,8 +268,8 @@ namespace ThermoRawFileParser.Writer
         private IRawDataPlus rawFile;
 
         // Use ordered dictionary because the order of the analyzers is of importance        
-        private readonly OrderedDictionary _massAnalyzers =
-            new OrderedDictionary();
+        private readonly Dictionary<MassAnalyzerType, String> _massAnalyzers =
+            new Dictionary<MassAnalyzerType, String>();
 
         private readonly Dictionary<IonizationModeType, CVParamType> _ionizationTypes =
             new Dictionary<IonizationModeType, CVParamType>();
@@ -290,8 +283,11 @@ namespace ThermoRawFileParser.Writer
         public override void WriteSpectra(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
             this.rawFile = rawFile;
-            var mzMl = InitializeMz();
 
+            // Initialize the mzML root element
+            var mzMl = InitializeMzMl();
+
+            // Add the spectra to a temporary list
             List<SpectrumType> spectra = new List<SpectrumType>();
             for (int scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
             {
@@ -302,6 +298,7 @@ namespace ThermoRawFileParser.Writer
                 }
             }
 
+            // Add the spectra to the spectrum list element
             if (spectra.Count > 0)
             {
                 mzMl.run.spectrumList.spectrum = new SpectrumType[spectra.Count];
@@ -314,6 +311,7 @@ namespace ThermoRawFileParser.Writer
                 }
             }
 
+            // Construct and add the instrument configuration(s)
             constructInstrumentConfigurationList(mzMl);
 
             using (TextWriter writer =
@@ -323,7 +321,11 @@ namespace ThermoRawFileParser.Writer
             }
         }
 
-        private mzMLType InitializeMz()
+        /// <summary>
+        /// Initialize the mzML root element
+        /// </summary>
+        /// <returns></returns>
+        private mzMLType InitializeMzMl()
         {
             mzMLType mzMl = new mzMLType()
             {
@@ -332,6 +334,7 @@ namespace ThermoRawFileParser.Writer
                 id = ParseInput.RawFileNameWithoutExtension,
             };
 
+            // Add the controlled vocabularies
             mzMl.cvList = new CVListType()
             {
                 count = "3",
@@ -469,6 +472,8 @@ namespace ThermoRawFileParser.Writer
                 value = ""
             };
 
+
+            // Add the run element
             mzMl.run = new RunType()
             {
                 id = ParseInput.RawFileNameWithoutExtension,
@@ -483,6 +488,10 @@ namespace ThermoRawFileParser.Writer
             return mzMl;
         }
 
+        /// <summary>
+        /// Populate the instrument configuration list
+        /// </summary>
+        /// <param name="mzMl"></param>
         private void constructInstrumentConfigurationList(mzMLType mzMl)
         {
             var instrumentData = rawFile.GetInstrumentData();
@@ -532,9 +541,10 @@ namespace ThermoRawFileParser.Writer
                 value = instrumentData.SoftwareVersion
             };
 
+            // Add a default analyzer if none were found
             if (_massAnalyzers.Count == 0)
             {
-                _massAnalyzers.Add(MassAnalyzerType.Any, MassAnalyzerTypes[MassAnalyzerType.Any]);
+                _massAnalyzers.Add(MassAnalyzerType.Any, "IC1");
             }
 
             // Set the run default instrument configuration ref
@@ -546,22 +556,23 @@ namespace ThermoRawFileParser.Writer
                 instrumentConfiguration = new InstrumentConfigurationType[_massAnalyzers.Count]
             };
             // Make a new instrument configuration for each analyzer
-            for (int i = 0; i < _massAnalyzers.Count; i++)
+            int massAnalyzerIndex = 0;
+            foreach (var massAnalyzer in _massAnalyzers)
             {
-                instrumentConfigurationList.instrumentConfiguration[i] = new InstrumentConfigurationType
+                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex] = new InstrumentConfigurationType
                 {
                     id = instrumentData.Name,
                     referenceableParamGroupRef = new ReferenceableParamGroupRefType[1],
                     componentList = new ComponentListType(),
                     cvParam = new CVParamType[3]
                 };
-                instrumentConfigurationList.instrumentConfiguration[i].referenceableParamGroupRef[0] =
+                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].referenceableParamGroupRef[0] =
                     new ReferenceableParamGroupRefType()
                     {
                         @ref = "commonInstrumentParams"
                     };
 
-                instrumentConfigurationList.instrumentConfiguration[i].componentList =
+                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList =
                     new ComponentListType
                     {
                         count = "3",
@@ -576,7 +587,7 @@ namespace ThermoRawFileParser.Writer
                     _ionizationTypes.Add(IonizationModeType.Any, IonizationTypes[IonizationModeType.Any]);
                 }
 
-                instrumentConfigurationList.instrumentConfiguration[i].componentList.source[0] =
+                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.source[0] =
                     new SourceComponentType
                     {
                         order = 1,
@@ -587,32 +598,35 @@ namespace ThermoRawFileParser.Writer
                 // Ionization type
                 foreach (KeyValuePair<IonizationModeType, CVParamType> ionizationType in _ionizationTypes)
                 {
-                    instrumentConfigurationList.instrumentConfiguration[i].componentList.source[0].cvParam[index] =
+                    instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.source[0]
+                            .cvParam[index] =
                         ionizationType.Value;
                     index++;
                 }
 
                 // Instrument analyzer             
                 // Mass analyer type                    
-                instrumentConfigurationList.instrumentConfiguration[i].componentList.analyzer[0] =
+                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.analyzer[0] =
                     new AnalyzerComponentType
                     {
                         order = (index + 1),
                         cvParam = new CVParamType[1]
                     };
-                instrumentConfigurationList.instrumentConfiguration[i].componentList.analyzer[0].cvParam[0] =
-                    (CVParamType) _massAnalyzers[i];
+                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.analyzer[0]
+                        .cvParam[0] =
+                    MassAnalyzerTypes[massAnalyzer.Key];
                 index++;
 
                 // Instrument detector
                 // TODO find a detector type
-                instrumentConfigurationList.instrumentConfiguration[i].componentList.detector[0] =
+                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.detector[0] =
                     new DetectorComponentType
                     {
                         order = (index + 1),
                         cvParam = new CVParamType[1]
                     };
-                instrumentConfigurationList.instrumentConfiguration[i].componentList.detector[0].cvParam[0] =
+                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.detector[0]
+                        .cvParam[0] =
                     new CVParamType
                     {
                         cvRef = "MS",
@@ -620,11 +634,18 @@ namespace ThermoRawFileParser.Writer
                         name = "detector type",
                         value = ""
                     };
+                massAnalyzerIndex++;
             }
 
             mzMl.instrumentConfigurationList = instrumentConfigurationList;
         }
 
+        /// <summary>
+        /// Construct a spectrum element for the given scan
+        /// </summary>
+        /// <param name="rawFile">the Thermo RAW file object</param>
+        /// <param name="scanNumber">the scan number</param>
+        /// <returns>The SpectrumType object</returns>
         private SpectrumType constructSpectrum(IRawDataPlus rawFile, int scanNumber)
         {
             // Get each scan from the RAW file
@@ -640,7 +661,20 @@ namespace ThermoRawFileParser.Writer
                 id = ConstructSpectrumTitle(scanNumber)
             };
 
-            // Keep the CV params in a list and convert to an array afterwards
+            // Add the ionization type if necessary
+            if (!_ionizationTypes.ContainsKey(scanFilter.IonizationMode))
+            {
+                _ionizationTypes.Add(scanFilter.IonizationMode, IonizationTypes[scanFilter.IonizationMode]);
+            }
+
+            // Add the mass analyzer if necessary
+            if (!_massAnalyzers.ContainsKey(scanFilter.MassAnalyzer) &&
+                MassAnalyzerTypes.ContainsKey(scanFilter.MassAnalyzer))
+            {
+                _massAnalyzers.Add(scanFilter.MassAnalyzer, "IC" + (_massAnalyzers.Count + 1));
+            }
+
+            // Keep the CV params in a list and convert to array afterwards
             List<CVParamType> spectrumCvParams = new List<CVParamType>();
 
             // MS level
@@ -783,6 +817,8 @@ namespace ThermoRawFileParser.Writer
             double? basePeakIntensity = null;
             double? lowestObservedMz = null;
             double? highestObservedMz = null;
+            double[] masses = null;
+            double[] intensities = null;
             if (scan.HasCentroidStream)
             {
                 var centroidStream = rawFile.GetCentroidStream(scanNumber, false);
@@ -792,6 +828,8 @@ namespace ThermoRawFileParser.Writer
                     basePeakIntensity = centroidStream.BasePeakIntensity;
                     lowestObservedMz = centroidStream.Masses[0];
                     highestObservedMz = centroidStream.Masses[centroidStream.Masses.Length - 1];
+                    masses = centroidStream.Masses;
+                    intensities = centroidStream.Intensities;
                 }
             }
             else
@@ -808,6 +846,8 @@ namespace ThermoRawFileParser.Writer
                 {
                     lowestObservedMz = segmentedScan.Positions[0];
                     highestObservedMz = segmentedScan.Positions[segmentedScan.Positions.Length - 1];
+                    masses = segmentedScan.Positions;
+                    intensities = segmentedScan.Intensities;
                 }
             }
 
@@ -871,222 +911,91 @@ namespace ThermoRawFileParser.Writer
                 });
             }
 
-            // Ionization type
-            if (!_ionizationTypes.ContainsKey(scanFilter.IonizationMode))
+            spectrum.binaryDataArrayList = new BinaryDataArrayListType
             {
-                _ionizationTypes.Add(scanFilter.IonizationMode, IonizationTypes[scanFilter.IonizationMode]);
-            }
+                // ONLY WRITING M/Z AND INTENSITY DATA, NOT THE CHARGE! (but can add charge info later)
+                // CHARGE (and other stuff) CAN BE IMPORTANT IN ML APPLICATIONS!!!!!
+                count = 5.ToString(),
+                binaryDataArray = new BinaryDataArrayType[5]
+            };
 
-            // Mass analyzer
-            if (!_massAnalyzers.Contains(scanFilter.MassAnalyzer) &&
-                MassAnalyzerTypes.ContainsKey(scanFilter.MassAnalyzer))
-            {
-                _massAnalyzers.Add(scanFilter.MassAnalyzer, MassAnalyzerTypes[scanFilter.MassAnalyzer]);
-            }
+            // M/Z Data
+            spectrum.binaryDataArrayList.binaryDataArray[0] =
+                new BinaryDataArrayType
+                {
+                    binary = Get64Bitarray(masses)
+                };
+            spectrum.binaryDataArrayList.binaryDataArray[0].encodedLength =
+                (4 * Math.Ceiling(((double) spectrum.binaryDataArrayList.binaryDataArray[0]
+                                       .binary.Length / 3))).ToString(CultureInfo.InvariantCulture);
+            spectrum.binaryDataArrayList.binaryDataArray[0].cvParam =
+                new CVParamType[3];
+            spectrum.binaryDataArrayList.binaryDataArray[0].cvParam[0] =
+                new CVParamType
+                {
+                    accession = "MS:1000514",
+                    name = "m/z array",
+                    cvRef = "MS",
+                    unitName = "m/z",
+                    value = "",
+                    unitCvRef = "MS",
+                    unitAccession = "MS:1000040",
+                };
+            spectrum.binaryDataArrayList.binaryDataArray[0].cvParam[1] =
+                new CVParamType
+                {
+                    accession = "MS:1000523",
+                    name = "64-bit float",
+                    cvRef = "MS",
+                    value = ""
+                };
+            spectrum.binaryDataArrayList.binaryDataArray[0].cvParam[2] =
+                new CVParamType
+                {
+                    accession = "MS:1000576",
+                    name = "no compression",
+                    cvRef = "MS",
+                    value = ""
+                };
 
-
-            // Add the mass analyzer ref           
-
-
-//            if (myMsDataFile.GetOneBasedScan(i).MzAnalyzer.Equals(analyzersInThisFile[0]))
-//            {
-//                mzML.run.spectrumList.spectrum[i - 1].scanList.scan[0] = new Generated.ScanType
-//                {
-//                    cvParam = new Generated.CVParamType[3]
-//                };
-//            }
-//            else
-//
-//            {
-//                mzML.run.spectrumList.spectrum[i - 1].scanList.scan[0] = new Generated.ScanType
-//                {
-//                    cvParam = new Generated.CVParamType[3],
-//                    instrumentConfigurationRef = analyzersInThisFileDict[myMsDataFile.GetOneBasedScan(i).MzAnalyzer]
-//                };
-//            }
-//
-//            mzML.run.spectrumList.spectrum[i - 1].scanList.scan[0].cvParam[0] = new Generated.CVParamType
-//            {
-//                name = "scan start time",
-//                accession = "MS:1000016",
-//                value = myMsDataFile.GetOneBasedScan(i).RetentionTime.ToString(CultureInfo.InvariantCulture),
-//                unitCvRef = "UO",
-//                unitAccession = "UO:0000031",
-//                unitName = "minute",
-//                cvRef = "MS",
-//            };
-//            mzML.run.spectrumList.spectrum[i - 1].scanList.scan[0].cvParam[1] = new Generated.CVParamType
-//            {
-//                name = "filter string",
-//                accession = "MS:1000512",
-//                value = myMsDataFile.GetOneBasedScan(i).ScanFilter,
-//                cvRef = "MS"
-//            };
-//            if (myMsDataFile.GetOneBasedScan(i).InjectionTime.HasValue)
-//            {
-//                mzML.run.spectrumList.spectrum[i - 1].scanList.scan[0].cvParam[2] = new Generated.CVParamType
-//                {
-//                    name = "ion injection time",
-//                    accession = "MS:1000927",
-//                    value = myMsDataFile.GetOneBasedScan(i).InjectionTime.Value.ToString(CultureInfo.InvariantCulture),
-//                    cvRef = "MS",
-//                    unitName = "millisecond",
-//                    unitAccession = "UO:0000028",
-//                    unitCvRef = "UO"
-//                };
-//            }
-//
-//            if (myMsDataFile.GetOneBasedScan(i) is IMsDataScanWithPrecursor<IMzSpectrum<IMzPeak>>)
-//            {
-//                var scanWithPrecursor =
-//                    myMsDataFile.GetOneBasedScan(i) as IMsDataScanWithPrecursor<IMzSpectrum<IMzPeak>>;
-//                if (scanWithPrecursor.SelectedIonMonoisotopicGuessMz.HasValue)
-//                {
-//                    mzML.run.spectrumList.spectrum[i - 1].scanList.scan[0].userParam = new Generated.UserParamType[1];
-//                    mzML.run.spectrumList.spectrum[i - 1].scanList.scan[0].userParam[0] = new Generated.UserParamType
-//                    {
-//                        name = "[mzLib]Monoisotopic M/Z:",
-//                        value = scanWithPrecursor.SelectedIonMonoisotopicGuessMz.Value.ToString(CultureInfo
-//                            .InvariantCulture)
-//                    };
-//                }
-//            }
-//
-//            mzML.run.spectrumList.spectrum[i - 1].scanList.scan[0].scanWindowList = new Generated.ScanWindowListType
-//            {
-//                count = 1,
-//                scanWindow = new Generated.ParamGroupType[1]
-//            };
-//            mzML.run.spectrumList.spectrum[i - 1].scanList.scan[0].scanWindowList.scanWindow[0] =
-//                new Generated.ParamGroupType
-//                {
-//                    cvParam = new Generated.CVParamType[2]
-//                };
-//            mzML.run.spectrumList.spectrum[i - 1].scanList.scan[0].scanWindowList.scanWindow[0].cvParam[0] =
-//                new Generated.
-//                    CVParamType
-//                    {
-//                        name = "scan window lower limit",
-//                        accession = "MS:1000501",
-//                        value = myMsDataFile.GetOneBasedScan(i).ScanWindowRange.Minimum
-//                            .ToString(CultureInfo.InvariantCulture),
-//                        cvRef = "MS",
-//                        unitCvRef = "MS",
-//                        unitAccession = "MS:1000040",
-//                        unitName = "m/z"
-//                    };
-//            mzML.run.spectrumList.spectrum[i - 1].scanList.scan[0].scanWindowList.scanWindow[0].cvParam[1] =
-//                new Generated.
-//                    CVParamType
-//                    {
-//                        name = "scan window upper limit",
-//                        accession = "MS:1000500",
-//                        value = myMsDataFile.GetOneBasedScan(i).ScanWindowRange.Maximum
-//                            .ToString(CultureInfo.InvariantCulture),
-//                        cvRef = "MS",
-//                        unitCvRef = "MS",
-//                        unitAccession = "MS:1000040",
-//                        unitName = "m/z"
-//                    };
-//            if (myMsDataFile.GetOneBasedScan(i).NoiseData == null)
-//            {
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList = new Generated.BinaryDataArrayListType
-//                {
-//                    // ONLY WRITING M/Z AND INTENSITY DATA, NOT THE CHARGE! (but can add charge info later)
-//                    // CHARGE (and other stuff) CAN BE IMPORTANT IN ML APPLICATIONS!!!!!
-//                    count = 2.ToString(),
-//                    binaryDataArray = new Generated.BinaryDataArrayType[2]
-//                };
-//            }
-//
-//            if (myMsDataFile.GetOneBasedScan(i).NoiseData != null)
-//            {
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList = new Generated.BinaryDataArrayListType
-//                {
-//                    // ONLY WRITING M/Z AND INTENSITY DATA, NOT THE CHARGE! (but can add charge info later)
-//                    // CHARGE (and other stuff) CAN BE IMPORTANT IN ML APPLICATIONS!!!!!
-//                    count = 5.ToString(),
-//                    binaryDataArray = new Generated.BinaryDataArrayType[5]
-//                };
-//            }
-//
-//            // M/Z Data
-//            mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[0] =
-//                new Generated.BinaryDataArrayType
-//                {
-//                    binary = myMsDataFile.GetOneBasedScan(i).MassSpectrum.Get64BitXarray()
-//                };
-//            mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[0].encodedLength =
-//                (4 * Math.Ceiling(((double) mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[0]
-//                                       .binary.Length / 3))).ToString(CultureInfo.InvariantCulture);
-//            mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[0].cvParam =
-//                new Generated.CVParamType[3];
-//            mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[0].cvParam[0] =
-//                new Generated.CVParamType
-//                {
-//                    accession = "MS:1000514",
-//                    name = "m/z array",
-//                    cvRef = "MS",
-//                    unitName = "m/z",
-//                    value = "",
-//                    unitCvRef = "MS",
-//                    unitAccession = "MS:1000040",
-//                };
-//            mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[0].cvParam[1] =
-//                new Generated.CVParamType
-//                {
-//                    accession = "MS:1000523",
-//                    name = "64-bit float",
-//                    cvRef = "MS",
-//                    value = ""
-//                };
-//            mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[0].cvParam[2] =
-//                new Generated.CVParamType
-//                {
-//                    accession = "MS:1000576",
-//                    name = "no compression",
-//                    cvRef = "MS",
-//                    value = ""
-//                };
-//
-//            // Intensity Data
-//            mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[1] =
-//                new Generated.BinaryDataArrayType
-//                {
-//                    binary = myMsDataFile.GetOneBasedScan(i).MassSpectrum.Get64BitYarray()
-//                };
-//            mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[1].encodedLength =
-//                (4 * Math.Ceiling(((double) mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[1]
-//                                       .binary.Length / 3))).ToString(CultureInfo.InvariantCulture);
-//            mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[1].cvParam =
-//                new Generated.CVParamType[3];
-//            mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[1].cvParam[0] =
-//                new Generated.CVParamType
-//                {
-//                    accession = "MS:1000515",
-//                    name = "intensity array",
-//                    cvRef = "MS",
-//                    unitCvRef = "MS",
-//                    unitAccession = "MS:1000131",
-//                    unitName = "number of counts",
-//                    value = ""
-//                };
-//            mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[1].cvParam[1] =
-//                new Generated.CVParamType
-//                {
-//                    accession = "MS:1000523",
-//                    name = "64-bit float",
-//                    cvRef = "MS",
-//                    value = ""
-//                };
-//            mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[1].cvParam[2] =
-//                new Generated.CVParamType
-//                {
-//                    accession = "MS:1000576",
-//                    name = "no compression",
-//                    cvRef = "MS",
-//                    value = ""
-//                };
+            // Intensity Data
+            spectrum.binaryDataArrayList.binaryDataArray[1] =
+                new BinaryDataArrayType
+                {
+                    binary = Get64Bitarray(intensities)
+                };
+            spectrum.binaryDataArrayList.binaryDataArray[1].encodedLength =
+                (4 * Math.Ceiling(((double) spectrum.binaryDataArrayList.binaryDataArray[1]
+                                       .binary.Length / 3))).ToString(CultureInfo.InvariantCulture);
+            spectrum.binaryDataArrayList.binaryDataArray[1].cvParam =
+                new CVParamType[3];
+            spectrum.binaryDataArrayList.binaryDataArray[1].cvParam[0] =
+                new CVParamType
+                {
+                    accession = "MS:1000515",
+                    name = "intensity array",
+                    cvRef = "MS",
+                    unitCvRef = "MS",
+                    unitAccession = "MS:1000131",
+                    unitName = "number of counts",
+                    value = ""
+                };
+            spectrum.binaryDataArrayList.binaryDataArray[1].cvParam[1] =
+                new CVParamType
+                {
+                    accession = "MS:1000523",
+                    name = "64-bit float",
+                    cvRef = "MS",
+                    value = ""
+                };
+            spectrum.binaryDataArrayList.binaryDataArray[1].cvParam[2] =
+                new CVParamType
+                {
+                    accession = "MS:1000576",
+                    name = "no compression",
+                    cvRef = "MS",
+                    value = ""
+                };
 //            if (myMsDataFile.GetOneBasedScan(i).NoiseData != null)
 //            {
 //                // mass
@@ -1412,14 +1321,11 @@ namespace ThermoRawFileParser.Writer
                 value = ""
             };
 
-            // Instrument configuration
-            
-            
             // Reference the right instrument configuration
-            string instrumentConfigurationRef = "IC1";
-            if (scanFilter.MSOrder == MSOrderType.Ms2 && _massAnalyzers.Count > 1)
+            string instrumentConfigurationRef;
+            if (!_massAnalyzers.TryGetValue(scanFilter.MassAnalyzer, out instrumentConfigurationRef))
             {
-                instrumentConfigurationRef = "IC2";
+                instrumentConfigurationRef = "IC1";
             }
 
             scanList.scan[0] = new ScanType()
@@ -1490,6 +1396,19 @@ namespace ThermoRawFileParser.Writer
             };
 
             return scanList;
+        }
+
+        private byte[] Get64Bitarray(IEnumerable<double> array)
+        {
+            MemoryStream memoryStream = new MemoryStream();
+            foreach (var doubleValue in array)
+            {
+                byte[] doubleValueByteArray = BitConverter.GetBytes(doubleValue);
+                memoryStream.Write(doubleValueByteArray, 0, doubleValueByteArray.Length);
+            }
+
+            memoryStream.Position = 0;
+            return memoryStream.ToArray();
         }
     }
 }
