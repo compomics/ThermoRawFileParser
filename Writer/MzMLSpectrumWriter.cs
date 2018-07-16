@@ -267,7 +267,7 @@ namespace ThermoRawFileParser.Writer
 
         private IRawDataPlus rawFile;
 
-        // Use ordered dictionary because the order of the analyzers is of importance        
+        // Dictionary to keep track of the different mass analyzers (key: Thermo MassAnalyzerType; value: the reference string)       
         private readonly Dictionary<MassAnalyzerType, String> _massAnalyzers =
             new Dictionary<MassAnalyzerType, String>();
 
@@ -275,6 +275,7 @@ namespace ThermoRawFileParser.Writer
             new Dictionary<IonizationModeType, CVParamType>();
 
         private readonly XmlSerializer mzmlSerializer = new XmlSerializer(typeof(mzMLType));
+        //private readonly XmlSerializer indexedMzmlSerializer = new XmlSerializer(typeof(indexedmzML));
 
         public MzMLSpectrumWriter(ParseInput parseInput) : base(parseInput)
         {
@@ -291,7 +292,7 @@ namespace ThermoRawFileParser.Writer
             List<SpectrumType> spectra = new List<SpectrumType>();
             for (int scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
             {
-                SpectrumType spectrum = constructSpectrum(rawFile, scanNumber);
+                SpectrumType spectrum = ConstructSpectrum(scanNumber);
                 if (spectrum != null)
                 {
                     spectra.Add(spectrum);
@@ -312,13 +313,23 @@ namespace ThermoRawFileParser.Writer
             }
 
             // Construct and add the instrument configuration(s)
-            constructInstrumentConfigurationList(mzMl);
+            ConstructInstrumentConfigurationList(mzMl);
+
+            // Add the chromatogram data
+            List<ChromatogramType> chromatograms = ConstructChromatograms(firstScanNumber, lastScanNumber);
+            if (!chromatograms.IsNullOrEmpty())
+            {
+                mzMl.run.chromatogramList = new ChromatogramListType
+                {
+                    chromatogram = chromatograms.ToArray()
+                };
+            }
 
             using (TextWriter writer =
-                new StreamWriter(ParseInput.OutputDirectory + "//" + ParseInput.RawFileNameWithoutExtension + ".mzml"))
-            {
-                mzmlSerializer.Serialize(writer, mzMl);
-            }
+                new StreamWriter(ParseInput.OutputDirectory + "//" + ParseInput.RawFileNameWithoutExtension + ".mzML"))
+            {                    
+                mzmlSerializer.Serialize(writer, mzMl);                
+            }            
         }
 
         /// <summary>
@@ -492,7 +503,7 @@ namespace ThermoRawFileParser.Writer
         /// Populate the instrument configuration list
         /// </summary>
         /// <param name="mzMl"></param>
-        private void constructInstrumentConfigurationList(mzMLType mzMl)
+        private void ConstructInstrumentConfigurationList(mzMLType mzMl)
         {
             var instrumentData = rawFile.GetInstrumentData();
 
@@ -561,7 +572,7 @@ namespace ThermoRawFileParser.Writer
             {
                 instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex] = new InstrumentConfigurationType
                 {
-                    id = instrumentData.Name,
+                    id = massAnalyzer.Value,
                     referenceableParamGroupRef = new ReferenceableParamGroupRefType[1],
                     componentList = new ComponentListType(),
                     cvParam = new CVParamType[3]
@@ -641,12 +652,139 @@ namespace ThermoRawFileParser.Writer
         }
 
         /// <summary>
+        /// Construct the chromatogram element(s)
+        /// </summary>
+        /// <param name="firstScanNumber">the first scan number</param>
+        /// <param name="lastScanNumber">the last scan number</param>
+        /// <returns>a list of chromatograms</returns>
+        private List<ChromatogramType> ConstructChromatograms(int firstScanNumber, int lastScanNumber)
+        {
+            List<ChromatogramType> chromatograms = new List<ChromatogramType>();
+
+            // Define the settings for getting the Base Peak chromatogram
+            ChromatogramTraceSettings settings = new ChromatogramTraceSettings(TraceType.BasePeak);
+
+            // Get the chromatogram from the RAW file. 
+            var data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, firstScanNumber,
+                lastScanNumber);
+
+            // Split the data into the chromatograms
+            var trace = ChromatogramSignal.FromChromatogramData(data);
+
+            for (int i = 0; i < trace.Length; i++)
+            {
+                if (trace[i].Length > 0)
+                {
+                    ChromatogramType chromatogram = new ChromatogramType()
+                    {
+                        index = i.ToString(),
+                        id = "base_peak_" + i,
+                        defaultArrayLength = trace[i].Times.Count,
+                        binaryDataArrayList = new BinaryDataArrayListType()
+                        {
+                            binaryDataArray = new BinaryDataArrayType[2]
+                        },
+                        cvParam = new CVParamType[1]
+                    };
+                    chromatogram.cvParam[0] = new CVParamType()
+                    {
+                        accession = "MS:1000235",
+                        name = "total ion current chromatogram",
+                        cvRef = "MS",
+                        value = "",
+                    };
+
+                    // Chromatogram times
+                    chromatogram.binaryDataArrayList.binaryDataArray[0] =
+                        new BinaryDataArrayType
+                        {
+                            binary = Get64BitArray(trace[i].Times)
+                        };
+                    chromatogram.binaryDataArrayList.binaryDataArray[0].encodedLength =
+                        (4 * Math.Ceiling(((double) chromatogram.binaryDataArrayList.binaryDataArray[0]
+                                               .binary.Length / 3))).ToString(CultureInfo.InvariantCulture);
+                    chromatogram.binaryDataArrayList.binaryDataArray[0].cvParam =
+                        new CVParamType[3];
+                    chromatogram.binaryDataArrayList.binaryDataArray[0].cvParam[0] =
+                        new CVParamType
+                        {
+                            accession = "MS:1000595",
+                            name = "time array",
+                            cvRef = "MS",
+                            unitName = "minute",
+                            value = "",
+                            unitCvRef = "UO",
+                            unitAccession = "UO:0000031",
+                        };
+                    chromatogram.binaryDataArrayList.binaryDataArray[0].cvParam[1] =
+                        new CVParamType
+                        {
+                            accession = "MS:1000523",
+                            name = "64-bit float",
+                            cvRef = "MS",
+                            value = ""
+                        };
+                    chromatogram.binaryDataArrayList.binaryDataArray[0].cvParam[2] =
+                        new CVParamType
+                        {
+                            accession = "MS:1000576",
+                            name = "no compression",
+                            cvRef = "MS",
+                            value = ""
+                        };
+
+                    // Chromatogram intensities
+                    chromatogram.binaryDataArrayList.binaryDataArray[1] =
+                        new BinaryDataArrayType
+                        {
+                            binary = Get64BitArray(trace[i].Intensities)
+                        };
+                    chromatogram.binaryDataArrayList.binaryDataArray[1].encodedLength =
+                        (4 * Math.Ceiling(((double) chromatogram.binaryDataArrayList.binaryDataArray[1]
+                                               .binary.Length / 3))).ToString(CultureInfo.InvariantCulture);
+                    chromatogram.binaryDataArrayList.binaryDataArray[1].cvParam =
+                        new CVParamType[3];
+                    chromatogram.binaryDataArrayList.binaryDataArray[1].cvParam[0] =
+                        new CVParamType
+                        {
+                            accession = "MS:1000515",
+                            name = "intensity array",
+                            cvRef = "MS",
+                            unitName = "number of counts",
+                            value = "",
+                            unitCvRef = "MS",
+                            unitAccession = "MS:1000131",
+                        };
+                    chromatogram.binaryDataArrayList.binaryDataArray[1].cvParam[1] =
+                        new CVParamType
+                        {
+                            accession = "MS:1000523",
+                            name = "64-bit float",
+                            cvRef = "MS",
+                            value = ""
+                        };
+                    chromatogram.binaryDataArrayList.binaryDataArray[1].cvParam[2] =
+                        new CVParamType
+                        {
+                            accession = "MS:1000576",
+                            name = "no compression",
+                            cvRef = "MS",
+                            value = ""
+                        };
+
+                    chromatograms.Add(chromatogram);
+                }
+            }
+
+            return chromatograms;
+        }
+
+        /// <summary>
         /// Construct a spectrum element for the given scan
         /// </summary>
-        /// <param name="rawFile">the Thermo RAW file object</param>
         /// <param name="scanNumber">the scan number</param>
         /// <returns>The SpectrumType object</returns>
-        private SpectrumType constructSpectrum(IRawDataPlus rawFile, int scanNumber)
+        private SpectrumType ConstructSpectrum(int scanNumber)
         {
             // Get each scan from the RAW file
             var scan = Scan.FromFile(rawFile, scanNumber);
@@ -691,8 +829,7 @@ namespace ThermoRawFileParser.Writer
             int? charge = null;
             double? monoisotopicMass = null;
             double? ionInjectionTime = null;
-            double? ms2IsolationWidth = null;
-            int? masterScanIndex = null;
+            int? masterScanNumber = null;
             for (int i = 0; i < trailerData.Length; i++)
             {
                 if ((trailerData.Labels[i] == "Charge State:"))
@@ -713,16 +850,11 @@ namespace ThermoRawFileParser.Writer
                     ionInjectionTime = double.Parse(trailerData.Values[i]);
                 }
 
-                if ((trailerData.Labels[i] == "MS2 Isolation Width:"))
-                {
-                    ms2IsolationWidth = double.Parse(trailerData.Values[i]);
-                }
-
                 if ((trailerData.Labels[i] == "Master Index:"))
                 {
                     if (Convert.ToInt32(trailerData.Values[i]) > 0)
                     {
-                        masterScanIndex = Convert.ToInt32(trailerData.Values[i]);
+                        masterScanNumber = Convert.ToInt32(trailerData.Values[i]);
                     }
                 }
             }
@@ -752,7 +884,7 @@ namespace ThermoRawFileParser.Writer
                 });
 
                 // Construct and set the precursor list element of the spectrum
-                var precursorListType = ConstructPrecursorList(scanNumber, scan, scanEvent, charge);
+                var precursorListType = ConstructPrecursorList(scanNumber, masterScanNumber, scan, scanEvent, charge);
                 spectrum.precursorList = precursorListType;
             }
 
@@ -911,19 +1043,21 @@ namespace ThermoRawFileParser.Writer
                 });
             }
 
+            // Add the CV params to the spectrum
+            spectrum.cvParam = spectrumCvParams.ToArray();
+
+            // Binary data array list
             spectrum.binaryDataArrayList = new BinaryDataArrayListType
             {
-                // ONLY WRITING M/Z AND INTENSITY DATA, NOT THE CHARGE! (but can add charge info later)
-                // CHARGE (and other stuff) CAN BE IMPORTANT IN ML APPLICATIONS!!!!!
-                count = 5.ToString(),
-                binaryDataArray = new BinaryDataArrayType[5]
+                count = "2",
+                binaryDataArray = new BinaryDataArrayType[2]
             };
 
             // M/Z Data
             spectrum.binaryDataArrayList.binaryDataArray[0] =
                 new BinaryDataArrayType
                 {
-                    binary = Get64Bitarray(masses)
+                    binary = Get64BitArray(masses)
                 };
             spectrum.binaryDataArrayList.binaryDataArray[0].encodedLength =
                 (4 * Math.Ceiling(((double) spectrum.binaryDataArrayList.binaryDataArray[0]
@@ -962,7 +1096,7 @@ namespace ThermoRawFileParser.Writer
             spectrum.binaryDataArrayList.binaryDataArray[1] =
                 new BinaryDataArrayType
                 {
-                    binary = Get64Bitarray(intensities)
+                    binary = Get64BitArray(intensities)
                 };
             spectrum.binaryDataArrayList.binaryDataArray[1].encodedLength =
                 (4 * Math.Ceiling(((double) spectrum.binaryDataArrayList.binaryDataArray[1]
@@ -996,191 +1130,45 @@ namespace ThermoRawFileParser.Writer
                     cvRef = "MS",
                     value = ""
                 };
-//            if (myMsDataFile.GetOneBasedScan(i).NoiseData != null)
-//            {
-//                // mass
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[2] =
-//                    new Generated.BinaryDataArrayType
-//                    {
-//                        binary = myMsDataFile.GetOneBasedScan(i).Get64BitNoiseDataMass()
-//                    };
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[2].arrayLength = (
-//                        mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[2].binary.Length / 8)
-//                    .ToString();
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[2].encodedLength =
-//                    (4 * Math.Ceiling(((
-//                                           double) mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList
-//                                           .binaryDataArray[2].binary.Length / 3))).ToString(
-//                        CultureInfo.InvariantCulture);
-//
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[2].cvParam =
-//                    new Generated.CVParamType[3]
-//                    ;
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[2].cvParam[0] =
-//                    new Generated.CVParamType
-//                    {
-//                        accession = "MS:1000786",
-//                        name = "non-standard data array",
-//                        cvRef = "MS",
-//                        value = "mass",
-//                        unitCvRef = "MS",
-//                    };
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[2].cvParam[1] =
-//                    new Generated.CVParamType
-//                    {
-//                        accession = "MS:1000523",
-//                        name = "64-bit float",
-//                        cvRef = "MS",
-//                        value = ""
-//                    };
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[2].cvParam[2] =
-//                    new Generated.CVParamType
-//                    {
-//                        accession = "MS:1000576",
-//                        name = "no compression",
-//                        cvRef = "MS",
-//                        value = ""
-//                    };
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[2].userParam = new
-//                    Generated.UserParamType[1];
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[2].userParam[0] = new
-//                    Generated.UserParamType
-//                    {
-//                        name = "kelleherCustomType",
-//                        value = "noise m/z",
-//                    };
-//
-//                // noise
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[3] =
-//                    new Generated.BinaryDataArrayType
-//                    {
-//                        binary = myMsDataFile.GetOneBasedScan(i).Get64BitNoiseDataNoise()
-//                    };
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[3].arrayLength = (
-//                        mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[3].binary.Length / 8)
-//                    .ToString();
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[3].encodedLength =
-//                    (4 * Math.Ceiling(((
-//                                           double) mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList
-//                                           .binaryDataArray[3].binary.Length / 3))).ToString(
-//                        CultureInfo.InvariantCulture);
-//
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[3].cvParam =
-//                    new Generated.CVParamType[3]
-//                    ;
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[3].cvParam[0] =
-//                    new Generated.CVParamType
-//                    {
-//                        accession = "MS:1000786",
-//                        name = "non-standard data array",
-//                        cvRef = "MS",
-//                        value = "SignalToNoise"
-//                    };
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[3].cvParam[1] =
-//                    new Generated.CVParamType
-//                    {
-//                        accession = "MS:1000523",
-//                        name = "64-bit float",
-//                        cvRef = "MS",
-//                        value = ""
-//                    };
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[3].cvParam[2] =
-//                    new Generated.CVParamType
-//                    {
-//                        accession = "MS:1000576",
-//                        name = "no compression",
-//                        cvRef = "MS",
-//                        value = ""
-//                    };
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[3].userParam = new
-//                    Generated.UserParamType[1];
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[3].userParam[0] = new
-//                    Generated.UserParamType
-//                    {
-//                        name = "kelleherCustomType",
-//                        value = "noise baseline",
-//                    };
-//
-//                // baseline
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[4] =
-//                    new Generated.BinaryDataArrayType
-//                    {
-//                        binary = myMsDataFile.GetOneBasedScan(i).Get64BitNoiseDataBaseline(),
-//                    };
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[4].arrayLength = (
-//                        mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[4].binary.Length / 8)
-//                    .ToString();
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[4].encodedLength =
-//                    (4 * Math.Ceiling(((
-//                                           double) mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList
-//                                           .binaryDataArray[4].binary.Length / 3))).ToString(
-//                        CultureInfo.InvariantCulture);
-//
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[4].cvParam =
-//                    new Generated.CVParamType[3]
-//                    ;
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[4].cvParam[0] =
-//                    new Generated.CVParamType
-//                    {
-//                        accession = "MS:1000786",
-//                        name = "non-standard data array",
-//                        cvRef = "MS",
-//                        value = "baseline"
-//                    };
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[4].cvParam[1] =
-//                    new Generated.CVParamType
-//                    {
-//                        accession = "MS:1000523",
-//                        name = "64-bit float",
-//                        cvRef = "MS",
-//                        value = ""
-//                    };
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[4].cvParam[2] =
-//                    new Generated.CVParamType
-//                    {
-//                        accession = "MS:1000576",
-//                        name = "no compression",
-//                        cvRef = "MS",
-//                        value = ""
-//                    };
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[4].userParam = new
-//                    Generated.UserParamType[1];
-//                mzML.run.spectrumList.spectrum[i - 1].binaryDataArrayList.binaryDataArray[4].userParam[0] = new
-//                    Generated.UserParamType
-//                    {
-//                        name = "kelleherCustomType",
-//                        value = "noise intensity",
-//                    };
-//            }
-
-            // Add the CV params to the spectrum
-            spectrum.cvParam = spectrumCvParams.ToArray();
 
             return spectrum;
         }
 
-        private PrecursorListType ConstructPrecursorList(int scanNumber, Scan scan, IScanEvent scanEvent,
+        /// <summary>
+        /// Populate the precursor list element
+        /// </summary>
+        /// <param name="scanNumber">the scan number</param>
+        /// <param name="masterScanNumber">the master scan number</param>
+        /// <param name="scan">the scan object</param>
+        /// <param name="scanEvent">the scan event</param>
+        /// <param name="charge">the charge</param>
+        /// <returns></returns>
+        private PrecursorListType ConstructPrecursorList(int scanNumber, int? masterScanNumber, Scan scan,
+            IScanEvent scanEvent,
             int? charge)
         {
-            PrecursorListType precursorList = new PrecursorListType();
-
             // Construct the precursor
-            precursorList = new PrecursorListType
+            PrecursorListType precursorList = new PrecursorListType
             {
                 count = "1",
                 precursor = new PrecursorType[1],
             };
-            precursorList.precursor[0] = new PrecursorType
+
+            PrecursorType precursor = new PrecursorType
             {
                 selectedIonList = new SelectedIonListType()
                 {
                     count = 1.ToString(),
                     selectedIon = new ParamGroupType[1]
-                },
-                spectrumRef = ConstructSpectrumTitle(scanNumber)
+                }
             };
 
-            precursorList.precursor[0].selectedIonList.selectedIon[0] =
+            if (masterScanNumber != null)
+            {
+                precursor.spectrumRef = ConstructSpectrumTitle(masterScanNumber.Value);
+            }
+
+            precursor.selectedIonList.selectedIon[0] =
                 new ParamGroupType
                 {
                     cvParam = new CVParamType[3]
@@ -1201,8 +1189,8 @@ namespace ThermoRawFileParser.Writer
             }
 
             // Selected ion MZ
-            precursorList.precursor[0].selectedIonList.selectedIon[0]
-                .cvParam[0] = new CVParamType
+            List<CVParamType> ionCvParams = new List<CVParamType>();
+            ionCvParams.Add(new CVParamType
             {
                 name = "selected ion m/z",
                 value = precursorMass.ToString(CultureInfo.InvariantCulture),
@@ -1211,16 +1199,20 @@ namespace ThermoRawFileParser.Writer
                 unitCvRef = "MS",
                 unitAccession = "MS:1000040",
                 unitName = "m/z"
-            };
+            });
 
-            precursorList.precursor[0].selectedIonList.selectedIon[0]
-                .cvParam[1] = new CVParamType
+            if (charge != null)
             {
-                name = "charge state",
-                value = charge.ToString(),
-                accession = "MS:1000041",
-                cvRef = "MS",
-            };
+                ionCvParams.Add(new CVParamType
+                {
+                    name = "charge state",
+                    value = charge.ToString(),
+                    accession = "MS:1000041",
+                    cvRef = "MS",
+                });
+            }
+
+            precursor.selectedIonList.selectedIon[0].cvParam = ionCvParams.ToArray();
 
             // TODO find selected ion intensity
             // Selected ion intensity
@@ -1233,12 +1225,12 @@ namespace ThermoRawFileParser.Writer
 //                    cvRef = "MS"
 //                };
 
-            precursorList.precursor[0].isolationWindow =
+            precursor.isolationWindow =
                 new ParamGroupType
                 {
                     cvParam = new CVParamType[3]
                 };
-            precursorList.precursor[0].isolationWindow.cvParam[0] =
+            precursor.isolationWindow.cvParam[0] =
                 new CVParamType
                 {
                     accession = "MS:1000827",
@@ -1249,41 +1241,48 @@ namespace ThermoRawFileParser.Writer
                     unitAccession = "MS:1000040",
                     unitName = "m/z"
                 };
-            precursorList.precursor[0].isolationWindow.cvParam[1] =
-                new CVParamType
-                {
-                    accession = "MS:1000828",
-                    name = "isolation window lower offset",
-                    value = scan.ScanStatistics.LowMass.ToString(CultureInfo.InvariantCulture),
-                    cvRef = "MS",
-                    unitCvRef = "MS",
-                    unitAccession = "MS:1000040",
-                    unitName = "m/z"
-                };
-            precursorList.precursor[0].isolationWindow.cvParam[2] =
-                new CVParamType
-                {
-                    accession = "MS:1000829",
-                    name = "isolation window upper offset",
-                    value = scan.ScanStatistics.HighMass.ToString(CultureInfo.InvariantCulture),
-                    cvRef = "MS",
-                    unitCvRef = "MS",
-                    unitAccession = "MS:1000040",
-                    unitName = "m/z"
-                };
-
-            precursorList.precursor[0].activation =
-                new ParamGroupType
-                {
-                    cvParam = new CVParamType[2]
-                };
-            precursorList.precursor[0].activation.cvParam[0] = new CVParamType()
+            if (isolationWidth != null)
             {
-                accession = "MS:1000045",
-                name = "collision energy",
-                cvRef = "MS",
-                value = "",
-            };
+                double offset = isolationWidth.Value / 2;
+                precursor.isolationWindow.cvParam[1] =
+                    new CVParamType
+                    {
+                        accession = "MS:1000828",
+                        name = "isolation window lower offset",
+                        value = offset.ToString(CultureInfo.InvariantCulture),
+                        cvRef = "MS",
+                        unitCvRef = "MS",
+                        unitAccession = "MS:1000040",
+                        unitName = "m/z"
+                    };
+                precursor.isolationWindow.cvParam[2] =
+                    new CVParamType
+                    {
+                        accession = "MS:1000829",
+                        name = "isolation window upper offset",
+                        value = offset.ToString(CultureInfo.InvariantCulture),
+                        cvRef = "MS",
+                        unitCvRef = "MS",
+                        unitAccession = "MS:1000040",
+                        unitName = "m/z"
+                    };
+            }
+
+            List<CVParamType> activationCvParams = new List<CVParamType>();
+            if (reaction != null && reaction.CollisionEnergyValid)
+            {
+                activationCvParams.Add(
+                    new CVParamType()
+                    {
+                        accession = "MS:1000045",
+                        name = "collision energy",
+                        cvRef = "MS",
+                        value = reaction.CollisionEnergy.ToString(CultureInfo.InvariantCulture),
+                        unitCvRef = "UO",
+                        unitAccession = "UO:0000266",
+                        unitName = "electronvolt"
+                    });
+            }
 
             CVParamType activation;
             if (!DissociationTypes.TryGetValue(reaction.ActivationType, out activation))
@@ -1297,11 +1296,28 @@ namespace ThermoRawFileParser.Writer
                 };
             }
 
-            precursorList.precursor[0].activation.cvParam[1] = activation;
+            activationCvParams.Add(activation);
+
+            precursor.activation =
+                new ParamGroupType
+                {
+                    cvParam = activationCvParams.ToArray()
+                };
+
+            precursorList.precursor[0] = precursor;
 
             return precursorList;
         }
 
+        /// <summary>
+        /// Populate the scan list element
+        /// </summary>
+        /// <param name="scanNumber">the scan number</param>
+        /// <param name="scan">the scan object</param>
+        /// <param name="scanFilter">the scan filter</param>
+        /// <param name="scanEvent">the scan event</param>
+        /// <param name="monoisotopicMass">the monoisotopic mass</param>
+        /// <returns></returns>
         private ScanListType ConstructScanList(int scanNumber, Scan scan, IScanFilter scanFilter, IScanEvent scanEvent,
             double? monoisotopicMass)
         {
@@ -1328,13 +1344,13 @@ namespace ThermoRawFileParser.Writer
                 instrumentConfigurationRef = "IC1";
             }
 
-            scanList.scan[0] = new ScanType()
+            ScanType scanType = new ScanType()
             {
                 instrumentConfigurationRef = instrumentConfigurationRef,
                 cvParam = new CVParamType[2],
             };
 
-            scanList.scan[0].cvParam[0] = new CVParamType
+            scanType.cvParam[0] = new CVParamType
             {
                 name = "scan start time",
                 accession = "MS:1000016",
@@ -1345,7 +1361,7 @@ namespace ThermoRawFileParser.Writer
                 cvRef = "MS",
             };
 
-            scanList.scan[0].cvParam[1] = new CVParamType
+            scanType.cvParam[1] = new CVParamType
             {
                 name = "filter string",
                 accession = "MS:1000512",
@@ -1355,8 +1371,8 @@ namespace ThermoRawFileParser.Writer
 
             if (monoisotopicMass.HasValue)
             {
-                scanList.scan[0].userParam = new UserParamType[1];
-                scanList.scan[0].userParam[0] = new UserParamType()
+                scanType.userParam = new UserParamType[1];
+                scanType.userParam[0] = new UserParamType()
                 {
                     name = "[Thermo Trailer Extra]Monoisotopic M/Z:",
                     value = monoisotopicMass.ToString(),
@@ -1365,16 +1381,16 @@ namespace ThermoRawFileParser.Writer
             }
 
             // Scan window list
-            scanList.scan[0].scanWindowList = new ScanWindowListType()
+            scanType.scanWindowList = new ScanWindowListType()
             {
                 count = 1,
                 scanWindow = new ParamGroupType[1]
             };
-            scanList.scan[0].scanWindowList.scanWindow[0] = new ParamGroupType()
+            ParamGroupType scanWindow = new ParamGroupType()
             {
                 cvParam = new CVParamType[2]
             };
-            scanList.scan[0].scanWindowList.scanWindow[0].cvParam[0] = new CVParamType()
+            scanWindow.cvParam[0] = new CVParamType()
             {
                 name = "scan window lower limit",
                 accession = "MS:1000501",
@@ -1384,7 +1400,7 @@ namespace ThermoRawFileParser.Writer
                 unitCvRef = "MS",
                 unitName = "m/z"
             };
-            scanList.scan[0].scanWindowList.scanWindow[0].cvParam[1] = new CVParamType()
+            scanWindow.cvParam[1] = new CVParamType()
             {
                 name = "scan window upper limit",
                 accession = "MS:1000500",
@@ -1395,10 +1411,19 @@ namespace ThermoRawFileParser.Writer
                 unitName = "m/z"
             };
 
+            scanType.scanWindowList.scanWindow[0] = scanWindow;
+
+            scanList.scan[0] = scanType;
+
             return scanList;
         }
 
-        private byte[] Get64Bitarray(IEnumerable<double> array)
+        /// <summary>
+        /// Convert the double array into a byte array
+        /// </summary>
+        /// <param name="array">the double array</param>
+        /// <returns>the byte array</returns>
+        private byte[] Get64BitArray(IEnumerable<double> array)
         {
             MemoryStream memoryStream = new MemoryStream();
             foreach (var doubleValue in array)

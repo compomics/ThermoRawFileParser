@@ -2,9 +2,6 @@
 using System.IO;
 using System.Net;
 using System.Reflection;
-using IO.MzML;
-using MassSpectrometry;
-using MzLibUtil;
 using NUnit.Framework;
 
 namespace ThermoRawFileParserTest
