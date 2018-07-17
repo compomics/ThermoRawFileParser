@@ -11,20 +11,14 @@ namespace ThermoRawFileParser
         private static readonly log4net.ILog Log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly ParseInput _parseInput;
-
-        public RawFileParser(ParseInput parseInput)
-        {
-            _parseInput = parseInput;
-        }
-
         /// <summary>
         /// Extract the RAW file metadata and spectra in MGF format. 
         /// </summary>
-        public void Parse()
+        /// <param name="parseInput">the parse input object</param>
+        public void Parse(ParseInput parseInput)
         {
             // Check to see if the RAW file name was supplied as an argument to the program
-            if (string.IsNullOrEmpty(_parseInput.RawFilePath))
+            if (string.IsNullOrEmpty(parseInput.RawFilePath))
             {
                 Log.Error("No RAW file specified!");
 
@@ -32,19 +26,19 @@ namespace ThermoRawFileParser
             }
 
             // Check to see if the specified RAW file exists
-            if (!File.Exists(_parseInput.RawFilePath))
+            if (!File.Exists(parseInput.RawFilePath))
             {
-                Log.Error(@"The file doesn't exist in the specified location - " + _parseInput.RawFilePath);
+                Log.Error(@"The file doesn't exist in the specified location - " + parseInput.RawFilePath);
 
                 return;
             }
 
-            Log.Info("Started parsing " + _parseInput.RawFilePath);
+            Log.Info("Started parsing " + parseInput.RawFilePath);
 
             // Create the IRawDataPlus object for accessing the RAW file
             //var rawFile = RawFileReaderAdapter.FileFactory(rawFilePath);
             IRawDataPlus rawFile;
-            using (rawFile = RawFileReaderFactory.ReadFile(_parseInput.RawFilePath))
+            using (rawFile = RawFileReaderFactory.ReadFile(parseInput.RawFilePath))
             {
                 if (!rawFile.IsOpen)
                 {
@@ -56,7 +50,7 @@ namespace ThermoRawFileParser
                 // Check for any errors in the RAW file
                 if (rawFile.IsError)
                 {
-                    Log.Error($"Error opening ({rawFile.FileError}) - {_parseInput.RawFilePath}");
+                    Log.Error($"Error opening ({rawFile.FileError}) - {parseInput.RawFilePath}");
 
                     return;
                 }
@@ -64,7 +58,7 @@ namespace ThermoRawFileParser
                 // Check if the RAW file is being acquired
                 if (rawFile.InAcquisition)
                 {
-                    Log.Error("RAW file still being acquired - " + _parseInput.RawFilePath);
+                    Log.Error("RAW file still being acquired - " + parseInput.RawFilePath);
 
                     return;
                 }
@@ -77,26 +71,27 @@ namespace ThermoRawFileParser
                 int firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
                 int lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
 
-                if (_parseInput.OutputMetadata)
+                if (parseInput.OutputMetadata)
                 {
-                    MetadataWriter metadataWriter = new MetadataWriter(_parseInput.OutputDirectory,
-                        _parseInput.RawFileNameWithoutExtension);
+                    MetadataWriter metadataWriter = new MetadataWriter(parseInput.OutputDirectory,
+                        parseInput.RawFileNameWithoutExtension);
                     metadataWriter.WriteMetada(rawFile, firstScanNumber, lastScanNumber);
                 }
 
                 SpectrumWriter spectrumWriter = null;
-                switch (_parseInput.OutputFormat)
+                switch (parseInput.OutputFormat)
                 {
                     case OutputFormat.Mgf:
-                        spectrumWriter = new MgfSpectrumWriter(_parseInput);
+                        spectrumWriter = new MgfSpectrumWriter(parseInput);
                         break;
                     case OutputFormat.Mzml:
-                        spectrumWriter = new MzMLSpectrumWriter(_parseInput);
+                        spectrumWriter = new MzMLSpectrumWriter(parseInput);
                         break;
                 }
+
                 spectrumWriter.WriteSpectra(rawFile, firstScanNumber, lastScanNumber);
 
-                Log.Info("Finished parsing " + _parseInput.RawFilePath);
+                Log.Info("Finished parsing " + parseInput.RawFilePath);
             }
         }
     }

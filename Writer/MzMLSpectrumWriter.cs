@@ -281,6 +281,7 @@ namespace ThermoRawFileParser.Writer
         {
         }
 
+        /// <inheritdoc />
         public override void WriteSpectra(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
             this.rawFile = rawFile;

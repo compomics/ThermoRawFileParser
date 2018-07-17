@@ -106,8 +106,8 @@ namespace ThermoRawFileParser
                 {
                     ParseInput parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, outputMetadata,
                         includeProfileData, collection, msRun, subFolder);
-                    RawFileParser rawFileParser = new RawFileParser(parseInput);
-                    rawFileParser.Parse();
+                    RawFileParser rawFileParser = new RawFileParser();
+                    rawFileParser.Parse(parseInput);
                 }
                 catch (Exception ex)
                 {

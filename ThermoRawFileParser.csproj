@@ -98,12 +98,6 @@
     </Content>
     <Content Include="Writer\MzML\mzML1.1.1_idx.xsd" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="ThermoRawFileParserTest\ThermoRawFileParserTest.csproj">
-      <Project>{825604e5-e6e0-461b-ad2a-e2210abefe59}</Project>
-      <Name>ThermoRawFileParserTest</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

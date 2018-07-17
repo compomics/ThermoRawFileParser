@@ -1,8 +1,12 @@
 ﻿using System;
 using System.IO;
-using System.Net;
 using System.Reflection;
+using IO.Mgf;
 using NUnit.Framework;
+using ThermoFisher.CommonCore.Data.Business;
+using ThermoFisher.CommonCore.Data.Interfaces;
+using ThermoRawFileParser;
+using ThermoRawFileParser.Writer;
 
 namespace ThermoRawFileParserTest
 {
@@ -10,13 +14,41 @@ namespace ThermoRawFileParserTest
     public class Tests
     {
         [Test]
-        public void Test1()
+        public void TestMgf()
         {
-            //ThermoStaticData staticThermo = ThermoStaticData.LoadAllStaticData(@"spectra.raw");
-            //ThermoDynamicData dynamicThermo = ThermoDynamicData.InitiateDynamicConnection(@"spectra.raw")
-            //Mzml mzmlFile = Mzml.LoadAllStaticData(@"spectra.mzML");           
+            // get temp path
+            String tempFilePath = Path.GetTempPath();
+
+            var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
+            ParseInput parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mgf, false, false, "coll", "run", "sub");        
+            SpectrumWriter spectrumWriter = new MgfSpectrumWriter(parseInput);
             
-            //create temp file
+            IRawDataPlus rawFile;
+            using (rawFile = RawFileReaderFactory.ReadFile(parseInput.RawFilePath))
+            {                                
+                rawFile.SelectInstrument(Device.MS, 1);
+                
+                // Get the first and last scan from the RAW file
+                int firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
+                int lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;                                
+                
+                spectrumWriter.WriteSpectra(rawFile, firstScanNumber, lastScanNumber);
+
+                                              
+            }
+            
+            // do this for the mzLib library
+            String tempFileName = Path.GetTempPath() + "elements.dat";           
+            UsefulProteomicsDatabases.Loaders.LoadElements(tempFileName);  
+            
+            var loadAllStaticData = Mgf.LoadAllStaticData(Path.Combine(tempFilePath, "small.mgf"));
+            Console.WriteLine("test");
+
+//            ThermoStaticData staticThermo = ThermoStaticData.LoadAllStaticData(@"spectra.raw");
+//            ThermoDynamicData dynamicThermo = ThermoDynamicData.InitiateDynamicConnection(@"spectra.raw")
+//            Mzml mzmlFile = Mzml.LoadAllStaticData(@"spectra.mzML");           
+//            
+//            create temp file
 //            String tempFileName = Path.GetTempPath() + "elements.dat";
 //            
 //            UsefulProteomicsDatabases.Loaders.LoadElements(tempFileName);

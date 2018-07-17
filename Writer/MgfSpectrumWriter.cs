@@ -6,7 +6,7 @@ using ThermoFisher.CommonCore.Data.Interfaces;
 
 namespace ThermoRawFileParser.Writer
 {
-    internal class MgfSpectrumWriter : SpectrumWriter
+    public class MgfSpectrumWriter : SpectrumWriter
     {
         private static readonly log4net.ILog Log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -29,17 +29,15 @@ namespace ThermoRawFileParser.Writer
 
                     // Check to see if the RAW file contains label (high-res) data and if it is present
                     // then look for any data that is out of order
-                    double time = rawFile.RetentionTimeFromScanNumber(scanNumber);                                      
+                    double time = rawFile.RetentionTimeFromScanNumber(scanNumber);
 
                     // Get the scan filter for this scan number
-                    var scanFilter = rawFile.GetFilterForScanNumber(scanNumber);                        
-                    
+                    var scanFilter = rawFile.GetFilterForScanNumber(scanNumber);
+
                     // Get the scan event for this scan number
                     var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
-                    
-                    //scanFilter.S
 
-                    // Get the ionizationMode, MS2 precursor mass, collision energy, and isolation width for each scan
+                    // Only consider MS2 spectra
                     if (scanFilter.MSOrder == ThermoFisher.CommonCore.Data.FilterEnums.MSOrderType.Ms2)
                     {
                         if (scanEvent.ScanData == ScanDataType.Centroid ||
@@ -50,14 +48,19 @@ namespace ThermoRawFileParser.Writer
                             mgfFile.WriteLine($"SCAN={scanNumber}");
                             mgfFile.WriteLine($"RTINSECONDS={time * 60}");
                             // Get the reaction information for the first precursor
-                            var reaction = scanEvent.GetReaction(0);
-                            double precursorMass = reaction.PrecursorMass;
-                            mgfFile.WriteLine($"PEPMASS={precursorMass:F7}");
-                            //mgfFile.WriteLine($"PEPMASS={precursorMass:F2} {GetPrecursorIntensity(rawFile, scanNumber)}");
+                            try
+                            {
+                                var reaction = scanEvent.GetReaction(0);
+                                double precursorMass = reaction.PrecursorMass;
+                                mgfFile.WriteLine($"PEPMASS={precursorMass:F7}");
+                            }
+                            catch (ArgumentOutOfRangeException exception)
+                            {
+                                Log.Warn("No reaction found for scan " + scanNumber);
+                            }
 
                             // trailer extra data list
                             var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
-
                             for (int i = 0; i < trailerData.Length; i++)
                             {
                                 if ((trailerData.Labels[i] == "Charge State:"))
@@ -69,11 +72,7 @@ namespace ThermoRawFileParser.Writer
                                 }
                             }
 
-                            //double collisionEnergy = reaction.CollisionEnergy;
-                            //mgfFile.WriteLine($"COLLISIONENERGY={collisionEnergy}");
-                            //var ionizationMode = scanFilter.IonizationMode;
-                            //mgfFile.WriteLine($"IONMODE={ionizationMode}");
-
+                            // Check if the scan has a centroid stream
                             if (scan.HasCentroidStream)
                             {
                                 var centroidStream = rawFile.GetCentroidStream(scanNumber, false);
@@ -86,6 +85,7 @@ namespace ThermoRawFileParser.Writer
                                     }
                                 }
                             }
+                            // Otherwise take the profile data
                             else
                             {
                                 // Get the scan statistics from the RAW file for this scan number
