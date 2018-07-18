@@ -18,6 +18,7 @@ namespace ThermoRawFileParser
             string outputDirectory = null;
             string outputFormatString = null;
             OutputFormat outputFormat = OutputFormat.Mgf;
+            bool gzip = false;
             bool outputMetadata = false;
             bool includeProfileData = false;
             string collection = null;
@@ -44,11 +45,16 @@ namespace ThermoRawFileParser
                     v => outputFormatString = v
                 },
                 {
+                    "g=|gzip=", "GZip the output file if this flag is specified (without value).",
+                    v => gzip = v != null
+                },
+                {
                     "m|metadata", "Write the metadata output file if this flag is specified (without value).",
                     v => outputMetadata = v != null
                 },
                 {
-                    "p|profiledata", "Include MS2 profile data if this flag is specified (without value).",
+                    "p|profiledata",
+                    "Exclude MS2 profile data if this flag is specified (without value). Only for MGF format!",
                     v => includeProfileData = v != null
                 },
                 {
@@ -104,7 +110,8 @@ namespace ThermoRawFileParser
             {
                 try
                 {
-                    ParseInput parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, outputMetadata,
+                    ParseInput parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip,
+                        outputMetadata,
                         includeProfileData, collection, msRun, subFolder);
                     RawFileParser rawFileParser = new RawFileParser();
                     rawFileParser.Parse(parseInput);
@@ -126,9 +133,11 @@ namespace ThermoRawFileParser
                 if (!optionException.OptionName.IsNullOrEmpty())
                 {
                     Console.Error.Write(optionException.OptionName + ": ");
-                }                
+                }
+
                 Console.Error.WriteLine(optionException.Message);
             }
+
             Console.Error.WriteLine(message);
             optionSet.WriteOptionDescriptions(Console.Error);
             Environment.Exit(-1);

@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using System;
+using System.IO;
+using System.IO.Compression;
+using System.Text;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
 
@@ -6,7 +9,14 @@ namespace ThermoRawFileParser.Writer
 {
     public abstract class SpectrumWriter : ISpectrumWriter
     {
-        protected readonly ParseInput ParseInput;        
+        /// <summary>
+        /// The parse input object
+        /// </summary>
+        protected readonly ParseInput ParseInput;
+        /// <summary>
+        /// The output stream writer
+        /// </summary>
+        protected StreamWriter writer;
 
         /// <summary>
         /// Constructor.
@@ -14,11 +24,32 @@ namespace ThermoRawFileParser.Writer
         /// <param name="rawFilePath">the RAW file path</param>
         protected SpectrumWriter(ParseInput parseInput)
         {
-            ParseInput = parseInput;           
+            ParseInput = parseInput;
         }
 
         /// <inheritdoc />
-        public abstract void WriteSpectra(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber);
+        public abstract void Write(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber);
+        
+        /// <summary>
+        /// Configure the output writer
+        /// </summary>
+        /// <param name="extension">The exenstion of the output file</param>
+        protected void ConfigureWriter(String extension)
+        {
+            String fullExtension = ParseInput.Gzip ? extension + ".gzip" : extension;
+            if (!ParseInput.Gzip)
+            {
+                writer = File.CreateText(ParseInput.OutputDirectory + "//" + ParseInput.RawFileNameWithoutExtension +
+                                         extension);
+            }
+            else
+            {
+                FileStream fileStream = File.Create(ParseInput.OutputDirectory + "//" +
+                                                    ParseInput.RawFileNameWithoutExtension + fullExtension);
+                GZipStream compress = new GZipStream(fileStream, CompressionMode.Compress);
+                writer = new StreamWriter(compress);
+            }
+        }
 
         /// <summary>
         /// Construct the spectrum title.
@@ -64,7 +95,7 @@ namespace ThermoRawFileParser.Writer
             ChromatogramTraceSettings settings = new ChromatogramTraceSettings(TraceType.TIC);
 
             // Get the chromatogram from the RAW file. 
-            var data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, scanNumber -1,
+            var data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, scanNumber - 1,
                 scanNumber - 1);
 
             // Split the data into the chromatograms

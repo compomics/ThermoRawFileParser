@@ -42,6 +42,10 @@
       <HintPath>..\packages\mzLib.1.0.329\lib\net471\Chromatography.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="DotNetZip, Version=1.10.1.0, Culture=neutral, PublicKeyToken=6583c7c814667745">
+      <HintPath>..\packages\DotNetZip.1.10.1\lib\net20\DotNetZip.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FlashLFQ, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\mzLib.1.0.329\lib\net471\FlashLFQ.dll</HintPath>
       <Private>True</Private>
@@ -84,6 +88,10 @@
     </Reference>
     <Reference Include="Proteomics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\mzLib.1.0.329\lib\net471\Proteomics.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PSI_Interface, Version=1.3.22.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\PSI_Interface.1.3.22\lib\net45\PSI_Interface.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Spectra, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">

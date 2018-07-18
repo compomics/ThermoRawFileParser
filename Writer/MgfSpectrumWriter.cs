@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
@@ -11,16 +10,15 @@ namespace ThermoRawFileParser.Writer
         private static readonly log4net.ILog Log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-
         public MgfSpectrumWriter(ParseInput parseInput) : base(parseInput)
         {
         }
 
         /// <inheritdoc />       
-        public override void WriteSpectra(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
+        public override void Write(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
-            using (var mgfFile =
-                File.CreateText(ParseInput.OutputDirectory + "//" + ParseInput.RawFileNameWithoutExtension + ".mgf"))
+            ConfigureWriter(".mgf");
+            using (writer)
             {
                 for (int scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
                 {
@@ -41,18 +39,18 @@ namespace ThermoRawFileParser.Writer
                     if (scanFilter.MSOrder == ThermoFisher.CommonCore.Data.FilterEnums.MSOrderType.Ms2)
                     {
                         if (scanEvent.ScanData == ScanDataType.Centroid ||
-                            (scanEvent.ScanData == ScanDataType.Profile && ParseInput.IncludeProfileData))
+                            (scanEvent.ScanData == ScanDataType.Profile && !ParseInput.ExcludeProfileData))
                         {
-                            mgfFile.WriteLine("BEGIN IONS");
-                            mgfFile.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
-                            mgfFile.WriteLine($"SCAN={scanNumber}");
-                            mgfFile.WriteLine($"RTINSECONDS={time * 60}");
+                            writer.WriteLine("BEGIN IONS");
+                            writer.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
+                            writer.WriteLine($"SCAN={scanNumber}");
+                            writer.WriteLine($"RTINSECONDS={time * 60}");
                             // Get the reaction information for the first precursor
                             try
                             {
                                 var reaction = scanEvent.GetReaction(0);
                                 double precursorMass = reaction.PrecursorMass;
-                                mgfFile.WriteLine($"PEPMASS={precursorMass:F7}");
+                                writer.WriteLine($"PEPMASS={precursorMass:F7}");
                             }
                             catch (ArgumentOutOfRangeException exception)
                             {
@@ -67,7 +65,7 @@ namespace ThermoRawFileParser.Writer
                                 {
                                     if (Convert.ToInt32(trailerData.Values[i]) > 0)
                                     {
-                                        mgfFile.WriteLine($"CHARGE={trailerData.Values[i]}+");
+                                        writer.WriteLine($"CHARGE={trailerData.Values[i]}+");
                                     }
                                 }
                             }
@@ -80,7 +78,7 @@ namespace ThermoRawFileParser.Writer
                                 {
                                     for (int i = 0; i < centroidStream.Length; i++)
                                     {
-                                        mgfFile.WriteLine(
+                                        writer.WriteLine(
                                             $"{centroidStream.Masses[i]:F7} {centroidStream.Intensities[i]:F10}");
                                     }
                                 }
@@ -95,12 +93,12 @@ namespace ThermoRawFileParser.Writer
                                 var segmentedScan = rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
                                 for (int i = 0; i < segmentedScan.Positions.Length; i++)
                                 {
-                                    mgfFile.WriteLine(
+                                    writer.WriteLine(
                                         $"{segmentedScan.Positions[i]:F7} {segmentedScan.Intensities[i]:F10}");
                                 }
                             }
 
-                            mgfFile.WriteLine("END IONS");
+                            writer.WriteLine("END IONS");
                         }
                     }
                 }

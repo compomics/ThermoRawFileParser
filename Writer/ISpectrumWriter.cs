@@ -10,6 +10,6 @@ namespace ThermoRawFileParser.Writer
         /// <param name="rawFile">the RAW file interface</param>
         /// <param name="firstScanNumber">the first scan number</param>
         /// <param name="lastScanNumber">the last scan number</param>
-        void WriteSpectra(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber);
+        void Write(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber);
     }
 }

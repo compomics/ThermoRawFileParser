@@ -274,15 +274,12 @@ namespace ThermoRawFileParser.Writer
         private readonly Dictionary<IonizationModeType, CVParamType> _ionizationTypes =
             new Dictionary<IonizationModeType, CVParamType>();
 
-        private readonly XmlSerializer mzmlSerializer = new XmlSerializer(typeof(mzMLType));
-        //private readonly XmlSerializer indexedMzmlSerializer = new XmlSerializer(typeof(indexedmzML));
-
         public MzMLSpectrumWriter(ParseInput parseInput) : base(parseInput)
         {
         }
 
         /// <inheritdoc />
-        public override void WriteSpectra(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
+        public override void Write(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
             this.rawFile = rawFile;
 
@@ -322,15 +319,18 @@ namespace ThermoRawFileParser.Writer
             {
                 mzMl.run.chromatogramList = new ChromatogramListType
                 {
+                    count = chromatograms.Count.ToString(),
+                    defaultDataProcessingRef = "ThermoRawFileParserProcessing",
                     chromatogram = chromatograms.ToArray()
                 };
             }
 
-            using (TextWriter writer =
-                new StreamWriter(ParseInput.OutputDirectory + "//" + ParseInput.RawFileNameWithoutExtension + ".mzML"))
-            {                    
-                mzmlSerializer.Serialize(writer, mzMl);                
-            }            
+            ConfigureWriter(".mzML");
+            using (writer)
+            {
+                XmlSerializer mzmlSerializer = new XmlSerializer(typeof(mzMLType));
+                mzmlSerializer.Serialize(writer, mzMl);
+            }
         }
 
         /// <summary>
@@ -483,7 +483,6 @@ namespace ThermoRawFileParser.Writer
                 name = "Conversion to mzML",
                 value = ""
             };
-
 
             // Add the run element
             mzMl.run = new RunType()
@@ -1214,17 +1213,6 @@ namespace ThermoRawFileParser.Writer
             }
 
             precursor.selectedIonList.selectedIon[0].cvParam = ionCvParams.ToArray();
-
-            // TODO find selected ion intensity
-            // Selected ion intensity
-//                spectrum.precursorList.precursor[0].selectedIonList.selectedIon[0]
-//                    .cvParam[2] = new CVParamType
-//                {
-//                    name = "peak intensity",
-//                    value = "?????",
-//                    accession = "MS:1000042",
-//                    cvRef = "MS"
-//                };
 
             precursor.isolationWindow =
                 new ParamGroupType

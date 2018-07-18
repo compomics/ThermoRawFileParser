@@ -20,14 +20,19 @@ namespace ThermoRawFileParser
         public OutputFormat OutputFormat { get; set; }
 
         /// <summary>
+        /// Gzip the output file.
+        /// </summary>
+        public bool Gzip { get; set; }
+
+        /// <summary>
         /// Output the metadata.
         /// </summary>
         public bool OutputMetadata { get; set; }
 
         /// <summary>
-        /// Include the MS2 spectra in profile mode.
+        /// Exclude the MS2 spectra in profile mode.
         /// </summary>
-        public bool IncludeProfileData { get; set; }
+        public bool ExcludeProfileData { get; set; }
 
         /// <summary>
         /// The data collection identifier.
@@ -59,8 +64,8 @@ namespace ThermoRawFileParser
         {
         }
 
-        public ParseInput(string rawFilePath, string outputDirectory, OutputFormat outputFormat, bool outputMetadata,
-            bool includeProfileData, string collection, string msRun, string subFolder)
+        public ParseInput(string rawFilePath, string outputDirectory, OutputFormat outputFormat, bool gzip,
+            bool outputMetadata, bool excludeProfileData, string collection, string msRun, string subFolder)
         {
             RawFilePath = rawFilePath;
             string[] splittedPath = RawFilePath.Split('/');
@@ -68,8 +73,9 @@ namespace ThermoRawFileParser
             RawFileNameWithoutExtension = Path.GetFileNameWithoutExtension(RawFileName);
             OutputDirectory = outputDirectory;
             OutputFormat = outputFormat;
+            Gzip = gzip;
             OutputMetadata = outputMetadata;
-            IncludeProfileData = includeProfileData;
+            ExcludeProfileData = excludeProfileData;
             Collection = collection;
             MsRun = msRun;
             SubFolder = subFolder;

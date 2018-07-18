@@ -88,8 +88,7 @@ namespace ThermoRawFileParser
                         spectrumWriter = new MzMLSpectrumWriter(parseInput);
                         break;
                 }
-
-                spectrumWriter.WriteSpectra(rawFile, firstScanNumber, lastScanNumber);
+                spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
 
                 Log.Info("Finished parsing " + parseInput.RawFilePath);
             }
