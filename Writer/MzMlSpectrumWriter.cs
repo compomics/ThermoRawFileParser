@@ -833,89 +833,104 @@ namespace ThermoRawFileParser.Writer
             spectrum.cvParam = spectrumCvParams.ToArray();
 
             // Binary data array list
-            spectrum.binaryDataArrayList = new BinaryDataArrayListType
-            {
-                count = "2",
-                binaryDataArray = new BinaryDataArrayType[2]
-            };
+            var binaryData = new List<BinaryDataArrayType>();
 
             // M/Z Data
-            spectrum.binaryDataArrayList.binaryDataArray[0] =
-                new BinaryDataArrayType
-                {
-                    binary = Get64BitArray(masses)
-                };
-            spectrum.binaryDataArrayList.binaryDataArray[0].encodedLength =
-                (4 * Math.Ceiling((double) spectrum.binaryDataArrayList.binaryDataArray[0]
-                                      .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-            spectrum.binaryDataArrayList.binaryDataArray[0].cvParam =
-                new CVParamType[3];
-            spectrum.binaryDataArrayList.binaryDataArray[0].cvParam[0] =
-                new CVParamType
-                {
-                    accession = "MS:1000514",
-                    name = "m/z array",
-                    cvRef = "MS",
-                    unitName = "m/z",
-                    value = "",
-                    unitCvRef = "MS",
-                    unitAccession = "MS:1000040"
-                };
-            spectrum.binaryDataArrayList.binaryDataArray[0].cvParam[1] =
-                new CVParamType
-                {
-                    accession = "MS:1000523",
-                    name = "64-bit float",
-                    cvRef = "MS",
-                    value = ""
-                };
-            spectrum.binaryDataArrayList.binaryDataArray[0].cvParam[2] =
-                new CVParamType
-                {
-                    accession = "MS:1000576",
-                    name = "no compression",
-                    cvRef = "MS",
-                    value = ""
-                };
+            if (!masses.IsNullOrEmpty())
+            {
+                var massesBinaryData =
+                    new BinaryDataArrayType
+                    {
+                        binary = Get64BitArray(masses)
+                    };
+                massesBinaryData.encodedLength =
+                    (4 * Math.Ceiling((double) massesBinaryData
+                                          .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
+                massesBinaryData.cvParam =
+                    new CVParamType[3];
+                massesBinaryData.cvParam[0] =
+                    new CVParamType
+                    {
+                        accession = "MS:1000514",
+                        name = "m/z array",
+                        cvRef = "MS",
+                        unitName = "m/z",
+                        value = "",
+                        unitCvRef = "MS",
+                        unitAccession = "MS:1000040"
+                    };
+                massesBinaryData.cvParam[1] =
+                    new CVParamType
+                    {
+                        accession = "MS:1000523",
+                        name = "64-bit float",
+                        cvRef = "MS",
+                        value = ""
+                    };
+                massesBinaryData.cvParam[2] =
+                    new CVParamType
+                    {
+                        accession = "MS:1000576",
+                        name = "no compression",
+                        cvRef = "MS",
+                        value = ""
+                    };
+
+                binaryData.Add(massesBinaryData);
+            }
 
             // Intensity Data
-            spectrum.binaryDataArrayList.binaryDataArray[1] =
-                new BinaryDataArrayType
+            if (!intensities.IsNullOrEmpty())
+            {
+                var intensitiesBinaryData =
+                    new BinaryDataArrayType
+                    {
+                        binary = Get64BitArray(intensities)
+                    };
+                intensitiesBinaryData.encodedLength =
+                    (4 * Math.Ceiling((double) intensitiesBinaryData
+                                          .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
+                intensitiesBinaryData.cvParam =
+                    new CVParamType[3];
+                intensitiesBinaryData.cvParam[0] =
+                    new CVParamType
+                    {
+                        accession = "MS:1000515",
+                        name = "intensity array",
+                        cvRef = "MS",
+                        unitCvRef = "MS",
+                        unitAccession = "MS:1000131",
+                        unitName = "number of counts",
+                        value = ""
+                    };
+                intensitiesBinaryData.cvParam[1] =
+                    new CVParamType
+                    {
+                        accession = "MS:1000523",
+                        name = "64-bit float",
+                        cvRef = "MS",
+                        value = ""
+                    };
+                intensitiesBinaryData.cvParam[2] =
+                    new CVParamType
+                    {
+                        accession = "MS:1000576",
+                        name = "no compression",
+                        cvRef = "MS",
+                        value = ""
+                    };
+
+                binaryData.Add(intensitiesBinaryData);
+            }
+
+            if (!binaryData.IsNullOrEmpty())
+            {
+                spectrum.binaryDataArrayList = new BinaryDataArrayListType
                 {
-                    binary = Get64BitArray(intensities)
+                    count = binaryData.Count.ToString(),
+                    binaryDataArray = binaryData.ToArray()
                 };
-            spectrum.binaryDataArrayList.binaryDataArray[1].encodedLength =
-                (4 * Math.Ceiling((double) spectrum.binaryDataArrayList.binaryDataArray[1]
-                                      .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-            spectrum.binaryDataArrayList.binaryDataArray[1].cvParam =
-                new CVParamType[3];
-            spectrum.binaryDataArrayList.binaryDataArray[1].cvParam[0] =
-                new CVParamType
-                {
-                    accession = "MS:1000515",
-                    name = "intensity array",
-                    cvRef = "MS",
-                    unitCvRef = "MS",
-                    unitAccession = "MS:1000131",
-                    unitName = "number of counts",
-                    value = ""
-                };
-            spectrum.binaryDataArrayList.binaryDataArray[1].cvParam[1] =
-                new CVParamType
-                {
-                    accession = "MS:1000523",
-                    name = "64-bit float",
-                    cvRef = "MS",
-                    value = ""
-                };
-            spectrum.binaryDataArrayList.binaryDataArray[1].cvParam[2] =
-                new CVParamType
-                {
-                    accession = "MS:1000576",
-                    name = "no compression",
-                    cvRef = "MS",
-                    value = ""
-                };
+            }
 
             return spectrum;
         }
@@ -1201,6 +1216,8 @@ namespace ThermoRawFileParser.Writer
             var memoryStream = new MemoryStream();
             foreach (var doubleValue in array)
             {
+                //Console.WriteLine(doubleValue);             
+
                 var doubleValueByteArray = BitConverter.GetBytes(doubleValue);
                 memoryStream.Write(doubleValueByteArray, 0, doubleValueByteArray.Length);
             }

@@ -98,8 +98,16 @@ namespace ThermoRawFileParser
             }
             catch (ArgumentNullException argumentNullException)
             {
-                ShowHelp("Error - usage is (use -option=value for the optional arguments):", null,
-                    optionSet);
+                if (help)
+                {
+                    ShowHelp(" usage is (use -option=value for the optional arguments):", null,
+                        optionSet);
+                }
+                else
+                {
+                    ShowHelp("Error - usage is (use -option=value for the optional arguments):", null,
+                        optionSet);
+                }
             }
 
             if (help)

@@ -38,7 +38,7 @@ namespace ThermoRawFileParserTest
         public void TestMzml()
         {
             // Get temp path for writing the test mzML
-            string tempFilePath = Path.GetTempPath();
+            var tempFilePath = Path.GetTempPath();
 
             var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
             var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mzml, false, false, false,
