@@ -42,7 +42,7 @@ namespace ThermoRawFileParser
                     v => outputFormatString = v
                 },
                 {
-                    "g=|gzip=", "GZip the output file if this flag is specified (without value).",
+                    "g|gzip", "GZip the output file if this flag is specified (without value).",
                     v => gzip = v != null
                 },
                 {
@@ -76,6 +76,7 @@ namespace ThermoRawFileParser
                 var extra = optionSet.Parse(args);
 
                 var outPutFormatInt = int.Parse(outputFormatString);
+
                 if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt))
                 {
                     outputFormat = (OutputFormat) outPutFormatInt;
@@ -93,6 +94,11 @@ namespace ThermoRawFileParser
             catch (OptionException optionException)
             {
                 ShowHelp("Error - usage is (use -option=value for the optional arguments):", optionException,
+                    optionSet);
+            }
+            catch (ArgumentNullException argumentNullException)
+            {
+                ShowHelp("Error - usage is (use -option=value for the optional arguments):", null,
                     optionSet);
             }
 
