@@ -9,17 +9,22 @@ RawFileReader reading tool. Copyright © 2016 by Thermo Fisher Scientific, Inc. 
 
 ## Usage
 ```
-mono ThermoRawFileParser.exe -i=/home/user/data_input/raw_file.raw -o=/home/niels/data_input/output/ -m -c=PXD00001
+mono ThermoRawFileParser.exe -i=/home/user/data_input/raw_file.raw -o=/home/niels/data_input/output/ -f=0 -g -m -c=PXD00001
 ```
-The optional parameters only work in the -option=value format. The metadata file is only created when the `-m` is specified. 
+The optional parameters only work in the -option=value format. The metadata file is only created when the `-m` is specified. For the MGF format, `-p` flag is used to exclude MS2 profile mode data (the MGF files can get big when the MS2 spectra were acquired in profile mode). 
 
 ```
-ThermoRawFileParser.exe usage (use -option=value for the optional arguments)
+ThermoRawFileParser.exe usage is (use -option=value for the optional arguments):
   -h, --help                 Prints out the options.
   -i, --input=VALUE          The raw file input.
   -o, --output=VALUE         The metadata and mgf output directory.
+  -f, --format=VALUE         The output format (0 for MGF, 1 for MzMl)
+  -g, --gzip                 GZip the output file if this flag is specified (
+                               without value).
   -m, --metadata             Write the metadata output file if this flag is
                                specified (without value).
+  -p, --profiledata          Exclude MS2 profile data if this flag is specified
+                               (without value). Only for MGF format!
   -c, --collection[=VALUE]   The optional collection identifier (PXD identifier
                                for example).
   -r, --run[=VALUE]          The optional mass spectrometry run name used in
@@ -46,10 +51,10 @@ docker build --no-cache -t thermorawparser .
 ```
 Run example:
 ```
-docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser mono /home/biodocker/bin/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -m -c=PXD00001
+docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser mono /home/biodocker/bin/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m -c=PXD00001
 ```
 or with the bash script (`ThermoRawFileParser.sh`):
 ```
-docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser /bin/bash /home/biodocker/bin/ThermoRawFileParser.sh -i=/data_input/raw_file.raw -o=/data_input/output/ -m -c=PXD00001
+docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser /bin/bash /home/biodocker/bin/ThermoRawFileParser.sh -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m -c=PXD00001
 ```
 
