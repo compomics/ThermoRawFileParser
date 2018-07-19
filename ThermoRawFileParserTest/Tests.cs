@@ -1,11 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Net;
-using System.Reflection;
-using IO.MzML;
-using MassSpectrometry;
-using MzLibUtil;
+using System.Xml.Serialization;
+using IO.Mgf;
 using NUnit.Framework;
+using ThermoRawFileParser;
+using ThermoRawFileParser.Writer.MzML;
 
 namespace ThermoRawFileParserTest
 {
@@ -13,37 +12,51 @@ namespace ThermoRawFileParserTest
     public class Tests
     {
         [Test]
-        public void Test1()
+        public void TestMgf()
         {
-            //ThermoStaticData staticThermo = ThermoStaticData.LoadAllStaticData(@"spectra.raw");
-            //ThermoDynamicData dynamicThermo = ThermoDynamicData.InitiateDynamicConnection(@"spectra.raw")
-            //Mzml mzmlFile = Mzml.LoadAllStaticData(@"spectra.mzML");           
-            
-            //create temp file
-            String tempFileName = Path.GetTempPath() + "elements.dat";
-            //string tempFileName = Path.GetTempFileName();
-            Console.WriteLine("fdffffffffff" + File.Exists(tempFileName));
-            
+            // Get temp path for writing the test MGF
+            var tempFilePath = Path.GetTempPath();
+
+            var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
+            var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mgf, false, false, false,
+                "coll",
+                "run", "sub");
+
+            var rawFileParser = new RawFileParser();
+            RawFileParser.Parse(parseInput);
+
+            // Do this for the mzLib library issue
+            var tempFileName = Path.GetTempPath() + "elements.dat";
             UsefulProteomicsDatabases.Loaders.LoadElements(tempFileName);
-            
-            double[] intensities1 = new double[] { 120.3, 230.5, 780.6, 490.5};
-            double[] mz1 = new double[] { 16.3, 45.2, 78.5, 112.6 };
-            MzmlMzSpectrum massSpec1 = new MzmlMzSpectrum(mz1, intensities1, false);
-            IMzmlScan[] scans = new IMzmlScan[]{
-                new MzmlScan(1, massSpec1, 1, true, Polarity.Positive, 1, new MzRange(1, 100), "f", MZAnalyzerType.Orbitrap, massSpec1.SumOfAllY, null, "1")
-            };
-            
-            FakeMsDataFile f = new FakeMsDataFile(scans);
-            MzmlMethods.CreateAndWriteMyMzmlWithCalibratedSpectra(f, Path.Combine("/home/niels/Desktop/raw/test", "mzmlWithEmptyScan.mzML"), false);
 
-            Mzml ok = Mzml.LoadAllStaticData(Path.Combine("/home/niels/Desktop/raw/test", "mzmlWithEmptyScan.mzML"));
-            
-            MzmlMethods.CreateAndWriteMyMzmlWithCalibratedSpectra(ok, Path.Combine("/home/niels/Desktop/raw/test", "mzmlWithEmptyScan2.mzML"), false);
+            var mgfData = Mgf.LoadAllStaticData(Path.Combine(tempFilePath, "small.mgf"));
+            Assert.AreEqual(34, mgfData.NumSpectra);
+            Assert.IsEmpty(mgfData.GetMS1Scans());
+        }
 
-            var testFilteringParams = new FilteringParams(200, 0.01, 5, true, true);
-            ok = Mzml.LoadAllStaticData(Path.Combine("/home/niels/Desktop/raw/test", "mzmlWithEmptyScan2.mzML"), testFilteringParams);
-            Assert.True(true);
+        [Test]
+        public void TestMzml()
+        {
+            // Get temp path for writing the test mzML
+            string tempFilePath = Path.GetTempPath();
+
+            var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
+            var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mzml, false, false, false,
+                "coll", "run", "sub");
+
+            var rawFileParser = new RawFileParser();
+            RawFileParser.Parse(parseInput);
+
+            // Deserialize the mzML file
+            var xmlSerializer = new XmlSerializer(typeof(mzMLType));
+            var testMzMl = (mzMLType) xmlSerializer.Deserialize(new FileStream(
+                Path.Combine(tempFilePath, "small.mzML"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+
+            Assert.AreEqual("48", testMzMl.run.spectrumList.count);
+            Assert.AreEqual(48, testMzMl.run.spectrumList.spectrum.Length);
+
+            Assert.AreEqual("1", testMzMl.run.chromatogramList.count);
+            Assert.AreEqual(1, testMzMl.run.chromatogramList.chromatogram.Length);
         }
     }
-
 }

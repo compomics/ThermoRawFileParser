@@ -1,0 +1,18 @@
+Name	Sequences Inducing Cleavage	Sequences Preventing Cleavage	Cleavage Terminus	Cleavage Specificity	PSI-MS Accession Number	PSI-MS Name	Site Regular Expression	Notes
+Arg-C	R		C	full	MS:1001303	Arg-C	(?<=R)(?!P)	
+Asp-N	D		N	full	MS:1001304	Asp-N	(?=[BD])	
+chymotrypsin (don't cleave before proline)	F|W|Y	P|P|P	C|C|C	full	MS:1001306	Chymotrypsin	(?<=[FYWL])(?!P)	
+chymotrypsin (cleave before proline)	F|W|Y		C|C|C	full	MS:1001306	Chymotrypsin	(?<=[FYWL])	
+CNBr	M		C	full	MS:1001307	CNBr	(?<=M)	
+Glu-C	E		C	full				
+Glu-C (with asp)	E|D		C|C	full				
+Lys-C (don't cleave before proline)	K	P	C	full	MS:1001309	Lys-C	(?<=K)(?!P)	
+Lys-C (cleave before proline)	K		C	full	MS:1001310	Lys-C/P	(?<=K)	
+Lys-N	K		N	full				
+semi-trypsin	K|R		C|C	semi	MS:1001313	Trypsin/P	(?<=[KR])	
+trypsin	K|R		C|C	full	MS:1001313	Trypsin/P	(?<=[KR])	
+tryptophan oxidation	W		C	full				
+non-specific	A|C|D|E|F|G|H|I|K|L|M|N|P|Q|R|S|T|U|V|W|Y		none|none|none|none|none|none|none|none|none|none|none|none|none|none|none|none|none|none|none|none|none	full	MS:1001956	unspecific cleavage		
+top-down			none	none	MS:1001955	no cleavage		
+singleN			none	SingleN	MS:1001957	single cleavage		
+singleC			none	SingleC	MS:1001958	single cleavage	

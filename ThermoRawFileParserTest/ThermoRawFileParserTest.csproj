@@ -35,55 +35,67 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Chemistry, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\mzLib.1.0.305\lib\net471\Chemistry.dll</HintPath>
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\Chemistry.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Chromatography, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\mzLib.1.0.305\lib\net471\Chromatography.dll</HintPath>
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\Chromatography.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="DotNetZip, Version=1.10.1.0, Culture=neutral, PublicKeyToken=6583c7c814667745">
+      <HintPath>..\packages\DotNetZip.1.10.1\lib\net20\DotNetZip.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FlashLFQ, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\mzLib.1.0.305\lib\net471\FlashLFQ.dll</HintPath>
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\FlashLFQ.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ManagedThermoHelperLayer, Version=1.0.305.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\mzLib.1.0.305\lib\net471\ManagedThermoHelperLayer.dll</HintPath>
+    <Reference Include="ManagedThermoHelperLayer, Version=1.0.329.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\ManagedThermoHelperLayer.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MassSpectrometry, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\mzLib.1.0.305\lib\net471\MassSpectrometry.dll</HintPath>
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\MassSpectrometry.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MathNet.Numerics, Version=4.4.1.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\MathNet.Numerics.4.4.1\lib\net461\MathNet.Numerics.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="mzIdentML, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\mzLib.1.0.305\lib\net471\mzIdentML.dll</HintPath>
+    <Reference Include="Mgf, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\Mgf.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MzIdentML, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\MzIdentML.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MzLibUtil, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\mzLib.1.0.305\lib\net471\MzLibUtil.dll</HintPath>
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\MzLibUtil.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MzML, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\mzLib.1.0.305\lib\net471\MzML.dll</HintPath>
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\MzML.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.framework, Version=3.10.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb">
       <HintPath>..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="pepXML, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\mzLib.1.0.305\lib\net471\pepXML.dll</HintPath>
+    <Reference Include="PepXML, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\PepXML.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Proteomics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\mzLib.1.0.305\lib\net471\Proteomics.dll</HintPath>
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\Proteomics.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PSI_Interface, Version=1.3.22.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\PSI_Interface.1.3.22\lib\net45\PSI_Interface.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Spectra, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\mzLib.1.0.305\lib\net471\Spectra.dll</HintPath>
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\Spectra.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -92,22 +104,48 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
-    <Reference Include="Thermo, Version=1.0.305.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\mzLib.1.0.305\lib\net471\Thermo.dll</HintPath>
+    <Reference Include="Thermo, Version=1.0.329.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\Thermo.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ThermoFisher.CommonCore.BackgroundSubtraction, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
+      <HintPath>..\packages\ThermoFisher.CommonCore.RawFileReader.4.0.26\lib\ThermoFisher.CommonCore.BackgroundSubtraction.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ThermoFisher.CommonCore.Data, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
+      <HintPath>..\packages\ThermoFisher.CommonCore.RawFileReader.4.0.26\lib\ThermoFisher.CommonCore.Data.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ThermoFisher.CommonCore.MassPrecisionEstimator, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\ThermoFisher.CommonCore.RawFileReader.4.0.26\lib\ThermoFisher.CommonCore.MassPrecisionEstimator.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ThermoFisher.CommonCore.RawFileReader, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
+      <HintPath>..\packages\ThermoFisher.CommonCore.RawFileReader.4.0.26\lib\ThermoFisher.CommonCore.RawFileReader.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="UsefulProteomicsDatabases, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\mzLib.1.0.305\lib\net471\UsefulProteomicsDatabases.dll</HintPath>
+      <HintPath>..\packages\mzLib.1.0.329\lib\net471\UsefulProteomicsDatabases.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FakeMsDataFile.cs" />
     <Compile Include="Tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ThermoRawFileParser.csproj">
+      <Project>{a70ebbb7-8f36-4c29-b886-1b6916047eb7}</Project>
+      <Name>ThermoRawFileParser</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="small.RAW">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -115,9 +153,9 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.10.1\build\NUnit.props'))" />
-    <Error Condition="!Exists('..\packages\mzLib.1.0.305\build\net471\mzLib.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\mzLib.1.0.305\build\net471\mzLib.targets'))" />
+    <Error Condition="!Exists('..\packages\mzLib.1.0.329\build\net471\mzLib.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\mzLib.1.0.329\build\net471\mzLib.targets'))" />
   </Target>
-  <Import Project="..\packages\mzLib.1.0.305\build\net471\mzLib.targets" Condition="Exists('..\packages\mzLib.1.0.305\build\net471\mzLib.targets')" />
+  <Import Project="..\packages\mzLib.1.0.329\build\net471\mzLib.targets" Condition="Exists('..\packages\mzLib.1.0.329\build\net471\mzLib.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
          Other similar extension points exist, see Microsoft.Common.targets.
     <Target Name="BeforeBuild">
