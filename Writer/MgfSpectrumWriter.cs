@@ -18,16 +18,16 @@ namespace ThermoRawFileParser.Writer
         public override void Write(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
             ConfigureWriter(".mgf");
-            using (writer)
+            using (Writer)
             {
-                for (int scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
+                for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
                 {
                     // Get each scan from the RAW file
                     var scan = Scan.FromFile(rawFile, scanNumber);
 
                     // Check to see if the RAW file contains label (high-res) data and if it is present
                     // then look for any data that is out of order
-                    double time = rawFile.RetentionTimeFromScanNumber(scanNumber);
+                    var time = rawFile.RetentionTimeFromScanNumber(scanNumber);
 
                     // Get the scan filter for this scan number
                     var scanFilter = rawFile.GetFilterForScanNumber(scanNumber);
@@ -36,21 +36,21 @@ namespace ThermoRawFileParser.Writer
                     var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
 
                     // Only consider MS2 spectra
-                    if (scanFilter.MSOrder == ThermoFisher.CommonCore.Data.FilterEnums.MSOrderType.Ms2)
+                    if (scanFilter.MSOrder == MSOrderType.Ms2)
                     {
                         if (scanEvent.ScanData == ScanDataType.Centroid ||
                             (scanEvent.ScanData == ScanDataType.Profile && !ParseInput.ExcludeProfileData))
                         {
-                            writer.WriteLine("BEGIN IONS");
-                            writer.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
-                            writer.WriteLine($"SCAN={scanNumber}");
-                            writer.WriteLine($"RTINSECONDS={time * 60}");
+                            Writer.WriteLine("BEGIN IONS");
+                            Writer.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
+                            Writer.WriteLine($"SCAN={scanNumber}");
+                            Writer.WriteLine($"RTINSECONDS={time * 60}");
                             // Get the reaction information for the first precursor
                             try
                             {
                                 var reaction = scanEvent.GetReaction(0);
-                                double precursorMass = reaction.PrecursorMass;
-                                writer.WriteLine($"PEPMASS={precursorMass:F7}");
+                                var precursorMass = reaction.PrecursorMass;
+                                Writer.WriteLine($"PEPMASS={precursorMass:F7}");
                             }
                             catch (ArgumentOutOfRangeException exception)
                             {
@@ -59,13 +59,13 @@ namespace ThermoRawFileParser.Writer
 
                             // trailer extra data list
                             var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
-                            for (int i = 0; i < trailerData.Length; i++)
+                            for (var i = 0; i < trailerData.Length; i++)
                             {
-                                if ((trailerData.Labels[i] == "Charge State:"))
+                                if (trailerData.Labels[i] == "Charge State:")
                                 {
                                     if (Convert.ToInt32(trailerData.Values[i]) > 0)
                                     {
-                                        writer.WriteLine($"CHARGE={trailerData.Values[i]}+");
+                                        Writer.WriteLine($"CHARGE={trailerData.Values[i]}+");
                                     }
                                 }
                             }
@@ -76,9 +76,9 @@ namespace ThermoRawFileParser.Writer
                                 var centroidStream = rawFile.GetCentroidStream(scanNumber, false);
                                 if (scan.CentroidScan.Length > 0)
                                 {
-                                    for (int i = 0; i < centroidStream.Length; i++)
+                                    for (var i = 0; i < centroidStream.Length; i++)
                                     {
-                                        writer.WriteLine(
+                                        Writer.WriteLine(
                                             $"{centroidStream.Masses[i]:F7} {centroidStream.Intensities[i]:F10}");
                                     }
                                 }
@@ -91,14 +91,14 @@ namespace ThermoRawFileParser.Writer
 
                                 // Get the segmented (low res and profile) scan data
                                 var segmentedScan = rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
-                                for (int i = 0; i < segmentedScan.Positions.Length; i++)
+                                for (var i = 0; i < segmentedScan.Positions.Length; i++)
                                 {
-                                    writer.WriteLine(
+                                    Writer.WriteLine(
                                         $"{segmentedScan.Positions[i]:F7} {segmentedScan.Intensities[i]:F10}");
                                 }
                             }
 
-                            writer.WriteLine("END IONS");
+                            Writer.WriteLine("END IONS");
                         }
                     }
                 }

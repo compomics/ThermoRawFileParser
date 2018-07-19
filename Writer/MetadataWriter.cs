@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
 
 namespace ThermoRawFileParser.Writer
@@ -30,16 +29,11 @@ namespace ThermoRawFileParser.Writer
         public void WriteMetada(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
             // Get the start and end time from the RAW file
-            double startTime = rawFile.RunHeaderEx.StartTime;
-            double endTime = rawFile.RunHeaderEx.EndTime;
-
-            var instrumentData = rawFile.GetInstrumentData();
-            //var instrumentMethod = rawFile.GetInstrumentMethod(0);
-            //Device device = rawFile.GetInstrumentType(0);
-            //var instrumentCountOfType = rawFile.GetInstrumentCountOfType(device);
+            var startTime = rawFile.RunHeaderEx.StartTime;
+            var endTime = rawFile.RunHeaderEx.EndTime;
 
             // Collect the metadata
-            List<string> output = new List<string>
+            var output = new List<string>
             {
                 "#General information",
                 "RAW file path=" + rawFile.FileName,

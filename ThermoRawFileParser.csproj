@@ -85,8 +85,9 @@
     <Compile Include="Writer\ISpectrumWriter.cs" />
     <Compile Include="Writer\MetadataWriter.cs" />
     <Compile Include="Writer\MgfSpectrumWriter.cs" />
-    <Compile Include="Writer\MzMLSpectrumWriter.cs" />
+    <Compile Include="Writer\MzMlSpectrumWriter.cs" />
     <Compile Include="Writer\MzML\mzML1_1_1_idx.cs" />
+    <Compile Include="Writer\OntologyMapping.cs" />
     <Compile Include="Writer\SpectrumWriter.cs" />
   </ItemGroup>
   <ItemGroup>

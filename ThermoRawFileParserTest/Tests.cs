@@ -15,18 +15,18 @@ namespace ThermoRawFileParserTest
         public void TestMgf()
         {
             // Get temp path for writing the test MGF
-            String tempFilePath = Path.GetTempPath();
+            var tempFilePath = Path.GetTempPath();
 
             var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
-            ParseInput parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mgf, false, false, false,
+            var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mgf, false, false, false,
                 "coll",
                 "run", "sub");
 
-            RawFileParser rawFileParser = new RawFileParser();
-            rawFileParser.Parse(parseInput);
+            var rawFileParser = new RawFileParser();
+            RawFileParser.Parse(parseInput);
 
             // Do this for the mzLib library issue
-            String tempFileName = Path.GetTempPath() + "elements.dat";
+            var tempFileName = Path.GetTempPath() + "elements.dat";
             UsefulProteomicsDatabases.Loaders.LoadElements(tempFileName);
 
             var mgfData = Mgf.LoadAllStaticData(Path.Combine(tempFilePath, "small.mgf"));
@@ -38,18 +38,18 @@ namespace ThermoRawFileParserTest
         public void TestMzml()
         {
             // Get temp path for writing the test mzML
-            String tempFilePath = Path.GetTempPath();
+            string tempFilePath = Path.GetTempPath();
 
             var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
-            ParseInput parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mzml, false, false, false,
+            var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mzml, false, false, false,
                 "coll", "run", "sub");
 
-            RawFileParser rawFileParser = new RawFileParser();
-            rawFileParser.Parse(parseInput);
+            var rawFileParser = new RawFileParser();
+            RawFileParser.Parse(parseInput);
 
             // Deserialize the mzML file
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof(mzMLType));
-            mzMLType testMzMl = (mzMLType) xmlSerializer.Deserialize(new FileStream(
+            var xmlSerializer = new XmlSerializer(typeof(mzMLType));
+            var testMzMl = (mzMLType) xmlSerializer.Deserialize(new FileStream(
                 Path.Combine(tempFilePath, "small.mzML"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
 
             Assert.AreEqual("48", testMzMl.run.spectrumList.count);

@@ -15,7 +15,7 @@ namespace ThermoRawFileParser
         /// Extract the RAW file metadata and spectra in MGF format. 
         /// </summary>
         /// <param name="parseInput">the parse input object</param>
-        public void Parse(ParseInput parseInput)
+        public static void Parse(ParseInput parseInput)
         {
             // Check to see if the RAW file name was supplied as an argument to the program
             if (string.IsNullOrEmpty(parseInput.RawFilePath))
@@ -68,25 +68,27 @@ namespace ThermoRawFileParser
                 rawFile.SelectInstrument(Device.MS, 1);
 
                 // Get the first and last scan from the RAW file
-                int firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
-                int lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
+                var firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
+                var lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
 
                 if (parseInput.OutputMetadata)
                 {
-                    MetadataWriter metadataWriter = new MetadataWriter(parseInput.OutputDirectory,
+                    var metadataWriter = new MetadataWriter(parseInput.OutputDirectory,
                         parseInput.RawFileNameWithoutExtension);
                     metadataWriter.WriteMetada(rawFile, firstScanNumber, lastScanNumber);
                 }
 
-                SpectrumWriter spectrumWriter = null;
+                SpectrumWriter spectrumWriter;
                 switch (parseInput.OutputFormat)
                 {
                     case OutputFormat.Mgf:
                         spectrumWriter = new MgfSpectrumWriter(parseInput);
                         break;
                     case OutputFormat.Mzml:
-                        spectrumWriter = new MzMLSpectrumWriter(parseInput);
+                        spectrumWriter = new MzMlSpectrumWriter(parseInput);
                         break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
                 spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
 

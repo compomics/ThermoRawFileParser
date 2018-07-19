@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using Mono.Options;
 using ThermoFisher.CommonCore.Data;
-using ThermoFisher.CommonCore.Data.Business;
 
 namespace ThermoRawFileParser
 {
-    public class MainClass
+    public static class MainClass
     {
         private static readonly log4net.ILog Log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -17,16 +14,16 @@ namespace ThermoRawFileParser
             string rawFilePath = null;
             string outputDirectory = null;
             string outputFormatString = null;
-            OutputFormat outputFormat = OutputFormat.Mgf;
-            bool gzip = false;
-            bool outputMetadata = false;
-            bool includeProfileData = false;
+            var outputFormat = OutputFormat.Mgf;
+            var gzip = false;
+            var outputMetadata = false;
+            var includeProfileData = false;
             string collection = null;
             string msRun = null;
             string subFolder = null;
-            bool help = false;
+            var help = false;
 
-            var optionSet = new OptionSet()
+            var optionSet = new OptionSet
             {
                 {
                     "h|help", "Prints out the options.",
@@ -70,16 +67,15 @@ namespace ThermoRawFileParser
                     "s:|subfolder:",
                     "Optional, to disambiguate instances where the same collection has 2 or more MS runs with the same name.",
                     v => subFolder = v
-                },
+                }
             };
 
             try
             {
-                List<string> extra;
                 //parse the command line
-                extra = optionSet.Parse(args);
+                var extra = optionSet.Parse(args);
 
-                int outPutFormatInt = Int32.Parse(outputFormatString);
+                var outPutFormatInt = int.Parse(outputFormatString);
                 if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt))
                 {
                     outputFormat = (OutputFormat) outPutFormatInt;
@@ -110,11 +106,10 @@ namespace ThermoRawFileParser
             {
                 try
                 {
-                    ParseInput parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip,
+                    var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip,
                         outputMetadata,
                         includeProfileData, collection, msRun, subFolder);
-                    RawFileParser rawFileParser = new RawFileParser();
-                    rawFileParser.Parse(parseInput);
+                    RawFileParser.Parse(parseInput);
                 }
                 catch (Exception ex)
                 {
