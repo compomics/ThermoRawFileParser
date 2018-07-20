@@ -57,7 +57,7 @@ namespace ThermoRawFileParser.Writer
         /// <param name="scanNumber">the spectrum scan number</param>
         protected string ConstructSpectrumTitle(int scanNumber)
         {
-            var spectrumTitle = new StringBuilder("mzspec:");
+            var spectrumTitle = new StringBuilder("mzspec=");
 
             if (ParseInput.Collection != null)
             {
@@ -78,7 +78,8 @@ namespace ThermoRawFileParser.Writer
                 spectrumTitle.Append(ParseInput.RawFileName).Append(":");
             }
 
-            spectrumTitle.Append("scan:");
+            spectrumTiple.Append(" ");
+            spectrumTitle.Append("scan=");
             spectrumTitle.Append(scanNumber);
 
             return spectrumTitle.ToString();
