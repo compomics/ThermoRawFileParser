@@ -78,7 +78,7 @@ namespace ThermoRawFileParser.Writer
                 spectrumTitle.Append(ParseInput.RawFileName).Append(":");
             }
 
-            spectrumTiple.Append(" ");
+            spectrumTitle.Append(" ");
             spectrumTitle.Append("scan=");
             spectrumTitle.Append(scanNumber);
 
