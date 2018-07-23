@@ -550,7 +550,8 @@ namespace ThermoRawFileParser.Writer
             var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
             var spectrum = new SpectrumType
             {
-                id = ConstructSpectrumTitle(scanNumber)
+                id = ConstructSpectrumTitle(scanNumber),
+                defaultArrayLength = 0
             };
 
             // Add the ionization type if necessary
@@ -838,6 +839,9 @@ namespace ThermoRawFileParser.Writer
             // M/Z Data
             if (!masses.IsNullOrEmpty())
             {
+                // Set the spectrum default array length
+                spectrum.defaultArrayLength = masses.Length;
+                
                 var massesBinaryData =
                     new BinaryDataArrayType
                     {
@@ -882,6 +886,12 @@ namespace ThermoRawFileParser.Writer
             // Intensity Data
             if (!intensities.IsNullOrEmpty())
             {
+                // Set the spectrum default array length if necessary
+                if (spectrum.defaultArrayLength == 0)
+                {
+                    spectrum.defaultArrayLength = masses.Length;
+                }
+
                 var intensitiesBinaryData =
                     new BinaryDataArrayType
                     {
@@ -1209,15 +1219,13 @@ namespace ThermoRawFileParser.Writer
         /// <summary>
         /// Convert the double array into a byte array
         /// </summary>
-        /// <param name="array">the double array</param>
+        /// <param name="array">the double collection</param>
         /// <returns>the byte array</returns>
         private static byte[] Get64BitArray(IEnumerable<double> array)
         {
             var memoryStream = new MemoryStream();
             foreach (var doubleValue in array)
-            {
-                //Console.WriteLine(doubleValue);             
-
+            {            
                 var doubleValueByteArray = BitConverter.GetBytes(doubleValue);
                 memoryStream.Write(doubleValueByteArray, 0, doubleValueByteArray.Length);
             }
