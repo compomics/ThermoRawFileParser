@@ -78,8 +78,9 @@ namespace ThermoRawFileParser.Writer
                 spectrumTitle.Append(ParseInput.RawFileName).Append(":");
             }
 
-            spectrumTitle.Append(" ");
-            spectrumTitle.Append("scan=");
+            // Use a fixed controller type and number
+            // because only MS detector data is considered for the moment
+            spectrumTitle.Append(" controllerType=0 controllerNumber=1 scan=");
             spectrumTitle.Append(scanNumber);
 
             return spectrumTitle.ToString();

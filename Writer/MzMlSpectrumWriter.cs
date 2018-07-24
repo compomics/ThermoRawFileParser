@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Security.Cryptography;
 using System.Xml.Serialization;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
@@ -104,7 +105,7 @@ namespace ThermoRawFileParser.Writer
             mzMl.cvList = new CVListType
             {
                 count = "3",
-                cv = new CVType[3]
+                cv = new CVType[2]
             };
 
             mzMl.cvList.cv[0] = new CVType
@@ -121,14 +122,6 @@ namespace ThermoRawFileParser.Writer
                 fullName = "Unit Ontology",
                 id = "UO",
                 version = "2018-03-24"
-            };
-
-            mzMl.cvList.cv[2] = new CVType
-            {
-                URI = @"http://purl.obolibrary.org/obo/ncit/releases/2018-06-08/ncit.owl",
-                fullName = "NCI Thesaurus OBO Edition",
-                id = "NCIT",
-                version = "18.05d"
             };
 
             mzMl.fileDescription = new FileDescriptionType
@@ -161,17 +154,17 @@ namespace ThermoRawFileParser.Writer
             mzMl.fileDescription.sourceFileList.sourceFile[0].cvParam[1] = new CVParamType
             {
                 accession = "MS:1000568",
+                name = "SHA-1",
+                cvRef = "MS",
+                value = CalculateChecksum()
+            };
+            mzMl.fileDescription.sourceFileList.sourceFile[0].cvParam[2] = new CVParamType
+            {
+                accession = "MS:1000563",
                 name = "Thermo RAW format",
                 cvRef = "MS",
                 value = ""
             };
-//            mzMl.fileDescription.sourceFileList.sourceFile[0].cvParam[2] = new CVParamType
-//            {
-//                accession = FileChecksumAccessions[myMsDataFile.SourceFile.FileChecksumType],
-//                name = myMsDataFile.SourceFile.FileChecksumType,
-//                cvRef = "MS",
-//                value = myMsDataFile.SourceFile.CheckSum ?? "",
-//            };                                                          
 
             mzMl.fileDescription.fileContent.cvParam = new CVParamType[2];
             // MS1
@@ -270,7 +263,7 @@ namespace ThermoRawFileParser.Writer
             mzMl.referenceableParamGroupList.referenceableParamGroup[0] = new ReferenceableParamGroupType
             {
                 id = "commonInstrumentParams",
-                cvParam = new CVParamType[3]
+                cvParam = new CVParamType[2]
             };
 
             // Instrument model
@@ -294,15 +287,6 @@ namespace ThermoRawFileParser.Writer
                 accession = "MS:1000529",
                 name = "instrument serial number",
                 value = instrumentData.SerialNumber
-            };
-
-            // Instrument software version
-            mzMl.referenceableParamGroupList.referenceableParamGroup[0].cvParam[2] = new CVParamType
-            {
-                cvRef = "NCIT",
-                accession = "NCIT:C111093",
-                name = "Software Version",
-                value = instrumentData.SoftwareVersion
             };
 
             // Add a default analyzer if none were found
@@ -429,13 +413,17 @@ namespace ThermoRawFileParser.Writer
             {
                 if (trace[i].Length > 0)
                 {
+                    // Binary data array list
+                    var binaryData = new List<BinaryDataArrayType>();
+
                     var chromatogram = new ChromatogramType
                     {
                         index = i.ToString(),
                         id = "base_peak_" + i,
-                        defaultArrayLength = trace[i].Times.Count,
+                        defaultArrayLength = 0,
                         binaryDataArrayList = new BinaryDataArrayListType
                         {
+                            count = "2",
                             binaryDataArray = new BinaryDataArrayType[2]
                         },
                         cvParam = new CVParamType[1]
@@ -449,82 +437,110 @@ namespace ThermoRawFileParser.Writer
                     };
 
                     // Chromatogram times
-                    chromatogram.binaryDataArrayList.binaryDataArray[0] =
-                        new BinaryDataArrayType
-                        {
-                            binary = Get64BitArray(trace[i].Times)
-                        };
-                    chromatogram.binaryDataArrayList.binaryDataArray[0].encodedLength =
-                        (4 * Math.Ceiling((double) chromatogram.binaryDataArrayList.binaryDataArray[0]
-                                              .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-                    chromatogram.binaryDataArrayList.binaryDataArray[0].cvParam =
-                        new CVParamType[3];
-                    chromatogram.binaryDataArrayList.binaryDataArray[0].cvParam[0] =
-                        new CVParamType
-                        {
-                            accession = "MS:1000595",
-                            name = "time array",
-                            cvRef = "MS",
-                            unitName = "minute",
-                            value = "",
-                            unitCvRef = "UO",
-                            unitAccession = "UO:0000031"
-                        };
-                    chromatogram.binaryDataArrayList.binaryDataArray[0].cvParam[1] =
-                        new CVParamType
-                        {
-                            accession = "MS:1000523",
-                            name = "64-bit float",
-                            cvRef = "MS",
-                            value = ""
-                        };
-                    chromatogram.binaryDataArrayList.binaryDataArray[0].cvParam[2] =
-                        new CVParamType
-                        {
-                            accession = "MS:1000576",
-                            name = "no compression",
-                            cvRef = "MS",
-                            value = ""
-                        };
+                    if (!trace[i].Times.IsNullOrEmpty())
+                    {
+                        // Set the chromatogram default array length
+                        chromatogram.defaultArrayLength = trace[i].Times.Count;
 
-                    // Chromatogram intensities
-                    chromatogram.binaryDataArrayList.binaryDataArray[1] =
-                        new BinaryDataArrayType
+                        var timesBinaryData =
+                            new BinaryDataArrayType
+                            {
+                                binary = Get64BitArray(trace[i].Times)
+                            };
+                        timesBinaryData.encodedLength =
+                            (4 * Math.Ceiling((double) timesBinaryData
+                                                  .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
+                        timesBinaryData.cvParam =
+                            new CVParamType[3];
+                        timesBinaryData.cvParam[0] =
+                            new CVParamType
+                            {
+                                accession = "MS:1000595",
+                                name = "time array",
+                                cvRef = "MS",
+                                unitName = "minute",
+                                value = "",
+                                unitCvRef = "UO",
+                                unitAccession = "UO:0000031"
+                            };
+                        timesBinaryData.cvParam[1] =
+                            new CVParamType
+                            {
+                                accession = "MS:1000523",
+                                name = "64-bit float",
+                                cvRef = "MS",
+                                value = ""
+                            };
+                        timesBinaryData.cvParam[2] =
+                            new CVParamType
+                            {
+                                accession = "MS:1000576",
+                                name = "no compression",
+                                cvRef = "MS",
+                                value = ""
+                            };
+
+                        binaryData.Add(timesBinaryData);
+                    }
+
+                    // Chromatogram intensities                    
+                    if (!trace[i].Times.IsNullOrEmpty())
+                    {
+                        // Set the spectrum default array length if necessary
+                        if (chromatogram.defaultArrayLength == 0)
                         {
-                            binary = Get64BitArray(trace[i].Intensities)
-                        };
-                    chromatogram.binaryDataArrayList.binaryDataArray[1].encodedLength =
-                        (4 * Math.Ceiling((double) chromatogram.binaryDataArrayList.binaryDataArray[1]
-                                              .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-                    chromatogram.binaryDataArrayList.binaryDataArray[1].cvParam =
-                        new CVParamType[3];
-                    chromatogram.binaryDataArrayList.binaryDataArray[1].cvParam[0] =
-                        new CVParamType
+                            chromatogram.defaultArrayLength = trace[i].Intensities.Count;
+                        }
+
+                        var intensitiesBinaryData =
+                            new BinaryDataArrayType
+                            {
+                                binary = Get64BitArray(trace[i].Intensities)
+                            };
+                        intensitiesBinaryData.encodedLength =
+                            (4 * Math.Ceiling((double) intensitiesBinaryData
+                                                  .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
+                        intensitiesBinaryData.cvParam =
+                            new CVParamType[3];
+                        intensitiesBinaryData.cvParam[0] =
+                            new CVParamType
+                            {
+                                accession = "MS:1000515",
+                                name = "intensity array",
+                                cvRef = "MS",
+                                unitName = "number of counts",
+                                value = "",
+                                unitCvRef = "MS",
+                                unitAccession = "MS:1000131"
+                            };
+                        intensitiesBinaryData.cvParam[1] =
+                            new CVParamType
+                            {
+                                accession = "MS:1000523",
+                                name = "64-bit float",
+                                cvRef = "MS",
+                                value = ""
+                            };
+                        intensitiesBinaryData.cvParam[2] =
+                            new CVParamType
+                            {
+                                accession = "MS:1000576",
+                                name = "no compression",
+                                cvRef = "MS",
+                                value = ""
+                            };
+
+                        binaryData.Add(intensitiesBinaryData);
+                    }
+
+                    if (!binaryData.IsNullOrEmpty())
+                    {
+                        chromatogram.binaryDataArrayList = new BinaryDataArrayListType
                         {
-                            accession = "MS:1000515",
-                            name = "intensity array",
-                            cvRef = "MS",
-                            unitName = "number of counts",
-                            value = "",
-                            unitCvRef = "MS",
-                            unitAccession = "MS:1000131"
+                            count = binaryData.Count.ToString(),
+                            binaryDataArray = binaryData.ToArray()
                         };
-                    chromatogram.binaryDataArrayList.binaryDataArray[1].cvParam[1] =
-                        new CVParamType
-                        {
-                            accession = "MS:1000523",
-                            name = "64-bit float",
-                            cvRef = "MS",
-                            value = ""
-                        };
-                    chromatogram.binaryDataArrayList.binaryDataArray[1].cvParam[2] =
-                        new CVParamType
-                        {
-                            accession = "MS:1000576",
-                            name = "no compression",
-                            cvRef = "MS",
-                            value = ""
-                        };
+                    }
 
                     chromatograms.Add(chromatogram);
                 }
@@ -579,8 +595,6 @@ namespace ThermoRawFileParser.Writer
                     cvRef = "MS"
                 }
             };
-
-            // MS level
 
             // Trailer extra data list
             var trailerData = _rawFile.GetTrailerExtraInformation(scanNumber);
@@ -841,7 +855,7 @@ namespace ThermoRawFileParser.Writer
             {
                 // Set the spectrum default array length
                 spectrum.defaultArrayLength = masses.Length;
-                
+
                 var massesBinaryData =
                     new BinaryDataArrayType
                     {
@@ -1225,13 +1239,29 @@ namespace ThermoRawFileParser.Writer
         {
             var memoryStream = new MemoryStream();
             foreach (var doubleValue in array)
-            {            
+            {
                 var doubleValueByteArray = BitConverter.GetBytes(doubleValue);
                 memoryStream.Write(doubleValueByteArray, 0, doubleValueByteArray.Length);
             }
 
             memoryStream.Position = 0;
             return memoryStream.ToArray();
+        }
+
+        /// <summary>
+        /// Calculate the RAW file checksum
+        /// </summary>
+        /// <returns>the checksum string</returns>
+        private string CalculateChecksum()
+        {
+            using (var sha1 = new SHA1Managed())
+            {
+                using (var stream = File.OpenRead(ParseInput.RawFilePath))
+                {
+                    var hash = sha1.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                }
+            }
         }
     }
 }
