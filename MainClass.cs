@@ -123,18 +123,24 @@ namespace ThermoRawFileParser
                     var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip,
                         outputMetadata,
                         includeProfileData, collection, msRun, subFolder);
-                    RawFileParser.Parse(parseInput);
+                    RawFileParser.Parse(parseInput); 
                 }
                 catch (Exception ex)
                 {
                     Log.Error("An unexpected error occured:");
                     Log.Error(ex.ToString());
 
-                    Environment.Exit(-1);
+                    Environment.Exit(1);
                 }
             }
         }
 
+        /// <summary>
+        /// Show the help message
+        /// </summary>
+        /// <param name="message">the help message</param>
+        /// <param name="optionException">the option exception, can be null</param>
+        /// <param name="optionSet">the option set object</param>
         private static void ShowHelp(string message, OptionException optionException, OptionSet optionSet)
         {
             if (optionException != null)

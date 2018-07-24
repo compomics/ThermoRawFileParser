@@ -20,17 +20,13 @@ namespace ThermoRawFileParser
             // Check to see if the RAW file name was supplied as an argument to the program
             if (string.IsNullOrEmpty(parseInput.RawFilePath))
             {
-                Log.Error("No RAW file specified!");
-
-                return;
+                throw new Exception("No RAW file specified!");
             }
 
             // Check to see if the specified RAW file exists
             if (!File.Exists(parseInput.RawFilePath))
             {
-                Log.Error(@"The file doesn't exist in the specified location - " + parseInput.RawFilePath);
-
-                return;
+                throw new Exception(@"The file doesn't exist in the specified location - " + parseInput.RawFilePath);
             }
 
             Log.Info("Started parsing " + parseInput.RawFilePath);
@@ -42,25 +38,19 @@ namespace ThermoRawFileParser
             {
                 if (!rawFile.IsOpen)
                 {
-                    Log.Error("Unable to access the RAW file using the RawFileReader class!");
-
-                    return;
+                    throw new Exception("Unable to access the RAW file using the RawFileReader class!");
                 }
 
                 // Check for any errors in the RAW file
                 if (rawFile.IsError)
                 {
-                    Log.Error($"Error opening ({rawFile.FileError}) - {parseInput.RawFilePath}");
-
-                    return;
+                    throw new Exception($"Error opening ({rawFile.FileError}) - {parseInput.RawFilePath}");
                 }
 
                 // Check if the RAW file is being acquired
                 if (rawFile.InAcquisition)
                 {
-                    Log.Error("RAW file still being acquired - " + parseInput.RawFilePath);
-
-                    return;
+                    throw new Exception("RAW file still being acquired - " + parseInput.RawFilePath);
                 }
 
                 // Get the number of instruments (controllers) present in the RAW file and set the 
@@ -90,6 +80,7 @@ namespace ThermoRawFileParser
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
+
                 spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
 
                 Log.Info("Finished parsing " + parseInput.RawFilePath);
