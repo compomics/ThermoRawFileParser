@@ -154,7 +154,7 @@ namespace ThermoRawFileParser.Writer
             mzMl.fileDescription.sourceFileList.sourceFile[0].cvParam[1] = new CVParamType
             {
                 accession = "MS:1000568",
-                name = "SHA-1",
+                name = "MD5",
                 cvRef = "MS",
                 value = CalculateChecksum()
             };
@@ -1254,11 +1254,11 @@ namespace ThermoRawFileParser.Writer
         /// <returns>the checksum string</returns>
         private string CalculateChecksum()
         {
-            using (var sha1 = new SHA1Managed())
+            using (var md5 = MD5.Create())
             {
                 using (var stream = File.OpenRead(ParseInput.RawFilePath))
                 {
-                    var hash = sha1.ComputeHash(stream);
+                    var hash = md5.ComputeHash(stream);
                     return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
                 }
             }
