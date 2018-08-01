@@ -76,6 +76,7 @@ namespace ThermoRawFileParser
                     var metadataWriter = new MetadataWriter(parseInput.OutputDirectory,
                         parseInput.RawFileNameWithoutExtension);
                     metadataWriter.WriteMetada(rawFile, firstScanNumber, lastScanNumber);
+                    metadataWriter.WriteJsonMetada(rawFile, firstScanNumber, lastScanNumber);
                 }
 
                 SpectrumWriter spectrumWriter;

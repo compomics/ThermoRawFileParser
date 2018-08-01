@@ -83,6 +83,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RawFileParser.cs" />
     <Compile Include="Writer\ISpectrumWriter.cs" />
+    <Compile Include="Writer\Metadata.cs" />
     <Compile Include="Writer\MetadataWriter.cs" />
     <Compile Include="Writer\MgfSpectrumWriter.cs" />
     <Compile Include="Writer\MzMlSpectrumWriter.cs" />

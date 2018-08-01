@@ -70,8 +70,61 @@ namespace ThermoRawFileParser.Writer
 
             // Write the meta data to file
             File.WriteAllLines(_outputDirectory + "/" + _rawFileNameWithoutExtension + "_metadata", output.ToArray());
-            var json = JsonConvert.SerializeObject(output.ToArray());
-            System.IO.File.WriteAllText(_outputDirectory + "/" + _rawFileNameWithoutExtension + ".json", json);
+           
+        }
+        
+        /// <summary>
+        /// Write the RAW file metadata to file.
+        /// <param name="rawFile">the RAW file object</param>
+        /// <param name="firstScanNumber">the first scan number</param>
+        /// <param name="lastScanNumber">the last scan number</param>
+        /// </summary>
+        public void WriteJsonMetada(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
+        {
+            // Get the start and end time from the RAW file
+            var startTime = rawFile.RunHeaderEx.StartTime;
+            var endTime = rawFile.RunHeaderEx.EndTime;
+            
+            var metadata = new Metadata();
+            
+            metadata.addFileProperty("file-path", rawFile.FileName);
+            metadata.addFileProperty("file-version", rawFile.FileHeader.Revision.ToString());
+            metadata.addFileProperty("creation-date", rawFile.FileHeader.CreationDate.ToString());
+            
+            // Collect the metadata
+            var output = new List<string>
+            {
+                $"Created by=[MS, MS:1000529, created_by, {rawFile.FileHeader.WhoCreatedId}]",
+                "Number of instruments=" + rawFile.InstrumentCount,
+                "Description=" + rawFile.FileHeader.FileDescription,
+                $"Instrument model=[MS, MS:1000494, Thermo Scientific instrument model, {rawFile.GetInstrumentData().Model}]",
+                "Instrument name=" + rawFile.GetInstrumentData().Name,
+                $"Instrument serial number=[MS, MS:1000529, instrument serial number, {rawFile.GetInstrumentData().SerialNumber}]",
+                $"Software version=[NCIT, NCIT:C111093, Software Version, {rawFile.GetInstrumentData().SoftwareVersion}]",
+                "Firmware version=" + rawFile.GetInstrumentData().HardwareVersion,
+                "Units=" + rawFile.GetInstrumentData().Units,
+                $"Mass resolution=[MS, MS:1000011, mass resolution, {rawFile.RunHeaderEx.MassResolution:F3}]",
+                $"Number of scans={rawFile.RunHeaderEx.SpectraCount}",
+                $"Scan range={firstScanNumber};{lastScanNumber}",
+                $"Scan start time=[MS, MS:1000016, scan start time, {startTime:F2}]",
+                $"Time range={startTime:F2};{endTime:F2}",
+                $"Mass range={rawFile.RunHeaderEx.LowMass:F4};{rawFile.RunHeaderEx.HighMass:F4}",
+                "",
+                "#Sample information",
+                "Sample name=" + rawFile.SampleInformation.SampleName,
+                "Sample id=" + rawFile.SampleInformation.SampleId,
+                "Sample type=" + rawFile.SampleInformation.SampleType,
+                "Sample comment=" + rawFile.SampleInformation.Comment,
+                "Sample vial=" + rawFile.SampleInformation.Vial,
+                "Sample volume=" + rawFile.SampleInformation.SampleVolume,
+                "Sample injection volume=" + rawFile.SampleInformation.InjectionVolume,
+                "Sample row number=" + rawFile.SampleInformation.RowNumber,
+                "Sample dilution factor=" + rawFile.SampleInformation.DilutionFactor
+            };
+
+            // Write the meta data to file
+            var json = JsonConvert.SerializeObject(metadata);
+            System.IO.File.WriteAllText(_outputDirectory + "/" + _rawFileNameWithoutExtension + "-metadata.json", json);
 
         }
     }
