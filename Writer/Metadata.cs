@@ -80,13 +80,11 @@ namespace ThermoRawFileParser.Writer
             var dic = new Dictionary<string, string>();
             dic.Add(key, value);
             sampleData.Add(dic);
-        }
-        
-        
+        }     
     }
 
-    public class CVTerm
-    {
+    public class CVTerm{
+        
         private string acc = "";
         private string cvLabelID ="";
         private string cvName = "";
