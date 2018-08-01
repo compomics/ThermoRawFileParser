@@ -141,7 +141,7 @@ namespace ThermoRawFileParser.Writer
                 id = ParseInput.RawFileName,
                 name = ParseInput.RawFileNameWithoutExtension,
                 location = ParseInput.RawFilePath,
-                cvParam = new CVParamType[3]
+                cvParam = new CVParamType[4]
             };
 
             mzMl.fileDescription.sourceFileList.sourceFile[0].cvParam[0] = new CVParamType
@@ -156,14 +156,21 @@ namespace ThermoRawFileParser.Writer
                 accession = "MS:1000568",
                 name = "MD5",
                 cvRef = "MS",
-                value = CalculateChecksum()
+                value = CalculateMD5Checksum()
             };
             mzMl.fileDescription.sourceFileList.sourceFile[0].cvParam[2] = new CVParamType
             {
-                accession = "MS:1000563",
-                name = "Thermo RAW format",
+                accession = "MS:1000568",
+                name = "MD5",
                 cvRef = "MS",
-                value = ""
+                value = CalculateMD5Checksum()
+            };
+            mzMl.fileDescription.sourceFileList.sourceFile[0].cvParam[3] = new CVParamType
+            {
+                accession = "MS:1000569",
+                name = "SHA-1",
+                cvRef = "MS",
+                value = CalculateSHAChecksum()
             };
 
             mzMl.fileDescription.fileContent.cvParam = new CVParamType[2];
@@ -1252,13 +1259,30 @@ namespace ThermoRawFileParser.Writer
         /// Calculate the RAW file checksum
         /// </summary>
         /// <returns>the checksum string</returns>
-        private string CalculateChecksum()
+        private string CalculateMD5Checksum()
         {
             using (var md5 = MD5.Create())
             {
                 using (var stream = File.OpenRead(ParseInput.RawFilePath))
                 {
                     var hash = md5.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                }
+            }
+        }
+        
+        
+        /// <summary>
+        /// Calculate the RAW file checksum
+        /// </summary>
+        /// <returns>the checksum string</returns>
+        private string CalculateSHAChecksum()
+        {
+            using (var sha1 = SHA1.Create())
+            {
+                using (var stream = File.OpenRead(ParseInput.RawFilePath))
+                {
+                    var hash = sha1.ComputeHash(stream);
                     return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
                 }
             }
