@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 using ThermoFisher.CommonCore.Data.Interfaces;
 
 namespace ThermoRawFileParser.Writer
@@ -69,6 +70,9 @@ namespace ThermoRawFileParser.Writer
 
             // Write the meta data to file
             File.WriteAllLines(_outputDirectory + "/" + _rawFileNameWithoutExtension + "_metadata", output.ToArray());
+            var json = JsonConvert.SerializeObject(output.ToArray());
+            System.IO.File.WriteAllText(_outputDirectory + "/" + _rawFileNameWithoutExtension + ".json", json);
+
         }
     }
 }
