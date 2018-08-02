@@ -14,9 +14,10 @@ namespace ThermoRawFileParser
             string rawFilePath = null;
             string outputDirectory = null;
             string outputFormatString = null;
-            var outputFormat = OutputFormat.Mgf;
+            var outputFormat = OutputFormat.NON;
             var gzip = false;
-            var outputMetadata = false;
+            string outputMetadataString = null; 
+            var outputMetadataFormat = MetadataFormat.NON;
             var includeProfileData = false;
             string collection = null;
             string msRun = null;
@@ -34,11 +35,11 @@ namespace ThermoRawFileParser
                     v => rawFilePath = v
                 },
                 {
-                    "o=|output=", "The metadata and mgf output directory.",
+                    "o=|output=", "The output directory.",
                     v => outputDirectory = v
                 },
                 {
-                    "f=|format=", "The output format (0 for MGF, 1 for MzMl)",
+                    "f=|format=", "The output format for the spectra (0 for MGF, 1 for MzMl)",
                     v => outputFormatString = v
                 },
                 {
@@ -46,8 +47,8 @@ namespace ThermoRawFileParser
                     v => gzip = v != null
                 },
                 {
-                    "m|metadata", "Write the metadata output file if this flag is specified (without value).",
-                    v => outputMetadata = v != null
+                    "m|metadata=", "Write the metadata output file if this flag is specified (0 for JSON, 1 for .txt).",
+                    v => outputMetadataString = v 
                 },
                 {
                     "p|profiledata",
@@ -74,16 +75,38 @@ namespace ThermoRawFileParser
             {
                 //parse the command line
                 var extra = optionSet.Parse(args);
+                
+                if(outputMetadataString == null && outputFormatString == null)
+                    throw new OptionException("The parameter -f or -m should be provided", "-f|--format , -m|--format");
 
-                var outPutFormatInt = int.Parse(outputFormatString);
-
-                if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt))
+                if (outputFormatString != null )
                 {
-                    outputFormat = (OutputFormat) outPutFormatInt;
+                    var outPutFormatInt = int.Parse(outputFormatString);
+              
+                    if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt))
+                        outputFormat = (OutputFormat) outPutFormatInt;
+                    else
+                        throw new OptionException("unknown output format", "-f, --format");
+                    
+                    if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt))
+                        outputFormat = (OutputFormat) outPutFormatInt;
+                    else
+                        throw new OptionException("unknown output format", "-f, --format");
                 }
-                else
+                
+                if (outputMetadataString != null)
                 {
-                    throw new OptionException("unknown output format", "-f, --format");
+                    var metadataInt = int.Parse(outputMetadataString);
+               
+                    if (Enum.IsDefined(typeof(MetadataFormat), metadataInt))
+                        outputMetadataFormat = (MetadataFormat) metadataInt;
+                    else
+                        throw new OptionException("unknown output format", "-m, --metadata");
+                   
+                    if (Enum.IsDefined(typeof(MetadataFormat), metadataInt))
+                        outputMetadataFormat = (MetadataFormat) metadataInt;
+                    else
+                        throw new OptionException("unknown output format", "-f, --metadata");
                 }
 
                 if (!extra.IsNullOrEmpty())
@@ -121,7 +144,7 @@ namespace ThermoRawFileParser
                 try
                 {
                     var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip,
-                        outputMetadata,
+                        outputMetadataFormat,
                         includeProfileData, collection, msRun, subFolder);
                     RawFileParser.Parse(parseInput);
                 }

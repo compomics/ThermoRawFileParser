@@ -71,27 +71,32 @@ namespace ThermoRawFileParser
                 var firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
                 var lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
 
-                if (parseInput.OutputMetadata)
+                if (parseInput.OutputMetadata != MetadataFormat.NON)
                 {
-                    var metadataWriter = new MetadataWriter(parseInput.OutputDirectory,
-                        parseInput.RawFileNameWithoutExtension);
-                    metadataWriter.WriteMetada(rawFile, firstScanNumber, lastScanNumber);
-                    metadataWriter.WriteJsonMetada(rawFile, firstScanNumber, lastScanNumber);
+                    var metadataWriter = new MetadataWriter(parseInput.OutputDirectory, parseInput.RawFileNameWithoutExtension);
+                    if(parseInput.OutputMetadata == MetadataFormat.JSON)
+                        metadataWriter.WriteJsonMetada(rawFile, firstScanNumber, lastScanNumber);
+                    if(parseInput.OutputMetadata == MetadataFormat.TXT)
+                        metadataWriter.WriteMetada(rawFile, firstScanNumber, lastScanNumber);
+                    
                 }
 
                 SpectrumWriter spectrumWriter;
-                switch (parseInput.OutputFormat)
+                if (parseInput.OutputFormat != OutputFormat.NON)
                 {
-                    case OutputFormat.Mgf:
-                        spectrumWriter = new MgfSpectrumWriter(parseInput);
-                        break;
-                    case OutputFormat.Mzml:
-                        spectrumWriter = new MzMlSpectrumWriter(parseInput);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    switch (parseInput.OutputFormat)
+                    {
+                        case OutputFormat.Mgf:
+                            spectrumWriter = new MgfSpectrumWriter(parseInput);
+                            spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
+                            break;
+                        case OutputFormat.Mzml:
+                            spectrumWriter = new MzMlSpectrumWriter(parseInput);
+                            spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
+                            break;
+                      }
+                    
                 }
-                spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
 
                 Log.Info("Finished parsing " + parseInput.RawFilePath);
             }
