@@ -27,7 +27,7 @@ namespace ThermoRawFileParser
         /// <summary>
         /// Output the metadata.
         /// </summary>
-        public bool OutputMetadata { get; }
+        public MetadataFormat OutputMetadata { get; }
 
         /// <summary>
         /// Exclude the MS2 spectra in profile mode.
@@ -61,7 +61,7 @@ namespace ThermoRawFileParser
         public string RawFileNameWithoutExtension { get; }
 
         public ParseInput(string rawFilePath, string outputDirectory, OutputFormat outputFormat, bool gzip,
-            bool outputMetadata, bool excludeProfileData, string collection, string msRun, string subFolder)
+            MetadataFormat outputMetadata, bool excludeProfileData, string collection, string msRun, string subFolder)
         {
             RawFilePath = rawFilePath;
             var splittedPath = RawFilePath.Split('/');

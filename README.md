@@ -13,7 +13,7 @@ RawFileReader reading tool. Copyright © 2016 by Thermo Fisher Scientific, Inc. 
 ```
 mono ThermoRawFileParser.exe -i=/home/user/data_input/raw_file.raw -o=/home/niels/data_input/output/ -f=0 -g -m -c=PXD00001
 ```
-The optional parameters only work in the -option=value format. The metadata file is only created when the `-m` is specified. For the MGF format, `-p` flag is used to exclude MS2 profile mode data (the MGF files can get big when the MS2 spectra were acquired in profile mode). 
+The optional parameters only work in the -option=value format. The too can generate the metadata of the file `-m` and the spectra file `-f` or both. For the MGF format, `-p` flag is used to exclude MS2 profile mode data (the MGF files can get big when the MS2 spectra were acquired in profile mode). 
 
 ```
 ThermoRawFileParser.exe usage is (use -option=value for the optional arguments):
@@ -24,7 +24,7 @@ ThermoRawFileParser.exe usage is (use -option=value for the optional arguments):
   -g, --gzip                 GZip the output file if this flag is specified (
                                without value).
   -m, --metadata             Write the metadata output file if this flag is
-                               specified (without value).
+                               specified (0 for JSON, 1 for TXT).
   -p, --profiledata          Exclude MS2 profile data if this flag is specified
                                (without value). Only for MGF format!
   -c, --collection[=VALUE]   The optional collection identifier (PXD identifier
@@ -59,4 +59,3 @@ or with the bash script (`ThermoRawFileParser.sh`):
 ```
 docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser /bin/bash /home/biodocker/bin/ThermoRawFileParser.sh -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m -c=PXD00001
 ```
-
