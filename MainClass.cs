@@ -47,7 +47,7 @@ namespace ThermoRawFileParser
                     v => gzip = v != null
                 },
                 {
-                    "m|metadata=", "Write the metadata output file if this flag is specified (0 for JSON, 1 for .txt).",
+                    "m|metadata=", "Write the metadata output file if this flag is specified (0 for JSON, 1 for TXT).",
                     v => outputMetadataString = v 
                 },
                 {

@@ -77,7 +77,7 @@ namespace ThermoRawFileParser.Writer
             };
 
             // Write the meta data to file
-            File.WriteAllLines(_outputDirectory + "/" + _rawFileNameWithoutExtension + "_metadata", output.ToArray());
+            File.WriteAllLines(_outputDirectory + "/" + _rawFileNameWithoutExtension + "-metadata.txt", output.ToArray());
            
         }
         
