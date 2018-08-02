@@ -116,17 +116,15 @@ namespace ThermoRawFileParser.Writer
             metadata.addScanSetting("start-time", new CVTerm("MS:1000016", "MS", "scan start time",startTime.ToString()));
             metadata.addScanSetting("resolution", new CVTerm("MS:1000011", "MS", "mass resolution", rawFile.RunHeaderEx.MassResolution.ToString()));
             metadata.addScanSetting("tolerance-unit", new CVTerm("UO:0000002", "MS", "mass unit", rawFile.GetInstrumentData().Units.ToString()));
-            metadata.addScanSetting("number-scans", new CVTerm("", "", "", rawFile.RunHeaderEx.SpectraCount.ToString()));
-            metadata.addScanSetting("scan-range", new CVTerm("", "", "", firstScanNumber + ":" + lastScanNumber));
-            metadata.addScanSetting("time-range", new CVTerm("","","", startTime + ":" + endTime));
-            metadata.addScanSetting("mass-range", new CVTerm("", "", "", rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass)); 
+            metadata.addScanSetting("number-scans", rawFile.RunHeaderEx.SpectraCount.ToString());
+            metadata.addScanSetting("scan-range", firstScanNumber + ":" + lastScanNumber);
+            metadata.addScanSetting("time-range", startTime + ":" + endTime);
+            metadata.addScanSetting("mass-range", rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass); 
             
             metadata.addInstrumentProperty("model", new CVTerm("MS:1000494", "MS","Thermo Scientific instrument model", rawFile.GetInstrumentData().Model));
             metadata.addInstrumentProperty("name", new CVTerm("MS:1000496", "MS","instrument attribute", rawFile.GetInstrumentData().Name));
             metadata.addInstrumentProperty("serial", new CVTerm("MS:1000529", "MS", "instrument serial number", rawFile.GetInstrumentData().SerialNumber));
-            
-            metadata.addMSData("ms-number", new CVTerm("","","", ""));
-            
+             
             var msTypes = new Dictionary<string, int>();
             double minTime = 1000000000000000;
             double maxTime = 0;
@@ -134,10 +132,11 @@ namespace ThermoRawFileParser.Writer
             double maxMz = 0;
             double minCharge = 100000000000000;
             double maxCharge = 0;
+            
+            HashSet<CVTerm> fragmentationType = new HashSet<CVTerm>(CVTerm.CvTermComparer);
 
             for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
             {
-                var scan = Scan.FromFile(rawFile, scanNumber);
                 var time = rawFile.RetentionTimeFromScanNumber(scanNumber);
 
                 // Get the scan filter for this scan number
@@ -158,10 +157,13 @@ namespace ThermoRawFileParser.Writer
                 if (time > maxTime)
                     maxTime = time;
                 if (time < minTime)
-                    minTime = time; 
+                    minTime = time;
+
                 
                 if (scanFilter.MSOrder == MSOrderType.Ms2)
                    {
+                       fragmentationType.Add(parseActivationType(scanFilter.GetActivation(0)));
+
                        if (scanEvent.ScanData == ScanDataType.Centroid || (scanEvent.ScanData == ScanDataType.Profile)){
                             try
                             {
@@ -182,9 +184,7 @@ namespace ThermoRawFileParser.Writer
                             for (var i = 0; i < trailerData.Length; i++)
                             {
                                 if (trailerData.Labels[i] == "Charge State:")
-                                {
-
-                                    if (Int32.Parse(trailerData.Values[i]) > maxCharge)
+                                { if (Int32.Parse(trailerData.Values[i]) > maxCharge)
                                         maxCharge = Int32.Parse(trailerData.Values[i]); 
                                     
                                     if (Int32.Parse(trailerData.Values[i]) < minCharge)
@@ -202,6 +202,18 @@ namespace ThermoRawFileParser.Writer
                 minCharge = 0;
             }
             
+            metadata.addMSData("ms-number", msTypes);
+            metadata.addMSData("activation-ypes", fragmentationType);
+            
+            metadata.addMSData("min-charge", minCharge);
+            metadata.addMSData("max-charge", maxCharge);
+            
+            metadata.addMSData("min-Time", minTime);
+            metadata.addMSData("max-Time", maxTime);
+            
+            metadata.addMSData("min-Mz", minMz);
+            metadata.addMSData("max-Mz", maxMz);
+            
             
             // Write the meta data to file
             var json = JsonConvert.SerializeObject(metadata);
@@ -209,5 +221,27 @@ namespace ThermoRawFileParser.Writer
             File.WriteAllText(_outputDirectory + "/" + _rawFileNameWithoutExtension + "-metadata.json", json);
 
         }
+
+        public CVTerm parseActivationType(ActivationType activation)
+        {
+            string word = activation.ToString(); 
+         
+            if (word  == "CollisionInducedDissociation")
+                return new CVTerm("MS:1000133","MS","collision-induced dissociation","CID");
+            if (word == "MultiPhotonDissociation")
+                return new CVTerm("MS:1000435","MS","photodissociation","MPD");
+            if (word == "ElectronCaptureDissociation")
+                return new CVTerm("MS:1000250","MS","electron capture dissociation","ECD");
+            if (word == "ElectronTransferDissociation" || word == "NegativeElectronTransferDissociation")
+                return new CVTerm("MS:1000598","MS","electron transfer dissociation","ETD");
+            if (word == "HigherEnergyCollisionalDissociation")
+                return new CVTerm("MS:1000422","MS","beam-type collision-induced dissociation","HCD");
+            if (word == "PQD")
+                return new CVTerm("MS:1000599","MS","pulsed q dissociation","PQD");
+
+            return new CVTerm("MS:1000044","MS","dissociation method",word);
+        }
     }
+    
+   
 }

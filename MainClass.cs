@@ -98,7 +98,7 @@ namespace ThermoRawFileParser
             }
             catch (ArgumentNullException argumentNullException)
             {
-                if (help)
+                if(help)
                 {
                     ShowHelp(" usage is (use -option=value for the optional arguments):", null,
                         optionSet);
