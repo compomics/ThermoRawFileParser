@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Compression;
 using System.Text;
 using ThermoFisher.CommonCore.Data.Business;
@@ -45,7 +46,7 @@ namespace ThermoRawFileParser.Writer
             else
             {
                 var fileStream = File.Create(ParseInput.OutputDirectory + "//" +
-                                                    ParseInput.RawFileNameWithoutExtension + fullExtension);
+                                             ParseInput.RawFileNameWithoutExtension + fullExtension);
                 var compress = new GZipStream(fileStream, CompressionMode.Compress);
                 Writer = new StreamWriter(compress);
             }
