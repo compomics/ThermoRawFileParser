@@ -8,6 +8,7 @@ namespace ThermoRawFileParser
 {
     public class RawFileParser
     {
+        //test
         private static readonly log4net.ILog Log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
