@@ -2,11 +2,11 @@
 {
     public enum OutputFormat
     {
-        Mgf, Mzml , NON
+        Mgf, Mzml , Parquet, NON
     }
 
     public enum MetadataFormat
     {
-        JSON, TXT , NON 
+        JSON, TXT , PARQUET, NON 
     }
 }
