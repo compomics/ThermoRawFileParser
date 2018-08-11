@@ -8,7 +8,7 @@ namespace ThermoRawFileParser
 {
     public class RawFileParser
     {
-        //test
+
         private static readonly log4net.ILog Log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -85,7 +85,11 @@ namespace ThermoRawFileParser
                             spectrumWriter = new MzMlSpectrumWriter(parseInput);
                             spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
                             break;
-                      }
+                        case OutputFormat.Parquet:
+                            spectrumWriter = new ParquetSpectrumWriter(parseInput);
+                            spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
+                            break;
+                    }
                     
                 }
 
