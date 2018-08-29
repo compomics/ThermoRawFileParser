@@ -96,34 +96,33 @@ namespace ThermoRawFileParser.Writer
             var metadata = new Metadata();
             
             /** File Properties **/
-            metadata.addFileProperty("path", rawFile.FileName);
-            metadata.addFileProperty("version", rawFile.FileHeader.Revision.ToString());
-            metadata.addFileProperty("creation-date", rawFile.FileHeader.CreationDate.ToString());
-            metadata.addFileProperty("number-instruments", rawFile.InstrumentCount.ToString());
-            metadata.addFileProperty("description", rawFile.FileHeader.FileDescription);
+            metadata.addFileProperty(new CVTerm("NCIT:C47922", "NCIT", "Pathname", rawFile.FileName));
+            metadata.addFileProperty(new CVTerm("NCIT:C25714", "NCIT", "Version",  rawFile.FileHeader.Revision.ToString()));
+            metadata.addFileProperty(new CVTerm("NCIT:C69199", "NCIT", "Content Creation Date", rawFile.FileHeader.CreationDate.ToString()));
+            metadata.addFileProperty(new CVTerm("NCIT:C25365", "NCIT", "Description", rawFile.FileHeader.FileDescription));
             
             /** Sample Properties **/
-            metadata.addSampleProperty("name", rawFile.SampleInformation.SampleName);
-            metadata.addSampleProperty("id", rawFile.SampleInformation.SampleId);
-            metadata.addSampleProperty("type", rawFile.SampleInformation.SampleType.ToString());
-            metadata.addSampleProperty("comment", rawFile.SampleInformation.Comment);
-            metadata.addSampleProperty("vial", rawFile.SampleInformation.Vial);
-            metadata.addSampleProperty("volume", rawFile.SampleInformation.SampleVolume.ToString()); 
-            metadata.addSampleProperty("injection-volume", rawFile.SampleInformation.InjectionVolume.ToString());
-            metadata.addSampleProperty("row-number", rawFile.SampleInformation.RowNumber.ToString());
-            metadata.addSampleProperty("dilution-factor", rawFile.SampleInformation.DilutionFactor.ToString());
+//            metadata.addSampleProperty("name", rawFile.SampleInformation.SampleName);
+//            metadata.addSampleProperty("id", rawFile.SampleInformation.SampleId);
+//            metadata.addSampleProperty("type", rawFile.SampleInformation.SampleType.ToString());
+//            metadata.addSampleProperty("comment", rawFile.SampleInformation.Comment);
+//            metadata.addSampleProperty("vial", rawFile.SampleInformation.Vial);
+//            metadata.addSampleProperty("volume", rawFile.SampleInformation.SampleVolume.ToString()); 
+//            metadata.addSampleProperty("injection-volume", rawFile.SampleInformation.InjectionVolume.ToString());
+//            metadata.addSampleProperty("row-number", rawFile.SampleInformation.RowNumber.ToString());
+//            metadata.addSampleProperty("dilution-factor", rawFile.SampleInformation.DilutionFactor.ToString());
             
-            metadata.addScanSetting("start-time", new CVTerm("MS:1000016", "MS", "scan start time",startTime.ToString()));
-            metadata.addScanSetting("resolution", new CVTerm("MS:1000011", "MS", "mass resolution", rawFile.RunHeaderEx.MassResolution.ToString()));
-            metadata.addScanSetting("tolerance-unit", new CVTerm("UO:0000002", "MS", "mass unit", rawFile.GetInstrumentData().Units.ToString()));
-            metadata.addScanSetting("number-scans", rawFile.RunHeaderEx.SpectraCount.ToString());
-            metadata.addScanSetting("scan-range", firstScanNumber + ":" + lastScanNumber);
-            metadata.addScanSetting("time-range", startTime + ":" + endTime);
-            metadata.addScanSetting("mass-range", rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass); 
+            metadata.addScanSetting(new CVTerm("MS:1000016", "MS", "scan start time",startTime.ToString()));
+            metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution", rawFile.RunHeaderEx.MassResolution.ToString()));
+            metadata.addScanSetting(new CVTerm("UO:0000002", "MS", "mass unit", rawFile.GetInstrumentData().Units.ToString()));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000478", "PRIDE","Number of scans", rawFile.RunHeaderEx.SpectraCount.ToString()));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000479", "PRIDE", "MS scan range", firstScanNumber + ":" + lastScanNumber));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000484", "PRIDE", "Retention time range", startTime + ":" + endTime));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000485", "PRIDE", "Mz range", rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass)); 
             
-            metadata.addInstrumentProperty("model", new CVTerm("MS:1000494", "MS","Thermo Scientific instrument model", rawFile.GetInstrumentData().Model));
-            metadata.addInstrumentProperty("name", new CVTerm("MS:1000496", "MS","instrument attribute", rawFile.GetInstrumentData().Name));
-            metadata.addInstrumentProperty("serial", new CVTerm("MS:1000529", "MS", "instrument serial number", rawFile.GetInstrumentData().SerialNumber));
+            metadata.addInstrumentProperty(new CVTerm("MS:1000494", "MS","Thermo Scientific instrument model", rawFile.GetInstrumentData().Model));
+            metadata.addInstrumentProperty(new CVTerm("MS:1000496", "MS","instrument attribute", rawFile.GetInstrumentData().Name));
+            metadata.addInstrumentProperty(new CVTerm("MS:1000529", "MS", "instrument serial number", rawFile.GetInstrumentData().SerialNumber));
              
             var msTypes = new Dictionary<string, int>();
             double minTime = 1000000000000000;
@@ -202,17 +201,28 @@ namespace ThermoRawFileParser.Writer
                 minCharge = 0;
             }
             
-            metadata.addMSData("ms-number", msTypes);
-            metadata.addMSData("activation-ypes", fragmentationType);
             
-            metadata.addMSData("min-charge", minCharge);
-            metadata.addMSData("max-charge", maxCharge);
+            foreach(KeyValuePair<string, int> entry in msTypes)
+            {
+                if(entry.Key.Equals(MSOrderType.Ms.ToString()))
+                    metadata.addMSData(new CVTerm("PRIDE:0000481", "PRIDE", "Number of MS1 spectra", entry.Value.ToString()));
+                if(entry.Key.Equals(MSOrderType.Ms2.ToString()))
+                    metadata.addMSData(new CVTerm("PRIDE:0000482", "PRIDE", "Number of MS2 spectra", entry.Value.ToString()));
+                if(entry.Key.Equals(MSOrderType.Ms3.ToString()))
+                    metadata.addMSData(new CVTerm("PRIDE:0000483", "PRIDE", "Number of MS3 spectra", entry.Value.ToString()));
+                
+            }
+           
+            metadata.addMSData(fragmentationType);
             
-            metadata.addMSData("min-Time", minTime);
-            metadata.addMSData("max-Time", maxTime);
+            metadata.addMSData(new CVTerm("PRIDE:0000472", "PRIDE", "MS min charge", minCharge.ToString()));
+            metadata.addMSData(new CVTerm("PRIDE:0000473", "PRIDE", "MS max charge", maxCharge.ToString()));
             
-            metadata.addMSData("min-Mz", minMz);
-            metadata.addMSData("max-Mz", maxMz);
+            metadata.addMSData(new CVTerm("PRIDE:0000474", "PRIDE", "MS min RT", minTime.ToString()));
+            metadata.addMSData(new CVTerm("PRIDE:0000475", "PRIDE", "MS max RT", maxTime.ToString()));
+            
+            metadata.addMSData(new CVTerm("PRIDE:0000476", "PRIDE", "MS min MZ", minMz.ToString()));
+            metadata.addMSData(new CVTerm("PRIDE:0000477", "PRIDE", "MS min MZ",  maxMz.ToString()));
             
             
             // Write the meta data to file
