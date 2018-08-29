@@ -102,20 +102,20 @@ namespace ThermoRawFileParser.Writer
             metadata.addFileProperty(new CVTerm("NCIT:C25365", "NCIT", "Description", rawFile.FileHeader.FileDescription));
             
             /** Sample Properties **/
-            metadata.addSampleProperty("name", rawFile.SampleInformation.SampleName);
-            metadata.addSampleProperty("id", rawFile.SampleInformation.SampleId);
-            metadata.addSampleProperty("type", rawFile.SampleInformation.SampleType.ToString());
-            metadata.addSampleProperty("comment", rawFile.SampleInformation.Comment);
-            metadata.addSampleProperty("vial", rawFile.SampleInformation.Vial);
-            metadata.addSampleProperty("volume", rawFile.SampleInformation.SampleVolume.ToString()); 
-            metadata.addSampleProperty("injection-volume", rawFile.SampleInformation.InjectionVolume.ToString());
-            metadata.addSampleProperty("row-number", rawFile.SampleInformation.RowNumber.ToString());
-            metadata.addSampleProperty("dilution-factor", rawFile.SampleInformation.DilutionFactor.ToString());
+//            metadata.addSampleProperty("name", rawFile.SampleInformation.SampleName);
+//            metadata.addSampleProperty("id", rawFile.SampleInformation.SampleId);
+//            metadata.addSampleProperty("type", rawFile.SampleInformation.SampleType.ToString());
+//            metadata.addSampleProperty("comment", rawFile.SampleInformation.Comment);
+//            metadata.addSampleProperty("vial", rawFile.SampleInformation.Vial);
+//            metadata.addSampleProperty("volume", rawFile.SampleInformation.SampleVolume.ToString()); 
+//            metadata.addSampleProperty("injection-volume", rawFile.SampleInformation.InjectionVolume.ToString());
+//            metadata.addSampleProperty("row-number", rawFile.SampleInformation.RowNumber.ToString());
+//            metadata.addSampleProperty("dilution-factor", rawFile.SampleInformation.DilutionFactor.ToString());
             
-            metadata.addScanSetting("start-time", new CVTerm("MS:1000016", "MS", "scan start time",startTime.ToString()));
-            metadata.addScanSetting("resolution", new CVTerm("MS:1000011", "MS", "mass resolution", rawFile.RunHeaderEx.MassResolution.ToString()));
-            metadata.addScanSetting("tolerance-unit", new CVTerm("UO:0000002", "MS", "mass unit", rawFile.GetInstrumentData().Units.ToString()));
-            metadata.addScanSetting("number-scans", rawFile.RunHeaderEx.SpectraCount.ToString());
+            metadata.addScanSetting(new CVTerm("MS:1000016", "MS", "scan start time",startTime.ToString()));
+            metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution", rawFile.RunHeaderEx.MassResolution.ToString()));
+            metadata.addScanSetting(new CVTerm("UO:0000002", "MS", "mass unit", rawFile.GetInstrumentData().Units.ToString()));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000478", "PRIDE","Number of scans", rawFile.RunHeaderEx.SpectraCount.ToString()));
             metadata.addScanSetting("scan-range", firstScanNumber + ":" + lastScanNumber);
             metadata.addScanSetting("time-range", startTime + ":" + endTime);
             metadata.addScanSetting("mass-range", rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass); 
