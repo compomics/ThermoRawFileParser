@@ -66,6 +66,11 @@ namespace ThermoRawFileParser.Writer
         {
             msData.Add(value);
         }
+        
+        public void addMSData(HashSet<CVTerm> value)
+        {
+            msData.AddRange(value);
+        }
 
         public void addSampleProperty(CVTerm value)
         {

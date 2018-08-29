@@ -116,9 +116,9 @@ namespace ThermoRawFileParser.Writer
             metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution", rawFile.RunHeaderEx.MassResolution.ToString()));
             metadata.addScanSetting(new CVTerm("UO:0000002", "MS", "mass unit", rawFile.GetInstrumentData().Units.ToString()));
             metadata.addScanSetting(new CVTerm("PRIDE:0000478", "PRIDE","Number of scans", rawFile.RunHeaderEx.SpectraCount.ToString()));
-            metadata.addScanSetting("scan-range", firstScanNumber + ":" + lastScanNumber);
-            metadata.addScanSetting("time-range", startTime + ":" + endTime);
-            metadata.addScanSetting("mass-range", rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass); 
+            metadata.addScanSetting(new CVTerm("PRIDE:0000479", "PRIDE", "MS scan range", firstScanNumber + ":" + lastScanNumber));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000484", "PRIDE", "Retention time range", startTime + ":" + endTime));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000485", "PRIDE", "Mz range", rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass)); 
             
             metadata.addInstrumentProperty(new CVTerm("MS:1000494", "MS","Thermo Scientific instrument model", rawFile.GetInstrumentData().Model));
             metadata.addInstrumentProperty(new CVTerm("MS:1000496", "MS","instrument attribute", rawFile.GetInstrumentData().Name));
@@ -201,17 +201,28 @@ namespace ThermoRawFileParser.Writer
                 minCharge = 0;
             }
             
-            metadata.addMSData("ms-number", msTypes);
-            metadata.addMSData("activation-ypes", fragmentationType);
             
-            metadata.addMSData("min-charge", minCharge);
-            metadata.addMSData("max-charge", maxCharge);
+            foreach(KeyValuePair<string, int> entry in msTypes)
+            {
+                if(entry.Key.Equals(MSOrderType.Ms.ToString()))
+                    metadata.addMSData(new CVTerm("PRIDE:0000481", "PRIDE", "Number of MS1 spectra", entry.Value.ToString()));
+                if(entry.Key.Equals(MSOrderType.Ms2.ToString()))
+                    metadata.addMSData(new CVTerm("PRIDE:0000482", "PRIDE", "Number of MS2 spectra", entry.Value.ToString()));
+                if(entry.Key.Equals(MSOrderType.Ms3.ToString()))
+                    metadata.addMSData(new CVTerm("PRIDE:0000483", "PRIDE", "Number of MS3 spectra", entry.Value.ToString()));
+                
+            }
+           
+            metadata.addMSData(fragmentationType);
             
-            metadata.addMSData("min-Time", minTime);
-            metadata.addMSData("max-Time", maxTime);
+            metadata.addMSData(new CVTerm("PRIDE:0000472", "PRIDE", "MS min charge", minCharge.ToString()));
+            metadata.addMSData(new CVTerm("PRIDE:0000473", "PRIDE", "MS max charge", maxCharge.ToString()));
             
-            metadata.addMSData("min-Mz", minMz);
-            metadata.addMSData("max-Mz", maxMz);
+            metadata.addMSData(new CVTerm("PRIDE:0000474", "PRIDE", "MS min RT", minTime.ToString()));
+            metadata.addMSData(new CVTerm("PRIDE:0000475", "PRIDE", "MS max RT", maxTime.ToString()));
+            
+            metadata.addMSData(new CVTerm("PRIDE:0000476", "PRIDE", "MS min MZ", minMz.ToString()));
+            metadata.addMSData(new CVTerm("PRIDE:0000477", "PRIDE", "MS min MZ",  maxMz.ToString()));
             
             
             // Write the meta data to file
