@@ -96,11 +96,10 @@ namespace ThermoRawFileParser.Writer
             var metadata = new Metadata();
             
             /** File Properties **/
-            metadata.addFileProperty("path", rawFile.FileName);
-            metadata.addFileProperty("version", rawFile.FileHeader.Revision.ToString());
-            metadata.addFileProperty("creation-date", rawFile.FileHeader.CreationDate.ToString());
-            metadata.addFileProperty("number-instruments", rawFile.InstrumentCount.ToString());
-            metadata.addFileProperty("description", rawFile.FileHeader.FileDescription);
+            metadata.addFileProperty(new CVTerm("NCIT:C47922", "NCIT", "Pathname", rawFile.FileName));
+            metadata.addFileProperty(new CVTerm("NCIT:C25714", "NCIT", "Version",  rawFile.FileHeader.Revision.ToString()));
+            metadata.addFileProperty(new CVTerm("NCIT:C69199", "NCIT", "Content Creation Date", rawFile.FileHeader.CreationDate.ToString()));
+            metadata.addFileProperty(new CVTerm("NCIT:C25365", "NCIT", "Description", rawFile.FileHeader.FileDescription));
             
             /** Sample Properties **/
             metadata.addSampleProperty("name", rawFile.SampleInformation.SampleName);
@@ -121,9 +120,9 @@ namespace ThermoRawFileParser.Writer
             metadata.addScanSetting("time-range", startTime + ":" + endTime);
             metadata.addScanSetting("mass-range", rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass); 
             
-            metadata.addInstrumentProperty("model", new CVTerm("MS:1000494", "MS","Thermo Scientific instrument model", rawFile.GetInstrumentData().Model));
-            metadata.addInstrumentProperty("name", new CVTerm("MS:1000496", "MS","instrument attribute", rawFile.GetInstrumentData().Name));
-            metadata.addInstrumentProperty("serial", new CVTerm("MS:1000529", "MS", "instrument serial number", rawFile.GetInstrumentData().SerialNumber));
+            metadata.addInstrumentProperty(new CVTerm("MS:1000494", "MS","Thermo Scientific instrument model", rawFile.GetInstrumentData().Model));
+            metadata.addInstrumentProperty(new CVTerm("MS:1000496", "MS","instrument attribute", rawFile.GetInstrumentData().Name));
+            metadata.addInstrumentProperty(new CVTerm("MS:1000529", "MS", "instrument serial number", rawFile.GetInstrumentData().SerialNumber));
              
             var msTypes = new Dictionary<string, int>();
             double minTime = 1000000000000000;

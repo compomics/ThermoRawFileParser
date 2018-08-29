@@ -7,79 +7,69 @@ namespace ThermoRawFileParser.Writer
     public class Metadata
     {
         /** The general Path properties contains: RAW path , RAW file version **/
-        private List<Dictionary<string, string>> fileProperties = new List<Dictionary<string, string>>();
+        private List<CVTerm> fileProperties = new List<CVTerm>();
 
         /** The Instruments properties contains the information of the instrument **/ 
-        private List<Dictionary<string, CVTerm>> instrumentProperties = new List<Dictionary<string, CVTerm>>();
+        private List<CVTerm> instrumentProperties = new List<CVTerm>();
 
         /** Scan Settings **/
-        private List<Dictionary<String, Object>> scanSettings = new List<Dictionary<string, Object>>();
+        private List<CVTerm> scanSettings = new List<CVTerm>();
 
         /** MS and MS data including number of MS and MS/MS **/
-        private List<Dictionary<String, Object>> msData = new List<Dictionary<string, Object>>(); 
+        private List<CVTerm> msData = new List<CVTerm>(); 
         
-        private List<Dictionary<string, string>> sampleData = new List<Dictionary<string, string>>();
+        private List<CVTerm> sampleData = new List<CVTerm>();
         
         /**
          * Default constructor 
          */
         public Metadata(){}
 
-        public Metadata(List<Dictionary<string, string>> fileProperties,
-            List<Dictionary<string, CVTerm>> instrumentProperties,
-            List<Dictionary<string, Object>> msData)
+        public Metadata(List<CVTerm> fileProperties,
+            List<CVTerm> instrumentProperties,
+            List<CVTerm> msData)
         {
             this.fileProperties = fileProperties;
             this.instrumentProperties = instrumentProperties;
             this.msData = msData;
         }
 
-        public List<Dictionary<string, string>> FileProperties => fileProperties;
+        public List<CVTerm> FileProperties => fileProperties;
 
-        public List<Dictionary<string, CVTerm>> InstrumentProperties => instrumentProperties;
+        public List<CVTerm> InstrumentProperties => instrumentProperties;
 
-        public List<Dictionary<string, Object>> MsData => msData;
+        public List<CVTerm> MsData => msData;
 
-        public List<Dictionary<string, string>> SampleData => sampleData;
+        public List<CVTerm> SampleData => sampleData;
 
-        public List<Dictionary<string, Object>> ScanSettings => scanSettings;
+        public List<CVTerm> ScanSettings => scanSettings;
 
         /**
          * Add a File property to the fileProperties 
          */
-        public void addFileProperty(String key, String value)
+        public void addFileProperty(CVTerm value)
         {
-            var dic = new Dictionary<string, string>();
-            dic.Add(key, value);
-            fileProperties.Add(dic);
+            fileProperties.Add(value);
         }
 
-        public void addInstrumentProperty(string key, CVTerm value)
+        public void addInstrumentProperty( CVTerm value)
         {
-            var dic = new Dictionary<string, CVTerm>();
-            dic.Add(key, value);
-            instrumentProperties.Add(dic);
+            instrumentProperties.Add(value);
         }
 
-        public void addScanSetting(string key, Object value)
+        public void addScanSetting(CVTerm value)
         {
-            var dic = new Dictionary<string, Object>();
-            dic.Add(key, value);
-            scanSettings.Add(dic);
+            scanSettings.Add(value);
         }
 
-        public void addMSData(string key, Object value)
+        public void addMSData(CVTerm value)
         {
-            var dic = new Dictionary<string, Object>();
-            dic.Add(key, value);
-            msData.Add(dic);
+            msData.Add(value);
         }
 
-        public void addSampleProperty(string key, string value)
+        public void addSampleProperty(CVTerm value)
         {
-            var dic = new Dictionary<string, string>();
-            dic.Add(key, value);
-            sampleData.Add(dic);
+            sampleData.Add(value);
         }     
     }
 
