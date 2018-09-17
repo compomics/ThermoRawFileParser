@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using ThermoRawFileParser.Writer.MzML;
 
 namespace ThermoRawFileParser.Writer
@@ -61,6 +62,13 @@ namespace ThermoRawFileParser.Writer
         {
             scanSettings.Add(value);
         }
+        
+        public void addScanSetting(ICollection<CVTerm> value)
+        {
+            scanSettings.AddRange(value);
+        }
+
+        
 
         public void addMSData(CVTerm value)
         {
