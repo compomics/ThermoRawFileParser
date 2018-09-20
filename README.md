@@ -19,12 +19,12 @@ The optional parameters only work in the -option=value format. The too can gener
 ThermoRawFileParser.exe usage is (use -option=value for the optional arguments):
   -h, --help                 Prints out the options.
   -i, --input=VALUE          The raw file input.
-  -o, --output=VALUE         The metadata and mgf output directory.
-  -f, --format=VALUE         The output format (0 for MGF, 1 for MzMl)
+  -o, --output=VALUE         The output directory.
+  -f, --format=VALUE         The output format for the spectra (0 for MGF, 1
+                               for MzMl, 2 for Parquet)
+  -m, --metadata=VALUE       The metadata output format (0 for JSON, 1 for TXT).
   -g, --gzip                 GZip the output file if this flag is specified (
                                without value).
-  -m, --metadata             Write the metadata output file if this flag is
-                               specified (0 for JSON, 1 for TXT).
   -p, --profiledata          Exclude MS2 profile data if this flag is specified
                                (without value). Only for MGF format!
   -c, --collection[=VALUE]   The optional collection identifier (PXD identifier
