@@ -1,8 +1,9 @@
 # ThermoRawFileParser
 
-Wrapper around the .net (C#) ThermoFisher ThermoRawFileReader library for running on Linux with mono. It takes a thermo RAW file as input and outputs a metadata file and the spectra in 2 possible formats
+Wrapper around the .net (C#) ThermoFisher ThermoRawFileReader library for running on Linux with mono. It takes a thermo RAW file as input and outputs a metadata file and the spectra in 3 possible formats
 * MGF: only MS2 spectra
 * mzML: both MS1 and MS2 spectra
+* Apache Parquet: under development
 
 RawFileReader reading tool. Copyright © 2016 by Thermo Fisher Scientific, Inc. All rights reserved
 
