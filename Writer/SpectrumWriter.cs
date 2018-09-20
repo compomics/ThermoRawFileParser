@@ -2,6 +2,7 @@
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
 
@@ -60,17 +61,17 @@ namespace ThermoRawFileParser.Writer
         {
             var spectrumTitle = new StringBuilder("mzspec=");
 
-            if (ParseInput.Collection != null)
+            if (!ParseInput.Collection.IsNullOrEmpty())
             {
                 spectrumTitle.Append(ParseInput.Collection).Append(":");
             }
 
-            if (ParseInput.SubFolder != null)
+            if (!ParseInput.SubFolder.IsNullOrEmpty())
             {
                 spectrumTitle.Append(ParseInput.SubFolder).Append(":");
             }
 
-            if (ParseInput.MsRun != null)
+            if (!ParseInput.MsRun.IsNullOrEmpty())
             {
                 spectrumTitle.Append(ParseInput.MsRun).Append(":");
             }

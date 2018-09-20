@@ -26,6 +26,7 @@ namespace ThermoRawFileParser.Writer
         private readonly Dictionary<MassAnalyzerType, string> _massAnalyzers =
             new Dictionary<MassAnalyzerType, string>();
 
+        // Dictionary to keep track of the different ionization modes (key: Thermo IonizationModeType; value: the reference string)
         private readonly Dictionary<IonizationModeType, CVParamType> _ionizationTypes =
             new Dictionary<IonizationModeType, CVParamType>();
 
@@ -97,43 +98,100 @@ namespace ThermoRawFileParser.Writer
             var mzMl = new mzMLType
             {
                 version = "1.1.0",
-                cvList = new CVListType(),
                 id = ParseInput.RawFileNameWithoutExtension
             };
 
-            // Add the controlled vocabularies
+            // Add the controlled vocabularies     
+            var cvs = new List<CVType>
+            {
+                new CVType
+                {
+                    URI = @"http://purl.obolibrary.org/obo/ms.owl",
+                    fullName = "Mass spectrometry ontology",
+                    id = "MS",
+                    version = "20-06-2018"
+                },
+                new CVType
+                {
+                    URI = @"http://purl.obolibrary.org/obo/uo.owl",
+                    fullName = "Unit Ontology",
+                    id = "UO",
+                    version = "2018-03-24"
+                }
+            };
+
             mzMl.cvList = new CVListType
             {
-                count = "3",
-                cv = new CVType[2]
+                count = cvs.Count.ToString(),
+                cv = cvs.ToArray()
             };
 
-            mzMl.cvList.cv[0] = new CVType
-            {
-                URI = @"http://purl.obolibrary.org/obo/ms.owl",
-                fullName = "Mass spectrometry ontology",
-                id = "MS",
-                version = "20-06-2018"
-            };
-
-            mzMl.cvList.cv[1] = new CVType
-            {
-                URI = @"http://purl.obolibrary.org/obo/uo.owl",
-                fullName = "Unit Ontology",
-                id = "UO",
-                version = "2018-03-24"
-            };
-
+            // File description
             mzMl.fileDescription = new FileDescriptionType
             {
                 fileContent = new ParamGroupType(),
                 sourceFileList = new SourceFileListType()
             };
 
+            // File description content
+            var fileContentCvParams = new List<CVParamType>
+            {
+                // MS1
+                new CVParamType
+                {
+                    accession = "MS:1000579", // MS1 Data
+                    name = "MS1 spectrum",
+                    cvRef = "MS",
+                    value = ""
+                },
+                // MS2
+                new CVParamType
+                {
+                    accession = "MS:1000580", // MSn Data
+                    name = "MSn spectrum",
+                    cvRef = "MS",
+                    value = ""
+                }
+            };
+            mzMl.fileDescription.fileContent.cvParam = fileContentCvParams.ToArray();
+
+            // File description source files
             mzMl.fileDescription.sourceFileList = new SourceFileListType
             {
                 count = "1",
                 sourceFile = new SourceFileType[1]
+            };
+
+            var sourceFileCvParams = new List<CVParamType>
+            {
+                new CVParamType
+                {
+                    accession = "MS:1000768",
+                    name = "Thermo nativeID format",
+                    cvRef = "MS",
+                    value = ""
+                },
+                new CVParamType
+                {
+                    accession = "MS:1000563",
+                    name = "Thermo RAW format",
+                    cvRef = "MS",
+                    value = ""
+                },
+                //new CVParamType
+                //{
+                //    accession = "MS:1000568",
+                //    name = "MD5",
+                //    cvRef = "MS",
+                //    value = CalculateMD5Checksum()
+                //},
+                new CVParamType
+                {
+                    accession = "MS:1000569",
+                    name = "SHA-1",
+                    cvRef = "MS",
+                    value = CalculateSHAChecksum()
+                }
             };
 
             mzMl.fileDescription.sourceFileList.sourceFile[0] = new SourceFileType
@@ -141,61 +199,14 @@ namespace ThermoRawFileParser.Writer
                 id = ParseInput.RawFileName,
                 name = ParseInput.RawFileNameWithoutExtension,
                 location = ParseInput.RawFilePath,
-                cvParam = new CVParamType[4]
+                cvParam = sourceFileCvParams.ToArray()
             };
 
-            mzMl.fileDescription.sourceFileList.sourceFile[0].cvParam[0] = new CVParamType
-            {
-                accession = "MS:1000768",
-                name = "Thermo nativeID format",
-                cvRef = "MS",
-                value = ""
-            };
-            mzMl.fileDescription.sourceFileList.sourceFile[0].cvParam[1] = new CVParamType
-            {
-                accession = "MS:1000568",
-                name = "MD5",
-                cvRef = "MS",
-                value = CalculateMD5Checksum()
-            };
-            mzMl.fileDescription.sourceFileList.sourceFile[0].cvParam[2] = new CVParamType
-            {
-                accession = "MS:1000568",
-                name = "MD5",
-                cvRef = "MS",
-                value = CalculateMD5Checksum()
-            };
-            mzMl.fileDescription.sourceFileList.sourceFile[0].cvParam[3] = new CVParamType
-            {
-                accession = "MS:1000569",
-                name = "SHA-1",
-                cvRef = "MS",
-                value = CalculateSHAChecksum()
-            };
-
-            mzMl.fileDescription.fileContent.cvParam = new CVParamType[2];
-            // MS1
-            mzMl.fileDescription.fileContent.cvParam[0] = new CVParamType
-            {
-                accession = "MS:1000579", // MS1 Data
-                name = "MS1 spectrum",
-                cvRef = "MS",
-                value = ""
-            };
-            // MS2
-            mzMl.fileDescription.fileContent.cvParam[1] = new CVParamType
-            {
-                accession = "MS:1000580", // MSn Data
-                name = "MSn spectrum",
-                cvRef = "MS",
-                value = ""
-            };
-
-            // Software
+            // Software            
             mzMl.softwareList = new SoftwareListType
             {
                 count = "1",
-                software = new SoftwareType[2]
+                software = new SoftwareType[1]
             };
 
             mzMl.softwareList.software[0] = new SoftwareType
@@ -310,6 +321,7 @@ namespace ThermoRawFileParser.Writer
                 count = _massAnalyzers.Count.ToString(),
                 instrumentConfiguration = new InstrumentConfigurationType[_massAnalyzers.Count]
             };
+
             // Make a new instrument configuration for each analyzer
             var massAnalyzerIndex = 0;
             foreach (var massAnalyzer in _massAnalyzers)
@@ -326,7 +338,6 @@ namespace ThermoRawFileParser.Writer
                     {
                         @ref = "commonInstrumentParams"
                     };
-
                 instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList =
                     new ComponentListType
                     {
@@ -361,7 +372,7 @@ namespace ThermoRawFileParser.Writer
                 }
 
                 // Instrument analyzer             
-                // Mass analyer type                    
+                // Mass analyzer type                    
                 instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.analyzer[0] =
                     new AnalyzerComponentType
                     {
@@ -373,23 +384,28 @@ namespace ThermoRawFileParser.Writer
                     OntologyMapping.MassAnalyzerTypes[massAnalyzer.Key];
                 index++;
 
-                // Instrument detector
-                // TODO find a detector type
+                // Instrument detector                
                 instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.detector[0] =
                     new DetectorComponentType
                     {
                         order = index + 1,
                         cvParam = new CVParamType[1]
                     };
+                
+                // Try to map the instrument to the detector
+                var detectorCvParams = OntologyMapping.InstrumentToDetectors[instrumentModel.accession];
+                CVParamType detectorCvParam;
+                if (massAnalyzerIndex < detectorCvParams.Count)
+                {
+                    detectorCvParam = detectorCvParams[massAnalyzerIndex];
+                }
+                else
+                {
+                    detectorCvParam = OntologyMapping.InstrumentToDetectors["MS:1000483"][0];
+                }
+
                 instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.detector[0]
-                        .cvParam[0] =
-                    new CVParamType
-                    {
-                        cvRef = "MS",
-                        accession = "MS:1000026",
-                        name = "detector type",
-                        value = ""
-                    };
+                    .cvParam[0] = detectorCvParam;
                 massAnalyzerIndex++;
             }
 
@@ -1270,8 +1286,8 @@ namespace ThermoRawFileParser.Writer
                 }
             }
         }
-        
-        
+
+
         /// <summary>
         /// Calculate the RAW file checksum
         /// </summary>
