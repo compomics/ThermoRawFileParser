@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
@@ -100,17 +101,7 @@ namespace ThermoRawFileParser.Writer
             metadata.addFileProperty(new CVTerm("NCIT:C25714", "NCIT", "Version",  rawFile.FileHeader.Revision.ToString()));
             metadata.addFileProperty(new CVTerm("NCIT:C69199", "NCIT", "Content Creation Date", rawFile.FileHeader.CreationDate.ToString()));
             metadata.addFileProperty(new CVTerm("NCIT:C25365", "NCIT", "Description", rawFile.FileHeader.FileDescription));
-            
-            /** Sample Properties **/
-//            metadata.addSampleProperty("name", rawFile.SampleInformation.SampleName);
-//            metadata.addSampleProperty("id", rawFile.SampleInformation.SampleId);
-//            metadata.addSampleProperty("type", rawFile.SampleInformation.SampleType.ToString());
-//            metadata.addSampleProperty("comment", rawFile.SampleInformation.Comment);
-//            metadata.addSampleProperty("vial", rawFile.SampleInformation.Vial);
-//            metadata.addSampleProperty("volume", rawFile.SampleInformation.SampleVolume.ToString()); 
-//            metadata.addSampleProperty("injection-volume", rawFile.SampleInformation.InjectionVolume.ToString());
-//            metadata.addSampleProperty("row-number", rawFile.SampleInformation.RowNumber.ToString());
-//            metadata.addSampleProperty("dilution-factor", rawFile.SampleInformation.DilutionFactor.ToString());
+           
             
             metadata.addScanSetting(new CVTerm("MS:1000016", "MS", "scan start time",startTime.ToString()));
             metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution", rawFile.RunHeaderEx.MassResolution.ToString()));
@@ -132,7 +123,7 @@ namespace ThermoRawFileParser.Writer
             double minCharge = 100000000000000;
             double maxCharge = 0;
             
-            HashSet<CVTerm> fragmentationType = new HashSet<CVTerm>(CVTerm.CvTermComparer);
+            ICollection<CVTerm> fragmentationType = new HashSet<CVTerm>(CVTerm.CvTermComparer);
 
             for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
             {
@@ -213,7 +204,7 @@ namespace ThermoRawFileParser.Writer
                 
             }
            
-            metadata.addMSData(fragmentationType);
+            metadata.addScanSetting(fragmentationType);
             
             metadata.addMSData(new CVTerm("PRIDE:0000472", "PRIDE", "MS min charge", minCharge.ToString()));
             metadata.addMSData(new CVTerm("PRIDE:0000473", "PRIDE", "MS max charge", maxCharge.ToString()));
