@@ -12,7 +12,7 @@ RawFileReader reading tool. Copyright © 2016 by Thermo Fisher Scientific, Inc. 
 
 ## Usage
 ```
-mono ThermoRawFileParser.exe -i=/home/user/data_input/raw_file.raw -o=/home/niels/data_input/output/ -f=0 -g -m -c=PXD00001
+mono ThermoRawFileParser.exe -i=/home/user/data_input/raw_file.raw -o=/home/user/data_input/output/ -f=0 -g -m -c=PXD00001
 ```
 The optional parameters only work in the -option=value format. The too can generate the metadata of the file `-m` and the spectra file `-f` or both. For the MGF format, `-p` flag is used to exclude MS2 profile mode data (the MGF files can get big when the MS2 spectra were acquired in profile mode). 
 
