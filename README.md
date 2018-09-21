@@ -48,15 +48,28 @@ The default log file is `ThermoRawFileParser.log`. The log settings can be chang
 
 ## Docker
 
-Use the docker file to build an image. It fetches to source code from github and builds it.
+### Basic docker
+
+Use the `Dockerfile_basic` docker file to build an image. It fetches to source code from github and builds it.
+```
+docker build --no-cache -t thermorawparser -f Dockerfile_basic .
+```
+Run example:
+```
+docker run -v /home/user/raw:/data_input -i -t thermorawparser mono /src/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0 -c=PXD00001
+```
+
+### Biocontainers docker
+
+Use the `Dockerfile` docker file to build an image. It fetches to source code from github and builds it.
 ```
 docker build --no-cache -t thermorawparser .
 ```
 Run example:
 ```
-docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser mono /home/biodocker/bin/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m -c=PXD00001
+docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser mono /home/biodocker/bin/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0 -c=PXD00001
 ```
 or with the bash script (`ThermoRawFileParser.sh`):
 ```
-docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser /bin/bash /home/biodocker/bin/ThermoRawFileParser.sh -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m -c=PXD00001
+docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser /bin/bash /home/biodocker/bin/ThermoRawFileParser.sh -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0 -c=PXD00001
 ```
