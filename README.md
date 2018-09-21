@@ -38,6 +38,10 @@ ThermoRawFileParser.exe usage is (use -option=value for the optional arguments):
                                name.
 ```
 
+## Download
+
+Click [here](https://github.com/compomics/ThermoRawFileParser/releases) to go to the release page.
+
 ## Build
 
 If you want to build the project using nuget, put the ThermoFisher.CommonCore.RawFileReader.4.0.26.nupkg package in your local nuget directory.
