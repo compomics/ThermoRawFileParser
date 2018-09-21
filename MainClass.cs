@@ -163,28 +163,19 @@ namespace ThermoRawFileParser
                 }
             }
 
-            if (help)
+            try
             {
-                const string usageMessage =
-                    "ThermoRawFileParser.exe usage (use -option=value for the optional arguments)";
-                ShowHelp(usageMessage, null, optionSet);
+                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip,
+                    outputMetadataFormat,
+                    includeProfileData, collection, msRun, subFolder);
+                RawFileParser.Parse(parseInput);
             }
-            else
+            catch (Exception ex)
             {
-                try
-                {
-                    var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip,
-                        outputMetadataFormat,
-                        includeProfileData, collection, msRun, subFolder);
-                    RawFileParser.Parse(parseInput);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("An unexpected error occured:");
-                    Log.Error(ex.ToString());
+                Log.Error("An unexpected error occured:");
+                Log.Error(ex.ToString());
 
-                    Environment.Exit(1);
-                }
+                Environment.Exit(1);
             }
         }
 
