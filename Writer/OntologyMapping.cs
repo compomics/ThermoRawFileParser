@@ -260,6 +260,15 @@ namespace ThermoRawFileParser.Writer
                         cvRef = "MS",
                         value = ""
                     }
+                },
+                {
+                    "Q Exactive Plus Orbitrap", new CVParamType
+                    {
+                        accession = "MS:1001911",
+                        name = "Q Exactive",
+                        cvRef = "MS",
+                        value = ""
+                    }
                 }
             };
 

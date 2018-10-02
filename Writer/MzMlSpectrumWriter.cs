@@ -9,6 +9,7 @@ using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
 using ThermoRawFileParser.Writer.MzML;
+using zlib;
 using CVParamType = ThermoRawFileParser.Writer.MzML.CVParamType;
 using SourceFileType = ThermoRawFileParser.Writer.MzML.SourceFileType;
 using UserParamType = ThermoRawFileParser.Writer.MzML.UserParamType;
@@ -106,17 +107,18 @@ namespace ThermoRawFileParser.Writer
             {
                 new CVType
                 {
-                    URI = @"http://purl.obolibrary.org/obo/ms.owl",
+                    URI = @"https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo",
                     fullName = "Mass spectrometry ontology",
                     id = "MS",
-                    version = "20-06-2018"
+                    version = "4.1.15"
                 },
                 new CVType
                 {
-                    URI = @"http://purl.obolibrary.org/obo/uo.owl",
+                    URI =
+                        @"https://raw.githubusercontent.com/bio-ontology-research-group/unit-ontology/master/unit.obo",
                     fullName = "Unit Ontology",
                     id = "UO",
-                    version = "2018-03-24"
+                    version = "09:04:2014"
                 }
             };
 
@@ -391,7 +393,7 @@ namespace ThermoRawFileParser.Writer
                         order = index + 1,
                         cvParam = new CVParamType[1]
                     };
-                
+
                 // Try to map the instrument to the detector
                 var detectorCvParams = OntologyMapping.InstrumentToDetectors[instrumentModel.accession];
                 CVParamType detectorCvParam;
@@ -468,7 +470,7 @@ namespace ThermoRawFileParser.Writer
                         var timesBinaryData =
                             new BinaryDataArrayType
                             {
-                                binary = Get64BitArray(trace[i].Times)
+                                binary = GetZLib64BitArray(trace[i].Times)
                             };
                         timesBinaryData.encodedLength =
                             (4 * Math.Ceiling((double) timesBinaryData
@@ -493,12 +495,12 @@ namespace ThermoRawFileParser.Writer
                                 name = "64-bit float",
                                 cvRef = "MS",
                                 value = ""
-                            };
+                            };                        
                         timesBinaryData.cvParam[2] =
                             new CVParamType
                             {
-                                accession = "MS:1000576",
-                                name = "no compression",
+                                accession = "MS:1000574",
+                                name = "zlib compression",
                                 cvRef = "MS",
                                 value = ""
                             };
@@ -518,7 +520,7 @@ namespace ThermoRawFileParser.Writer
                         var intensitiesBinaryData =
                             new BinaryDataArrayType
                             {
-                                binary = Get64BitArray(trace[i].Intensities)
+                                binary = GetZLib64BitArray(trace[i].Intensities)
                             };
                         intensitiesBinaryData.encodedLength =
                             (4 * Math.Ceiling((double) intensitiesBinaryData
@@ -543,12 +545,12 @@ namespace ThermoRawFileParser.Writer
                                 name = "64-bit float",
                                 cvRef = "MS",
                                 value = ""
-                            };
+                            };                        
                         intensitiesBinaryData.cvParam[2] =
                             new CVParamType
                             {
-                                accession = "MS:1000576",
-                                name = "no compression",
+                                accession = "MS:1000574",
+                                name = "zlib compression",
                                 cvRef = "MS",
                                 value = ""
                             };
@@ -705,32 +707,32 @@ namespace ThermoRawFileParser.Writer
             }
 
             // Spectrum scan data
-            var scanData = scanFilter.ScanData;
-            switch (scanData)
-            {
-                case ScanDataType.Profile:
-                    spectrumCvParams.Add(new CVParamType
-                    {
-                        accession = "MS:1000128",
-                        cvRef = "MS",
-                        name = "profile spectrum",
-                        value = ""
-                    });
-                    break;
-                case ScanDataType.Centroid:
-                    spectrumCvParams.Add(new CVParamType
-                    {
-                        accession = "MS:1000127",
-                        cvRef = "MS",
-                        name = "centroid spectrum",
-                        value = ""
-                    });
-                    break;
-                case ScanDataType.Any:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+//            var scanData = scanFilter.ScanData;
+//            switch (scanData)
+//            {
+//                case ScanDataType.Profile:
+//                    spectrumCvParams.Add(new CVParamType
+//                    {
+//                        accession = "MS:1000128",
+//                        cvRef = "MS",
+//                        name = "profile spectrum",
+//                        value = ""
+//                    });
+//                    break;
+//                case ScanDataType.Centroid:
+//                    spectrumCvParams.Add(new CVParamType
+//                    {
+//                        accession = "MS:1000127",
+//                        cvRef = "MS",
+//                        name = "centroid spectrum",
+//                        value = ""
+//                    });
+//                    break;
+//                case ScanDataType.Any:
+//                    break;
+//                default:
+//                    throw new ArgumentOutOfRangeException();
+//            }
 
             // Scan polarity            
             var polarityType = scanFilter.Polarity;
@@ -786,6 +788,16 @@ namespace ThermoRawFileParser.Writer
                     highestObservedMz = centroidStream.Masses[centroidStream.Masses.Length - 1];
                     masses = centroidStream.Masses;
                     intensities = centroidStream.Intensities;
+
+                    // Note that although the scan data type is profile,
+                    // centroid data might be available
+                    spectrumCvParams.Add(new CVParamType
+                    {
+                        accession = "MS:1000127",
+                        cvRef = "MS",
+                        name = "centroid spectrum",
+                        value = ""
+                    });
                 }
             }
             else
@@ -804,6 +816,14 @@ namespace ThermoRawFileParser.Writer
                     highestObservedMz = segmentedScan.Positions[segmentedScan.Positions.Length - 1];
                     masses = segmentedScan.Positions;
                     intensities = segmentedScan.Intensities;
+                    
+                    spectrumCvParams.Add(new CVParamType
+                    {
+                        accession = "MS:1000128",
+                        cvRef = "MS",
+                        name = "profile spectrum",
+                        value = ""
+                    });
                 }
             }
 
@@ -882,7 +902,7 @@ namespace ThermoRawFileParser.Writer
                 var massesBinaryData =
                     new BinaryDataArrayType
                     {
-                        binary = Get64BitArray(masses)
+                        binary = GetZLib64BitArray(masses)
                     };
                 massesBinaryData.encodedLength =
                     (4 * Math.Ceiling((double) massesBinaryData
@@ -907,12 +927,12 @@ namespace ThermoRawFileParser.Writer
                         name = "64-bit float",
                         cvRef = "MS",
                         value = ""
-                    };
+                    };                
                 massesBinaryData.cvParam[2] =
                     new CVParamType
                     {
-                        accession = "MS:1000576",
-                        name = "no compression",
+                        accession = "MS:1000574",
+                        name = "zlib compression",
                         cvRef = "MS",
                         value = ""
                     };
@@ -932,7 +952,7 @@ namespace ThermoRawFileParser.Writer
                 var intensitiesBinaryData =
                     new BinaryDataArrayType
                     {
-                        binary = Get64BitArray(intensities)
+                        binary = GetZLib64BitArray(intensities)
                     };
                 intensitiesBinaryData.encodedLength =
                     (4 * Math.Ceiling((double) intensitiesBinaryData
@@ -957,12 +977,12 @@ namespace ThermoRawFileParser.Writer
                         name = "64-bit float",
                         cvRef = "MS",
                         value = ""
-                    };
+                    };                
                 intensitiesBinaryData.cvParam[2] =
                     new CVParamType
                     {
-                        accession = "MS:1000576",
-                        name = "no compression",
+                        accession = "MS:1000574",
+                        name = "zlib compression",
                         cvRef = "MS",
                         value = ""
                     };
@@ -1260,15 +1280,47 @@ namespace ThermoRawFileParser.Writer
         /// <returns>the byte array</returns>
         private static byte[] Get64BitArray(IEnumerable<double> array)
         {
-            var memoryStream = new MemoryStream();
-            foreach (var doubleValue in array)
+            byte[] bytes;
+
+            using (var memoryStream = new MemoryStream())
             {
-                var doubleValueByteArray = BitConverter.GetBytes(doubleValue);
-                memoryStream.Write(doubleValueByteArray, 0, doubleValueByteArray.Length);
+                foreach (var doubleValue in array)
+                {
+                    var doubleValueByteArray = BitConverter.GetBytes(doubleValue);
+                    memoryStream.Write(doubleValueByteArray, 0, doubleValueByteArray.Length);
+                }
+
+                memoryStream.Position = 0;
+                bytes = memoryStream.ToArray();
             }
 
-            memoryStream.Position = 0;
-            return memoryStream.ToArray();
+            return bytes;
+        }
+
+        /// <summary>
+        /// Convert the double array into a compressed zlib byte array
+        /// </summary>
+        /// <param name="array">the double collection</param>
+        /// <returns>the byte array</returns>
+        private static byte[] GetZLib64BitArray(IEnumerable<double> array)
+        {
+            byte[] bytes;
+
+            using (var memoryStream = new MemoryStream())
+            using (var outZStream = new ZOutputStream(memoryStream, zlibConst.Z_DEFAULT_COMPRESSION))
+            {
+                foreach (var doubleValue in array)
+                {
+                    var doubleValueByteArray = BitConverter.GetBytes(doubleValue);
+                    outZStream.Write(doubleValueByteArray, 0, doubleValueByteArray.Length);
+                }
+
+                outZStream.finish();
+                memoryStream.Position = 0;
+                bytes = memoryStream.ToArray();
+            }
+
+            return bytes;
         }
 
         /// <summary>

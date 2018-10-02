@@ -128,6 +128,10 @@
       <HintPath>..\packages\mzLib.1.0.329\lib\net471\UsefulProteomicsDatabases.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="zlib.net, Version=1.0.3.0, Culture=neutral, PublicKeyToken=47d7877cb3620160">
+      <HintPath>..\packages\zlib.net.1.0.4.0\lib\zlib.net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Tests.cs" />

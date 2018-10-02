@@ -99,6 +99,10 @@
     <Reference Include="ThermoFisher.CommonCore.RawFileReader, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
       <HintPath>packages\ThermoFisher.CommonCore.RawFileReader.4.0.26\lib\ThermoFisher.CommonCore.RawFileReader.dll</HintPath>
     </Reference>
+    <Reference Include="zlib.net, Version=1.0.3.0, Culture=neutral, PublicKeyToken=47d7877cb3620160">
+      <HintPath>packages\zlib.net.1.0.4.0\lib\zlib.net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="OutputFormat.cs" />
