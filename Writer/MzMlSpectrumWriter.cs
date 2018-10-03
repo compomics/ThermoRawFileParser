@@ -110,7 +110,7 @@ namespace ThermoRawFileParser.Writer
                     URI = @"https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo",
                     fullName = "Mass spectrometry ontology",
                     id = "MS",
-                    version = "4.1.15"
+                    version = "4.1.12"
                 },
                 new CVType
                 {
@@ -495,7 +495,7 @@ namespace ThermoRawFileParser.Writer
                                 name = "64-bit float",
                                 cvRef = "MS",
                                 value = ""
-                            };                        
+                            };
                         timesBinaryData.cvParam[2] =
                             new CVParamType
                             {
@@ -545,7 +545,7 @@ namespace ThermoRawFileParser.Writer
                                 name = "64-bit float",
                                 cvRef = "MS",
                                 value = ""
-                            };                        
+                            };
                         intensitiesBinaryData.cvParam[2] =
                             new CVParamType
                             {
@@ -816,7 +816,7 @@ namespace ThermoRawFileParser.Writer
                     highestObservedMz = segmentedScan.Positions[segmentedScan.Positions.Length - 1];
                     masses = segmentedScan.Positions;
                     intensities = segmentedScan.Intensities;
-                    
+
                     spectrumCvParams.Add(new CVParamType
                     {
                         accession = "MS:1000128",
@@ -927,7 +927,7 @@ namespace ThermoRawFileParser.Writer
                         name = "64-bit float",
                         cvRef = "MS",
                         value = ""
-                    };                
+                    };
                 massesBinaryData.cvParam[2] =
                     new CVParamType
                     {
@@ -977,7 +977,7 @@ namespace ThermoRawFileParser.Writer
                         name = "64-bit float",
                         cvRef = "MS",
                         value = ""
-                    };                
+                    };
                 intensitiesBinaryData.cvParam[2] =
                     new CVParamType
                     {
