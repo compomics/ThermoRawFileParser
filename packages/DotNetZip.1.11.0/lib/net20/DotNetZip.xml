@@ -4307,13 +4307,6 @@
               of ZipEntry objects contained within this instance.
             </summary>
         </member>
-        <member name="P:Ionic.Zip.ZipFile.DefaultEncoding">
-            <summary>
-            The default text encoding used in zip archives.  It is numeric 437, also
-            known as IBM437.
-            </summary>
-            <seealso cref="P:Ionic.Zip.ZipFile.ProvisionalAlternateEncoding"/>
-        </member>
         <member name="P:Ionic.Zip.ZipFile.StatusMessageTextWriter">
              <summary>
              Gets or sets the <c>TextWriter</c> to which status messages are delivered
@@ -8712,6 +8705,25 @@
              </param>
             
         </member>
+        <member name="M:Ionic.Zip.ZipFile.#cctor">
+            <summary>
+            
+            
+            Static constructor for ZipFile
+            </summary>
+            <remarks>
+            Code Pages 437 and 1252 for English are same
+            Code Page 1252 Windows Latin 1 (ANSI) - <see href="https://msdn.microsoft.com/en-us/library/cc195054.aspx"/>
+            Code Page 437 MS-DOS Latin US - <see href="https://msdn.microsoft.com/en-us/library/cc195060.aspx"/>
+            </remarks>
+        </member>
+        <member name="P:Ionic.Zip.ZipFile.DefaultEncoding">
+            <summary>
+            The default text encoding used in zip archives.  It is numeric 437, also
+            known as IBM437.
+            </summary>
+            <seealso cref="P:Ionic.Zip.ZipFile.AlternateEncoding"/>
+        </member>
         <member name="M:Ionic.Zip.ZipFile.GetEnumerator">
              <summary>
              Generic IEnumerator support, for use of a ZipFile in an enumeration.
@@ -9567,6 +9579,15 @@
             <param name="pathName">source path.</param>
             <returns>transformed path</returns>
         </member>
+        <member name="M:Ionic.Zip.SharedUtilities.SanitizePath(System.String)">
+            <summary>
+            Sanitize paths in zip files. This means making sure that relative paths in a zip file don't go outside
+            the top directory. Entries like something/../../../../Temp/evil.txt get sanitized to Temp/evil.txt
+            when extracting
+            </summary>
+            <param name="path">A path with forward slashes as directory separator</param>
+            <returns>sanitized path</returns>
+        </member>
         <member name="M:Ionic.Zip.SharedUtilities.FindSignature(System.IO.Stream,System.Int32)">
              <summary>
                Finds a signature in the zip stream. This is useful for finding
@@ -10206,6 +10227,13 @@
             
              </remarks>
             
+        </member>
+        <member name="P:Ionic.Zip.ZipEntry.DontEmitLastModified">
+            <summary>
+            Ability to set Last Modified DOS time to zero
+            (for using with EmitTimesInWindowsFormatWhenSaving+EmitTimesInUnixFormatWhenSaving setted to false)
+            some flasher hardware use as marker of first binary
+            </summary>
         </member>
         <member name="P:Ionic.Zip.ZipEntry.ModifiedTime">
              <summary>

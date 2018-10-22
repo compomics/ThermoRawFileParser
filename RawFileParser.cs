@@ -72,9 +72,9 @@ namespace ThermoRawFileParser
                     
                 }
 
-                SpectrumWriter spectrumWriter;
                 if (parseInput.OutputFormat != OutputFormat.NON)
                 {
+                    SpectrumWriter spectrumWriter;
                     switch (parseInput.OutputFormat)
                     {
                         case OutputFormat.Mgf:
@@ -90,7 +90,6 @@ namespace ThermoRawFileParser
                             spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
                             break;
                     }
-                    
                 }
 
                 Log.Info("Finished parsing " + parseInput.RawFilePath);

@@ -22,7 +22,6 @@ namespace ThermoRawFileParserTest
                 "coll",
                 "run", "sub");
 
-            var rawFileParser = new RawFileParser();
             RawFileParser.Parse(parseInput);
 
             // Do this for the mzLib library issue
@@ -44,7 +43,6 @@ namespace ThermoRawFileParserTest
             var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mzml, false, MetadataFormat.NON, false,
                 "coll", "run", "sub");
 
-            var rawFileParser = new RawFileParser();
             RawFileParser.Parse(parseInput);
 
             // Deserialize the mzML file

@@ -31,6 +31,9 @@ namespace ThermoRawFileParser.Writer
         private readonly Dictionary<IonizationModeType, CVParamType> _ionizationTypes =
             new Dictionary<IonizationModeType, CVParamType>();
 
+        // Precursor scan number for reference in the precursor element of an MS2 spectrum
+        private int _precursorScanNumber;
+
         public MzMlSpectrumWriter(ParseInput parseInput) : base(parseInput)
         {
         }
@@ -625,7 +628,6 @@ namespace ThermoRawFileParser.Writer
             var trailerData = _rawFile.GetTrailerExtraInformation(scanNumber);
             int? charge = null;
             double? monoisotopicMass = null;
-            int? masterScanNumber = null;
             for (var i = 0; i < trailerData.Length; i++)
             {
                 if (trailerData.Labels[i] == "Charge State:")
@@ -639,14 +641,6 @@ namespace ThermoRawFileParser.Writer
                 if (trailerData.Labels[i] == "Monoisotopic M/Z:")
                 {
                     monoisotopicMass = double.Parse(trailerData.Values[i]);
-                }
-
-                if (trailerData.Labels[i] == "Master Index:")
-                {
-                    if (Convert.ToInt32(trailerData.Values[i]) > 0)
-                    {
-                        masterScanNumber = Convert.ToInt32(trailerData.Values[i]);
-                    }
                 }
             }
 
@@ -664,6 +658,10 @@ namespace ThermoRawFileParser.Writer
                         name = "MS1 spectrum",
                         value = ""
                     });
+
+                    // Keep track of scan number for precursor reference
+                    _precursorScanNumber = scanNumber;
+
                     break;
                 case MSOrderType.Ms2:
                     spectrumCvParams.Add(new CVParamType
@@ -675,7 +673,7 @@ namespace ThermoRawFileParser.Writer
                     });
 
                     // Construct and set the precursor list element of the spectrum
-                    var precursorListType = ConstructPrecursorList(masterScanNumber, scanEvent, charge);
+                    var precursorListType = ConstructPrecursorList(scanEvent, charge);
                     spectrum.precursorList = precursorListType;
                     break;
                 case MSOrderType.Ng:
@@ -705,34 +703,6 @@ namespace ThermoRawFileParser.Writer
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
-            // Spectrum scan data
-//            var scanData = scanFilter.ScanData;
-//            switch (scanData)
-//            {
-//                case ScanDataType.Profile:
-//                    spectrumCvParams.Add(new CVParamType
-//                    {
-//                        accession = "MS:1000128",
-//                        cvRef = "MS",
-//                        name = "profile spectrum",
-//                        value = ""
-//                    });
-//                    break;
-//                case ScanDataType.Centroid:
-//                    spectrumCvParams.Add(new CVParamType
-//                    {
-//                        accession = "MS:1000127",
-//                        cvRef = "MS",
-//                        name = "centroid spectrum",
-//                        value = ""
-//                    });
-//                    break;
-//                case ScanDataType.Any:
-//                    break;
-//                default:
-//                    throw new ArgumentOutOfRangeException();
-//            }
 
             // Scan polarity            
             var polarityType = scanFilter.Polarity;
@@ -842,7 +812,7 @@ namespace ThermoRawFileParser.Writer
                 });
             }
 
-            //base peak intensity
+            // Base peak intensity
             if (basePeakMass != null)
             {
                 spectrumCvParams.Add(new CVParamType
@@ -1005,13 +975,10 @@ namespace ThermoRawFileParser.Writer
         /// <summary>
         /// Populate the precursor list element
         /// </summary>
-        /// <param name="masterScanNumber">the master scan number</param>
         /// <param name="scanEvent">the scan event</param>
         /// <param name="charge">the charge</param>
         /// <returns>the precursor list</returns>
-        private PrecursorListType ConstructPrecursorList(int? masterScanNumber,
-            IScanEventBase scanEvent,
-            int? charge)
+        private PrecursorListType ConstructPrecursorList(IScanEventBase scanEvent, int? charge)
         {
             // Construct the precursor
             var precursorList = new PrecursorListType
@@ -1029,10 +996,7 @@ namespace ThermoRawFileParser.Writer
                 }
             };
 
-            if (masterScanNumber != null)
-            {
-                precursor.spectrumRef = ConstructSpectrumTitle(masterScanNumber.Value);
-            }
+            precursor.spectrumRef = ConstructSpectrumTitle(_precursorScanNumber);
 
             precursor.selectedIonList.selectedIon[0] =
                 new ParamGroupType
@@ -1141,18 +1105,21 @@ namespace ThermoRawFileParser.Writer
                     });
             }
 
-            if (!OntologyMapping.DissociationTypes.TryGetValue(reaction.ActivationType, out var activation))
+            if (reaction != null)
             {
-                activation = new CVParamType
+                if (!OntologyMapping.DissociationTypes.TryGetValue(reaction.ActivationType, out var activation))
                 {
-                    accession = "MS:1000044",
-                    name = "Activation Method",
-                    cvRef = "MS",
-                    value = ""
-                };
-            }
+                    activation = new CVParamType
+                    {
+                        accession = "MS:1000044",
+                        name = "Activation Method",
+                        cvRef = "MS",
+                        value = ""
+                    };
+                }
 
-            activationCvParams.Add(activation);
+                activationCvParams.Add(activation);
+            }
 
             precursor.activation =
                 new ParamGroupType
@@ -1338,7 +1305,6 @@ namespace ThermoRawFileParser.Writer
                 }
             }
         }
-
 
         /// <summary>
         /// Calculate the RAW file checksum

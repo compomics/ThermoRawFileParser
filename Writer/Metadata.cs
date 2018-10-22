@@ -8,18 +8,18 @@ namespace ThermoRawFileParser.Writer
     public class Metadata
     {
         /** The general Path properties contains: RAW path , RAW file version **/
-        private List<CVTerm> fileProperties = new List<CVTerm>();
+        private readonly List<CVTerm> fileProperties = new List<CVTerm>();
 
         /** The Instruments properties contains the information of the instrument **/ 
-        private List<CVTerm> instrumentProperties = new List<CVTerm>();
+        private readonly List<CVTerm> instrumentProperties = new List<CVTerm>();
 
         /** Scan Settings **/
-        private List<CVTerm> scanSettings = new List<CVTerm>();
+        private readonly List<CVTerm> scanSettings = new List<CVTerm>();
 
         /** MS and MS data including number of MS and MS/MS **/
-        private List<CVTerm> msData = new List<CVTerm>(); 
+        private readonly List<CVTerm> msData = new List<CVTerm>(); 
         
-        private List<CVTerm> sampleData = new List<CVTerm>();
+        private readonly List<CVTerm> sampleData = new List<CVTerm>();
         
         /**
          * Default constructor 
@@ -88,10 +88,10 @@ namespace ThermoRawFileParser.Writer
 
     public class CVTerm{
         
-        private string acc = "";
-        private string cvLabelID ="";
-        private string cvName = "";
-        private string cvValue ="";
+        private readonly string acc = "";
+        private readonly string cvLabelID ="";
+        private readonly string cvName = "";
+        private readonly string cvValue ="";
 
         public CVTerm()
         {

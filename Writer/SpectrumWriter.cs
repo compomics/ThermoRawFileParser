@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.IO.Compression;
 using System.Text;
 using ThermoFisher.CommonCore.Data;
@@ -93,15 +92,14 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         /// <param name="rawFile">the RAW file object</param>
         /// <param name="precursorScanNumber">the precursor scan number</param>
-        /// <param name="scanNumber">the scan number</param>
-        protected double GetPrecursorIntensity(IRawDataPlus rawFile, int precursorScanNumber, int scanNumber)
+        protected static double GetPrecursorIntensity(IRawDataPlus rawFile, int precursorScanNumber)
         {
             // Define the settings for getting the Base Peak chromatogram            
-            var settings = new ChromatogramTraceSettings(TraceType.TIC);
+            var settings = new ChromatogramTraceSettings(TraceType.BasePeak);
 
             // Get the chromatogram from the RAW file. 
-            var data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, scanNumber - 1,
-                scanNumber - 1);
+            var data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, precursorScanNumber,
+                precursorScanNumber);
 
             // Split the data into the chromatograms
             var trace = ChromatogramSignal.FromChromatogramData(data);
