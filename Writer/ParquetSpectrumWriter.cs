@@ -16,7 +16,7 @@ namespace ThermoRawFileParser.Writer
     public class ParquetSpectrumWriter : SpectrumWriter
     {
         private static readonly log4net.ILog Log =
-          log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private IRawDataPlus _rawFile;
 
@@ -24,33 +24,30 @@ namespace ThermoRawFileParser.Writer
         private readonly Dictionary<MassAnalyzerType, string> _massAnalyzers =
             new Dictionary<MassAnalyzerType, string>();
 
-
         private readonly Dictionary<IonizationModeType, CVParamType> _ionizationTypes =
             new Dictionary<IonizationModeType, CVParamType>();
 
         public ParquetSpectrumWriter(ParseInput parseInput) : base(parseInput)
         {
-
         }
 
         public override void Write(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
             _rawFile = rawFile;
             List<PScan> pScans = new List<PScan>();
-            WritePScans(rawFile.FileName, rawFile, pScans);
-
+            WritePScans(ParseInput.OutputDirectory, rawFile.FileName, rawFile, pScans);
         }
 
-        private static void WritePScans(string fileName,
-           IRawDataPlus raw,
-           List<PScan> scans)
+        private static void WritePScans(string outputDirectory, string fileName,
+            IRawDataPlus raw,
+            List<PScan> scans)
         {
             var enumerator = raw.GetFilteredScanEnumerator(" ");
 
-            foreach (var scanNumber in enumerator) // note in my tests serial is faster than Parallel.Foreach() (this involves disk access, so it makes sense)
+            foreach (var scanNumber in enumerator
+            ) // note in my tests serial is faster than Parallel.Foreach() (this involves disk access, so it makes sense)
             {
-
-                //trailer iinformation is extracted via index
+                //trailer information is extracted via index
                 var trailers = raw.GetTrailerExtraValues(scanNumber);
                 var trailerLabels = raw.GetTrailerExtraInformation(scanNumber);
                 object chargeState = 0;
@@ -62,6 +59,7 @@ namespace ThermoRawFileParser.Writer
                         break;
                     }
                 }
+
                 var scanFilter = raw.GetFilterForScanNumber(scanNumber);
                 var scanStats = raw.GetScanStatsForScanNumber(scanNumber);
 
@@ -72,6 +70,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     centroidStream = raw.GetCentroidStream(scanNumber, false);
                 }
+
                 //check for IT mass analyzer data
                 if (scanFilter.MassAnalyzer == MassAnalyzerType.MassAnalyzerITMS)
                 {
@@ -87,19 +86,21 @@ namespace ThermoRawFileParser.Writer
                     var pscan = GetPScan(scanStats, centroidStream, fileName, Convert.ToInt32(chargeState));
                     scans.Add(pscan);
                 }
+
                 if (msOrder == MSOrderType.Ms2)
                 {
                     var precursorMz = raw.GetScanEventForScanNumber(scanNumber).GetReaction(0).PrecursorMass;
-                    var pscan = GetPScan(scanStats, centroidStream, fileName, precursorMz, Convert.ToInt32(chargeState));
+                    var pscan = GetPScan(scanStats, centroidStream, fileName, precursorMz,
+                        Convert.ToInt32(chargeState));
                     scans.Add(pscan);
                 }
 
                 var t = raw.GetTrailerExtraValues(scanNumber);
             }
 
-            WriteScans(scans, fileName);
-
+            WriteScans(outputDirectory, scans, fileName);
         }
+
         private static PScan GetPScan(ScanStatistics scanStats, CentroidStream centroidStream,
             string fileName, double? precursorMz = null, int? precursorCharge = null)
         {
@@ -125,30 +126,30 @@ namespace ThermoRawFileParser.Writer
             return scan;
         }
 
-        public static void WriteScans(List<PScan> scans, string sourceRawFileName)
+        public static void WriteScans(string outputDirectory, List<PScan> scans, string sourceRawFileName)
         {
-            var output = Path.GetFileNameWithoutExtension(sourceRawFileName);
+            var output = outputDirectory + "//" + Path.GetFileNameWithoutExtension(sourceRawFileName);
 
             var ds = new DataSet(new DataField<double>("BasePeakIntensity"),
-                                    new DataField<double>("BasePeakMass"),
-                                    new DataField<double[]>("Baselines"),
-                                    new DataField<double[]>("Charges"),
-                                    new DataField<string>("FileId"),
-                                    new DataField<string>("FileName"),
-                                    new DataField<double>("HighMass"),
-                                    new DataField<double[]>("Intensities"),
-                                    new DataField<double>("LowMass"),
-                                    new DataField<double[]>("Masses"),
-                                    new DataField<int>("MsOrder"),
-                                    new DataField<double[]>("Noises"),
-                                    new DataField<int>("PacketType"),
-                                    new DataField<int?>("PrecursorCharge"),
-                                    new DataField<double?>("PrecursorMass"),
-                                    new DataField<double[]>("Resolutions"),
-                                    new DataField<double>("RetentionTime"),
-                                    new DataField<int>("ScanNumber"),
-                                    new DataField<string>("ScanType"),
-                                    new DataField<double>("TIC"));
+                new DataField<double>("BasePeakMass"),
+                new DataField<double[]>("Baselines"),
+                new DataField<double[]>("Charges"),
+                new DataField<string>("FileId"),
+                new DataField<string>("FileName"),
+                new DataField<double>("HighMass"),
+                new DataField<double[]>("Intensities"),
+                new DataField<double>("LowMass"),
+                new DataField<double[]>("Masses"),
+                new DataField<int>("MsOrder"),
+                new DataField<double[]>("Noises"),
+                new DataField<int>("PacketType"),
+                new DataField<int?>("PrecursorCharge"),
+                new DataField<double?>("PrecursorMass"),
+                new DataField<double[]>("Resolutions"),
+                new DataField<double>("RetentionTime"),
+                new DataField<int>("ScanNumber"),
+                new DataField<string>("ScanType"),
+                new DataField<double>("TIC"));
 
             foreach (var scan in scans)
             {
@@ -158,18 +159,22 @@ namespace ThermoRawFileParser.Writer
                 {
                     scan.Noises = dummyVal;
                 }
+
                 if (scan.Charges == null)
                 {
                     scan.Charges = dummyVal;
                 }
+
                 if (scan.Baselines == null)
                 {
                     scan.Baselines = dummyVal;
                 }
+
                 if (scan.Resolutions == null)
                 {
                     scan.Resolutions = dummyVal;
                 }
+
                 if (scan.PrecursorMz == null)
                 {
                     scan.PrecursorMz = 0;
@@ -206,9 +211,8 @@ namespace ThermoRawFileParser.Writer
                 }
             }
         }
-
-
     }
+
     /// PSCan meaing Parsec Scan (because Commoncore has a Scan class)
     /// </summary>
     public class PScan
@@ -217,6 +221,7 @@ namespace ThermoRawFileParser.Writer
         /// Unique ID per file (foreign key in data store)
         /// </summary>
         public string FileId { get; set; }
+
         public string FileName { get; set; }
         public double BasePeakIntensity { get; set; }
         public double BasePeakMass { get; set; }
@@ -237,6 +242,4 @@ namespace ThermoRawFileParser.Writer
         public double? PrecursorMz { get; set; }
         public int? PrecursorCharge { get; set; }
     }
-
 }
-

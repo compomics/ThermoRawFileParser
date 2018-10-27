@@ -42,8 +42,8 @@
       <HintPath>..\packages\mzLib.1.0.329\lib\net471\Chromatography.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="DotNetZip, Version=1.10.1.0, Culture=neutral, PublicKeyToken=6583c7c814667745">
-      <HintPath>..\packages\DotNetZip.1.10.1\lib\net20\DotNetZip.dll</HintPath>
+    <Reference Include="DotNetZip, Version=1.11.0.0, Culture=neutral, PublicKeyToken=6583c7c814667745">
+      <HintPath>..\packages\DotNetZip.1.11.0\lib\net20\DotNetZip.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FlashLFQ, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
@@ -126,6 +126,10 @@
     </Reference>
     <Reference Include="UsefulProteomicsDatabases, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\mzLib.1.0.329\lib\net471\UsefulProteomicsDatabases.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="zlib.net, Version=1.0.3.0, Culture=neutral, PublicKeyToken=47d7877cb3620160">
+      <HintPath>..\packages\zlib.net.1.0.4.0\lib\zlib.net.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>

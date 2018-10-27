@@ -260,6 +260,135 @@ namespace ThermoRawFileParser.Writer
                         cvRef = "MS",
                         value = ""
                     }
+                },
+                {
+                    "Q Exactive Plus Orbitrap", new CVParamType
+                    {
+                        accession = "MS:1001911",
+                        name = "Q Exactive",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                }
+            };
+
+        /// <summary>
+        /// Thermo instrument CV accession string to CV mapping
+        /// </summary>
+        public static readonly Dictionary<string, List<CVParamType>> InstrumentToDetectors =
+            new Dictionary<string, List<CVParamType>>
+            {
+                {
+                    "MS:1000448", new List<CVParamType>
+                    {
+                        new CVParamType
+                        {
+                            accession = "MS:1000624",
+                            name = "inductive detector",
+                            cvRef = "MS",
+                            value = ""
+                        },
+                        new CVParamType
+                        {
+                            accession = "MS:1000253",
+                            name = "electron multiplier",
+                            cvRef = "MS",
+                            value = ""
+                        }
+                    }
+                },
+                {
+                    "MS:1001742", new List<CVParamType>
+                    {
+                        new CVParamType
+                        {
+                            accession = "MS:1000624",
+                            name = "inductive detector",
+                            cvRef = "MS",
+                            value = ""
+                        },
+                        new CVParamType
+                        {
+                            accession = "MS:1000253",
+                            name = "electron multiplier",
+                            cvRef = "MS",
+                            value = ""
+                        }
+                    }
+                },
+                {
+                    "MS:1000449", new List<CVParamType>
+                    {
+                        new CVParamType
+                        {
+                            accession = "MS:1000624",
+                            name = "inductive detector",
+                            cvRef = "MS",
+                            value = ""
+                        },
+                        new CVParamType
+                        {
+                            accession = "MS:1000253",
+                            name = "electron multiplier",
+                            cvRef = "MS",
+                            value = ""
+                        }
+                    }
+                },
+                {
+                    "MS:1000855", new List<CVParamType>
+                    {
+                        new CVParamType
+                        {
+                            accession = "MS:1000253",
+                            name = "electron multiplier",
+                            cvRef = "MS",
+                            value = ""
+                        }
+                    }
+                },
+                {
+                    "MS:1002416", new List<CVParamType>
+                    {
+                        new CVParamType
+                        {
+                            accession = "MS:1000624",
+                            name = "inductive detector",
+                            cvRef = "MS",
+                            value = ""
+                        },
+                        new CVParamType
+                        {
+                            accession = "MS:1000253",
+                            name = "electron multiplier",
+                            cvRef = "MS",
+                            value = ""
+                        }
+                    }
+                },
+                {
+                    "MS:1001911", new List<CVParamType>
+                    {
+                        new CVParamType
+                        {
+                            accession = "MS:1000624",
+                            name = "inductive detector",
+                            cvRef = "MS",
+                            value = ""
+                        }
+                    }
+                },                
+                {
+                    "MS:1000483", new List<CVParamType>
+                    {
+                        new CVParamType
+                        {
+                            accession = "MS:1000026",
+                            name = "inductive detector",
+                            cvRef = "MS",
+                            value = ""
+                        }
+                    }
                 }
             };
     }

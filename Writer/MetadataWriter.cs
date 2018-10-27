@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
-using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
-using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
-using ThermoRawFileParser.Writer.MzML;
 
 namespace ThermoRawFileParser.Writer
 {

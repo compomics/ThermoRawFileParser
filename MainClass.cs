@@ -16,7 +16,7 @@ namespace ThermoRawFileParser
             string outputFormatString = null;
             var outputFormat = OutputFormat.NON;
             var gzip = false;
-            string outputMetadataString = null; 
+            string outputMetadataString = null;
             var outputMetadataFormat = MetadataFormat.NON;
             var includeProfileData = false;
             string collection = null;
@@ -39,16 +39,16 @@ namespace ThermoRawFileParser
                     v => outputDirectory = v
                 },
                 {
-                    "f=|format=", "The output format for the spectra (0 for MGF, 1 for MzMl)",
+                    "f=|format=", "The output format for the spectra (0 for MGF, 1 for MzMl, 2 for Parquet)",
                     v => outputFormatString = v
+                },
+                {
+                    "m=|metadata=", "The metadata output format (0 for JSON, 1 for TXT).",
+                    v => outputMetadataString = v
                 },
                 {
                     "g|gzip", "GZip the output file if this flag is specified (without value).",
                     v => gzip = v != null
-                },
-                {
-                    "m|metadata=", "Write the metadata output file if this flag is specified (0 for JSON, 1 for TXT).",
-                    v => outputMetadataString = v 
                 },
                 {
                     "p|profiledata",
@@ -75,43 +75,73 @@ namespace ThermoRawFileParser
             {
                 //parse the command line
                 var extra = optionSet.Parse(args);
-                
-                if(outputMetadataString == null && outputFormatString == null)
-                    throw new OptionException("The parameter -f or -m should be provided", "-f|--format , -m|--format");
-
-                if (outputFormatString != null )
-                {
-                    var outPutFormatInt = int.Parse(outputFormatString);
-              
-                    if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt))
-                        outputFormat = (OutputFormat) outPutFormatInt;
-                    else
-                        throw new OptionException("unknown output format", "-f, --format");
-                    
-                    if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt))
-                        outputFormat = (OutputFormat) outPutFormatInt;
-                    else
-                        throw new OptionException("unknown output format", "-f, --format");
-                }
-                
-                if (outputMetadataString != null)
-                {
-                    var metadataInt = int.Parse(outputMetadataString);
-               
-                    if (Enum.IsDefined(typeof(MetadataFormat), metadataInt))
-                        outputMetadataFormat = (MetadataFormat) metadataInt;
-                    else
-                        throw new OptionException("unknown output format", "-m, --metadata");
-                   
-                    if (Enum.IsDefined(typeof(MetadataFormat), metadataInt))
-                        outputMetadataFormat = (MetadataFormat) metadataInt;
-                    else
-                        throw new OptionException("unknown output format", "-f, --metadata");
-                }
 
                 if (!extra.IsNullOrEmpty())
                 {
                     throw new OptionException("unexpected extra arguments", null);
+                }
+
+                if (help)
+                {
+                    ShowHelp(" usage is (use -option=value for the optional arguments):", null,
+                        optionSet);
+                    return;
+                }
+
+                if (outputMetadataString == null && outputFormatString == null)
+                {
+                    throw new OptionException("The parameter -f or -m should be provided",
+                        "-f|--format , -m|--format");
+                }
+
+                if (outputFormatString != null)
+                {
+                    int outPutFormatInt;
+                    try
+                    {
+                        outPutFormatInt = int.Parse(outputFormatString);
+                    }
+                    catch (FormatException e)
+                    {
+                        throw new OptionException("unknown output format value (0 for MGF, 1 for MzMl, 2 for Parquet)",
+                            "-f, --format");
+                    }
+
+                    if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt) &&
+                        ((OutputFormat) outPutFormatInt) != OutputFormat.NON)
+                    {
+                        outputFormat = (OutputFormat) outPutFormatInt;
+                    }
+                    else
+                    {
+                        throw new OptionException("unknown output format value (0 for MGF, 1 for MzMl, 2 for Parquet)",
+                            "-f, --format");
+                    }
+                }
+
+                if (outputMetadataString != null)
+                {
+                    int metadataInt;
+                    try
+                    {
+                        metadataInt = int.Parse(outputMetadataString);
+                    }
+                    catch (FormatException e)
+                    {
+                        throw new OptionException("unknown metadata format value (0 for JSON, 1 for TXT)",
+                            "-m, --metadata");
+                    }
+
+                    if (Enum.IsDefined(typeof(MetadataFormat), metadataInt) &&
+                        ((MetadataFormat) metadataInt) != MetadataFormat.NON)
+                    {
+                        outputMetadataFormat = (MetadataFormat) metadataInt;
+                    }
+                    else
+                    {
+                        throw new OptionException("unknown metadata format value (0 for JSON, 1 for TXT)",
+                            "-m, --metadata");
+                    }
                 }
             }
             catch (OptionException optionException)
@@ -121,7 +151,7 @@ namespace ThermoRawFileParser
             }
             catch (ArgumentNullException argumentNullException)
             {
-                if(help)
+                if (help)
                 {
                     ShowHelp(" usage is (use -option=value for the optional arguments):", null,
                         optionSet);
@@ -133,28 +163,19 @@ namespace ThermoRawFileParser
                 }
             }
 
-            if (help)
+            try
             {
-                const string usageMessage =
-                    "ThermoRawFileParser.exe usage (use -option=value for the optional arguments)";
-                ShowHelp(usageMessage, null, optionSet);
+                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip,
+                    outputMetadataFormat,
+                    includeProfileData, collection, msRun, subFolder);
+                RawFileParser.Parse(parseInput);
             }
-            else
+            catch (Exception ex)
             {
-                try
-                {
-                    var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip,
-                        outputMetadataFormat,
-                        includeProfileData, collection, msRun, subFolder);
-                    RawFileParser.Parse(parseInput); 
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("An unexpected error occured:");
-                    Log.Error(ex.ToString());
+                Log.Error("An unexpected error occured:");
+                Log.Error(ex.ToString());
 
-                    Environment.Exit(1);
-                }
+                Environment.Exit(1);
             }
         }
 

@@ -1,7 +1,7 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.IO.Compression;
 using System.Text;
+using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
 
@@ -34,7 +34,7 @@ namespace ThermoRawFileParser.Writer
         /// <summary>
         /// Configure the output writer
         /// </summary>
-        /// <param name="extension">The exenstion of the output file</param>
+        /// <param name="extension">The extension of the output file</param>
         protected void ConfigureWriter(string extension)
         {
             var fullExtension = ParseInput.Gzip ? extension + ".gzip" : extension;
@@ -60,17 +60,17 @@ namespace ThermoRawFileParser.Writer
         {
             var spectrumTitle = new StringBuilder("mzspec=");
 
-            if (ParseInput.Collection != null)
+            if (!ParseInput.Collection.IsNullOrEmpty())
             {
                 spectrumTitle.Append(ParseInput.Collection).Append(":");
             }
 
-            if (ParseInput.SubFolder != null)
+            if (!ParseInput.SubFolder.IsNullOrEmpty())
             {
                 spectrumTitle.Append(ParseInput.SubFolder).Append(":");
             }
 
-            if (ParseInput.MsRun != null)
+            if (!ParseInput.MsRun.IsNullOrEmpty())
             {
                 spectrumTitle.Append(ParseInput.MsRun).Append(":");
             }
@@ -92,15 +92,14 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         /// <param name="rawFile">the RAW file object</param>
         /// <param name="precursorScanNumber">the precursor scan number</param>
-        /// <param name="scanNumber">the scan number</param>
-        protected double GetPrecursorIntensity(IRawDataPlus rawFile, int precursorScanNumber, int scanNumber)
+        protected static double GetPrecursorIntensity(IRawDataPlus rawFile, int precursorScanNumber)
         {
             // Define the settings for getting the Base Peak chromatogram            
-            var settings = new ChromatogramTraceSettings(TraceType.TIC);
+            var settings = new ChromatogramTraceSettings(TraceType.BasePeak);
 
             // Get the chromatogram from the RAW file. 
-            var data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, scanNumber - 1,
-                scanNumber - 1);
+            var data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, precursorScanNumber,
+                precursorScanNumber);
 
             // Split the data into the chromatograms
             var trace = ChromatogramSignal.FromChromatogramData(data);
