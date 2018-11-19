@@ -1090,35 +1090,49 @@ namespace ThermoRawFileParser.Writer
             }
 
             var activationCvParams = new List<CVParamType>();
-            if (reaction != null && reaction.CollisionEnergyValid)
+            for (int i = 0; ; i++)
             {
-                activationCvParams.Add(
-                    new CVParamType
-                    {
-                        accession = "MS:1000045",
-                        name = "collision energy",
-                        cvRef = "MS",
-                        value = reaction.CollisionEnergy.ToString(CultureInfo.InvariantCulture),
-                        unitCvRef = "UO",
-                        unitAccession = "UO:0000266",
-                        unitName = "electronvolt"
-                    });
-            }
-
-            if (reaction != null)
-            {
-                if (!OntologyMapping.DissociationTypes.TryGetValue(reaction.ActivationType, out var activation))
+                reaction = null;
+                try
                 {
-                    activation = new CVParamType
-                    {
-                        accession = "MS:1000044",
-                        name = "Activation Method",
-                        cvRef = "MS",
-                        value = ""
-                    };
+                    reaction = scanEvent.GetReaction(i);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    break;
                 }
 
-                activationCvParams.Add(activation);
+
+                if (reaction != null && reaction.CollisionEnergyValid)
+                {
+                    activationCvParams.Add(
+                        new CVParamType
+                        {
+                            accession = "MS:1000045",
+                            name = "collision energy",
+                            cvRef = "MS",
+                            value = reaction.CollisionEnergy.ToString(CultureInfo.InvariantCulture),
+                            unitCvRef = "UO",
+                            unitAccession = "UO:0000266",
+                            unitName = "electronvolt"
+                        });
+                }
+
+                if (reaction != null)
+                {
+                    if (!OntologyMapping.DissociationTypes.TryGetValue(reaction.ActivationType, out var activation))
+                    {
+                        activation = new CVParamType
+                        {
+                            accession = "MS:1000044",
+                            name = "Activation Method",
+                            cvRef = "MS",
+                            value = ""
+                        };
+                    }
+
+                    activationCvParams.Add(activation);
+                }
             }
 
             precursor.activation =
