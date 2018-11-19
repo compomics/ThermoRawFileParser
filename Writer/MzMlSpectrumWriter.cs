@@ -1169,7 +1169,7 @@ namespace ThermoRawFileParser.Writer
             var scanType = new ScanType
             {
                 instrumentConfigurationRef = instrumentConfigurationRef,
-                cvParam = new CVParamType[2]
+                cvParam = new CVParamType[3]
             };
 
             scanType.cvParam[0] = new CVParamType
@@ -1189,6 +1189,28 @@ namespace ThermoRawFileParser.Writer
                 accession = "MS:1000512",
                 value = scanEvent.ToString(),
                 cvRef = "MS"
+            };
+
+            // ion injection time
+            var trailerLabels = _rawFile.GetTrailerExtraInformation(scanNumber);
+            var ionInjectionTime = 0.0;
+            for (int i = 0; i < trailerLabels.Length; i++)
+            {
+                if (trailerLabels.Labels[i] == "Ion Injection Time (ms):")
+                {
+                    ionInjectionTime = (float)_rawFile.GetTrailerExtraValue(scanNumber, i);
+                    break;
+                }
+            }
+            scanType.cvParam[2] = new CVParamType
+            {
+                name = "ion injection time",
+                cvRef = "MS",
+                accession = "MS:1000927",
+                value = ionInjectionTime.ToString(),
+                unitCvRef = "UO",
+                unitAccession = "UO:0000028",
+                unitName = "millisecond"
             };
 
             if (monoisotopicMass.HasValue)
