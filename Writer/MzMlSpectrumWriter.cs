@@ -627,7 +627,8 @@ namespace ThermoRawFileParser.Writer
             // Trailer extra data list
             var trailerData = _rawFile.GetTrailerExtraInformation(scanNumber);
             int? charge = null;
-            double? monoisotopicMass = null;
+            float? monoisotopicMass = null;
+            float? ionInjectionTime = null;
             for (var i = 0; i < trailerData.Length; i++)
             {
                 if (trailerData.Labels[i] == "Charge State:")
@@ -640,12 +641,18 @@ namespace ThermoRawFileParser.Writer
 
                 if (trailerData.Labels[i] == "Monoisotopic M/Z:")
                 {
-                    monoisotopicMass = double.Parse(trailerData.Values[i]);
+                    monoisotopicMass = float.Parse(trailerData.Values[i]);
+                }
+
+                if (trailerData.Labels[i] == "Ion Injection Time (ms):")
+                {
+                    ionInjectionTime = float.Parse(trailerData.Values[i]);
                 }
             }
 
             // Construct and set the scan list element of the spectrum
-            var scanListType = ConstructScanList(scanNumber, scan, scanFilter, scanEvent, monoisotopicMass);
+            var scanListType = ConstructScanList(scanNumber, scan, scanFilter, scanEvent, monoisotopicMass,
+                ionInjectionTime);
             spectrum.scanList = scanListType;
 
             switch (scanFilter.MSOrder)
@@ -1090,7 +1097,7 @@ namespace ThermoRawFileParser.Writer
             }
 
             var activationCvParams = new List<CVParamType>();
-            for (int i = 0; ; i++)
+            for (int i = 0;; i++)
             {
                 reaction = null;
                 try
@@ -1101,7 +1108,6 @@ namespace ThermoRawFileParser.Writer
                 {
                     break;
                 }
-
 
                 if (reaction != null && reaction.CollisionEnergyValid)
                 {
@@ -1154,9 +1160,10 @@ namespace ThermoRawFileParser.Writer
         /// <param name="scanFilter">the scan filter</param>
         /// <param name="scanEvent">the scan event</param>
         /// <param name="monoisotopicMass">the monoisotopic mass</param>
+        /// <param name="ionInjectionTime">the ion injection time</param>
         /// <returns></returns>
         private ScanListType ConstructScanList(int scanNumber, Scan scan, IScanFilter scanFilter, IScanEvent scanEvent,
-            double? monoisotopicMass)
+            float? monoisotopicMass, float? ionInjectionTime)
         {
             // Scan list
             var scanList = new ScanListType
@@ -1180,13 +1187,10 @@ namespace ThermoRawFileParser.Writer
                 instrumentConfigurationRef = "IC1";
             }
 
-            var scanType = new ScanType
-            {
-                instrumentConfigurationRef = instrumentConfigurationRef,
-                cvParam = new CVParamType[3]
-            };
+            var scanTypeCvParams = new List<CVParamType>();
 
-            scanType.cvParam[0] = new CVParamType
+            // Scan start time
+            scanTypeCvParams.Add(new CVParamType
             {
                 name = "scan start time",
                 accession = "MS:1000016",
@@ -1195,38 +1199,39 @@ namespace ThermoRawFileParser.Writer
                 unitAccession = "UO:0000031",
                 unitName = "minute",
                 cvRef = "MS"
-            };
+            });
 
-            scanType.cvParam[1] = new CVParamType
+            // Scan filter string
+            scanTypeCvParams.Add(new CVParamType
             {
                 name = "filter string",
                 accession = "MS:1000512",
                 value = scanEvent.ToString(),
                 cvRef = "MS"
-            };
+            });
 
-            // ion injection time
-            var trailerLabels = _rawFile.GetTrailerExtraInformation(scanNumber);
-            var ionInjectionTime = 0.0;
-            for (int i = 0; i < trailerLabels.Length; i++)
+            // Ion injection time
+            if (ionInjectionTime.HasValue)
             {
-                if (trailerLabels.Labels[i] == "Ion Injection Time (ms):")
+                scanTypeCvParams.Add(new CVParamType
                 {
-                    ionInjectionTime = (float)_rawFile.GetTrailerExtraValue(scanNumber, i);
-                    break;
-                }
+                    name = "ion injection time",
+                    cvRef = "MS",
+                    accession = "MS:1000927",
+                    value = ionInjectionTime.ToString(),
+                    unitCvRef = "UO",
+                    unitAccession = "UO:0000028",
+                    unitName = "millisecond"
+                });
             }
-            scanType.cvParam[2] = new CVParamType
+
+            var scanType = new ScanType
             {
-                name = "ion injection time",
-                cvRef = "MS",
-                accession = "MS:1000927",
-                value = ionInjectionTime.ToString(),
-                unitCvRef = "UO",
-                unitAccession = "UO:0000028",
-                unitName = "millisecond"
+                instrumentConfigurationRef = instrumentConfigurationRef,
+                cvParam = scanTypeCvParams.ToArray()
             };
 
+            // Monoisotopic mass
             if (monoisotopicMass.HasValue)
             {
                 scanType.userParam = new UserParamType[1];
