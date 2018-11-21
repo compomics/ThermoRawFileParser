@@ -1090,35 +1090,49 @@ namespace ThermoRawFileParser.Writer
             }
 
             var activationCvParams = new List<CVParamType>();
-            if (reaction != null && reaction.CollisionEnergyValid)
+            for (int i = 0; ; i++)
             {
-                activationCvParams.Add(
-                    new CVParamType
-                    {
-                        accession = "MS:1000045",
-                        name = "collision energy",
-                        cvRef = "MS",
-                        value = reaction.CollisionEnergy.ToString(CultureInfo.InvariantCulture),
-                        unitCvRef = "UO",
-                        unitAccession = "UO:0000266",
-                        unitName = "electronvolt"
-                    });
-            }
-
-            if (reaction != null)
-            {
-                if (!OntologyMapping.DissociationTypes.TryGetValue(reaction.ActivationType, out var activation))
+                reaction = null;
+                try
                 {
-                    activation = new CVParamType
-                    {
-                        accession = "MS:1000044",
-                        name = "Activation Method",
-                        cvRef = "MS",
-                        value = ""
-                    };
+                    reaction = scanEvent.GetReaction(i);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    break;
                 }
 
-                activationCvParams.Add(activation);
+
+                if (reaction != null && reaction.CollisionEnergyValid)
+                {
+                    activationCvParams.Add(
+                        new CVParamType
+                        {
+                            accession = "MS:1000045",
+                            name = "collision energy",
+                            cvRef = "MS",
+                            value = reaction.CollisionEnergy.ToString(CultureInfo.InvariantCulture),
+                            unitCvRef = "UO",
+                            unitAccession = "UO:0000266",
+                            unitName = "electronvolt"
+                        });
+                }
+
+                if (reaction != null)
+                {
+                    if (!OntologyMapping.DissociationTypes.TryGetValue(reaction.ActivationType, out var activation))
+                    {
+                        activation = new CVParamType
+                        {
+                            accession = "MS:1000044",
+                            name = "Activation Method",
+                            cvRef = "MS",
+                            value = ""
+                        };
+                    }
+
+                    activationCvParams.Add(activation);
+                }
             }
 
             precursor.activation =
@@ -1169,7 +1183,7 @@ namespace ThermoRawFileParser.Writer
             var scanType = new ScanType
             {
                 instrumentConfigurationRef = instrumentConfigurationRef,
-                cvParam = new CVParamType[2]
+                cvParam = new CVParamType[3]
             };
 
             scanType.cvParam[0] = new CVParamType
@@ -1189,6 +1203,28 @@ namespace ThermoRawFileParser.Writer
                 accession = "MS:1000512",
                 value = scanEvent.ToString(),
                 cvRef = "MS"
+            };
+
+            // ion injection time
+            var trailerLabels = _rawFile.GetTrailerExtraInformation(scanNumber);
+            var ionInjectionTime = 0.0;
+            for (int i = 0; i < trailerLabels.Length; i++)
+            {
+                if (trailerLabels.Labels[i] == "Ion Injection Time (ms):")
+                {
+                    ionInjectionTime = (float)_rawFile.GetTrailerExtraValue(scanNumber, i);
+                    break;
+                }
+            }
+            scanType.cvParam[2] = new CVParamType
+            {
+                name = "ion injection time",
+                cvRef = "MS",
+                accession = "MS:1000927",
+                value = ionInjectionTime.ToString(),
+                unitCvRef = "UO",
+                unitAccession = "UO:0000028",
+                unitName = "millisecond"
             };
 
             if (monoisotopicMass.HasValue)
