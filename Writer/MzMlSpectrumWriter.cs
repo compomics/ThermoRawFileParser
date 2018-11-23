@@ -679,7 +679,7 @@ namespace ThermoRawFileParser.Writer
                         value = ""
                     });
 
-                    // Construct and set the precursor list element of the spectrum
+                    // Construct and set the precursor list element of the spectrum                    
                     var precursorListType = ConstructPrecursorList(scanEvent, charge);
                     spectrum.precursorList = precursorListType;
                     break;
@@ -1096,20 +1096,11 @@ namespace ThermoRawFileParser.Writer
                     };
             }
 
+            // Activation            
             var activationCvParams = new List<CVParamType>();
-            for (int i = 0;; i++)
+            if (reaction != null)
             {
-                reaction = null;
-                try
-                {
-                    reaction = scanEvent.GetReaction(i);
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    break;
-                }
-
-                if (reaction != null && reaction.CollisionEnergyValid)
+                if (reaction.CollisionEnergyValid)
                 {
                     activationCvParams.Add(
                         new CVParamType
@@ -1124,22 +1115,76 @@ namespace ThermoRawFileParser.Writer
                         });
                 }
 
-                if (reaction != null)
+                if (!OntologyMapping.DissociationTypes.TryGetValue(reaction.ActivationType, out var activation))
                 {
-                    if (!OntologyMapping.DissociationTypes.TryGetValue(reaction.ActivationType, out var activation))
+                    activation = new CVParamType
                     {
-                        activation = new CVParamType
-                        {
-                            accession = "MS:1000044",
-                            name = "Activation Method",
-                            cvRef = "MS",
-                            value = ""
-                        };
-                    }
-
-                    activationCvParams.Add(activation);
+                        accession = "MS:1000044",
+                        name = "Activation Method",
+                        cvRef = "MS",
+                        value = ""
+                    };
                 }
+
+                activationCvParams.Add(activation);
             }
+
+            // Check for supplemental activation
+            if (scanEvent.SupplementalActivation == TriState.On)
+            {
+                try
+                {
+                    reaction = scanEvent.GetReaction(1);
+
+                    if (reaction != null)
+                    {
+                        if (reaction.CollisionEnergyValid)
+                        {
+                            activationCvParams.Add(
+                                new CVParamType
+                                {
+                                    accession = "MS:1002680",
+                                    name = "supplemental collision energy",
+                                    cvRef = "MS",
+                                    value = reaction.CollisionEnergy.ToString(CultureInfo.InvariantCulture),
+                                    unitCvRef = "UO",
+                                    unitAccession = "UO:0000266",
+                                    unitName = "electronvolt"
+                                });
+                        }
+
+                        // Add this supplemental CV term
+                        // TODO: use a more generic approach
+                        if (reaction.ActivationType == ActivationType.HigherEnergyCollisionalDissociation)
+                        {
+                            activationCvParams.Add(new CVParamType
+                            {
+                                accession = "MS:1002678",
+                                name = "supplemental beam-type collision-induced dissociation",
+                                cvRef = "MS",
+                                value = ""
+                            });
+                        }
+
+                        if (!OntologyMapping.DissociationTypes.TryGetValue(reaction.ActivationType, out var activation))
+                        {
+                            activation = new CVParamType
+                            {
+                                accession = "MS:1000044",
+                                name = "Activation Method",
+                                cvRef = "MS",
+                                value = ""
+                            };
+                        }
+
+                        activationCvParams.Add(activation);
+                    }
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    // Do nothing
+                }
+            }            
 
             precursor.activation =
                 new ParamGroupType
