@@ -66,8 +66,8 @@ Create example for reusing the container:
 ```
 docker create -v /home/user/raw:/data_input --name=rawparser -it thermorawparser
 docker start rawparser
-docker exec testing4 mono /src/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0 -c=PXD00001
-docker exec testing4 mono /src/bin/Debug/ThermoRawFileParser.exe -i=/data_input/another_raw_file.raw -o=/data_input/output/ -f=0 -g -m=0 -c=PXD00001
+docker exec rawparser mono /src/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0 -c=PXD00001
+docker exec rawparser mono /src/bin/Debug/ThermoRawFileParser.exe -i=/data_input/another_raw_file.raw -o=/data_input/output/ -f=0 -g -m=0 -c=PXD00001
 docker stop rawparser
 ```
 
