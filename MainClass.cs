@@ -1,4 +1,6 @@
 ﻿using System;
+using log4net;
+using log4net.Core;
 using Mono.Options;
 using ThermoFisher.CommonCore.Data;
 
@@ -6,8 +8,7 @@ namespace ThermoRawFileParser
 {
     public static class MainClass
     {
-        private static readonly log4net.ILog Log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public static void Main(string[] args)
         {
@@ -23,7 +24,8 @@ namespace ThermoRawFileParser
             string msRun = null;
             string subFolder = null;
             string s3url = null;
-            string s3key = null; 
+            string s3key = null;
+            var verbose = false; 
             
             var help = false;
 
@@ -73,14 +75,18 @@ namespace ThermoRawFileParser
                     v => subFolder = v
                 },
                 {
-                    "s3|s3:",
+                    "s3|s3_bucket:",
                     "Optional property to write directly the data into an S3 bucket", 
                     v => s3url = v
                 },
                 {
-                    "s3key|s3key:", 
+                    "s3key|s3_key:", 
                     "Optional key for the S3 bucket to write the file output", 
                     v => s3key = v
+                },
+                {
+                    "v|verbose", "Verbose the programm and the individual steps",
+                    v => verbose = v != null
                 }
                     
             };
@@ -179,9 +185,13 @@ namespace ThermoRawFileParser
 
             try
             {
-                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip,
-                    outputMetadataFormat,
-                    includeProfileData, collection, msRun, subFolder);
+                if (verbose)
+                {
+                    ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetLoggerRepository()).Root.Level = Level.Debug;
+                    ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetLoggerRepository()).RaiseConfigurationChanged(EventArgs.Empty);
+
+                }
+                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip, outputMetadataFormat, includeProfileData, collection, msRun, subFolder,  Log);
                 RawFileParser.Parse(parseInput);
             }
             catch (Exception ex)

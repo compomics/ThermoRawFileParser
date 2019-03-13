@@ -8,9 +8,12 @@ using ThermoRawFileParser.Writer.MzML;
 
 namespace ThermoRawFileParserTest
 {
+    
     [TestFixture]
     public class Tests
     {
+        private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         [Test]
         public void TestMgf()
         {
@@ -20,7 +23,7 @@ namespace ThermoRawFileParserTest
             var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
             var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mgf, false, MetadataFormat.NON, false,
                 "coll",
-                "run", "sub");
+                "run", "sub", Log);
 
             RawFileParser.Parse(parseInput);
 
@@ -41,7 +44,7 @@ namespace ThermoRawFileParserTest
 
             var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
             var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mzml, false, MetadataFormat.NON, false,
-                "coll", "run", "sub");
+                "coll", "run", "sub", Log);
 
             RawFileParser.Parse(parseInput);
 

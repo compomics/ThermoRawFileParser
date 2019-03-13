@@ -60,8 +60,10 @@ namespace ThermoRawFileParser
         /// </summary>
         public string RawFileNameWithoutExtension { get; }
 
+        public log4net.ILog Log { get; }
+
         public ParseInput(string rawFilePath, string outputDirectory, OutputFormat outputFormat, bool gzip,
-            MetadataFormat outputMetadata, bool excludeProfileData, string collection, string msRun, string subFolder)
+            MetadataFormat outputMetadata, bool excludeProfileData, string collection, string msRun, string subFolder, log4net.ILog log)
         {
             RawFilePath = rawFilePath;
             var splittedPath = RawFilePath.Split('/');
@@ -75,6 +77,7 @@ namespace ThermoRawFileParser
             Collection = collection;
             MsRun = msRun;
             SubFolder = subFolder;
+            Log = log;
         }
     }
 }

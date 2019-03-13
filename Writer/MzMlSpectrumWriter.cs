@@ -18,10 +18,9 @@ namespace ThermoRawFileParser.Writer
 {
     public class MzMlSpectrumWriter : SpectrumWriter
     {
-        private static readonly log4net.ILog Log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         private IRawDataPlus _rawFile;
+
+        private log4net.ILog Log; 
 
         // Dictionary to keep track of the different mass analyzers (key: Thermo MassAnalyzerType; value: the reference string)       
         private readonly Dictionary<MassAnalyzerType, string> _massAnalyzers =
@@ -34,8 +33,9 @@ namespace ThermoRawFileParser.Writer
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
         private int _precursorScanNumber;
 
-        public MzMlSpectrumWriter(ParseInput parseInput) : base(parseInput)
+        public MzMlSpectrumWriter(ParseInput parseInput , log4net.ILog log ) : base(parseInput)
         {
+            Log = log; 
         }
 
         /// <inheritdoc />
@@ -54,6 +54,7 @@ namespace ThermoRawFileParser.Writer
                 if (spectrum != null)
                 {
                     spectra.Add(spectrum);
+                    Log.Debug("Spectrum Added to List of Spectra -- ID " + spectrum.id);
                 }
             }
 
