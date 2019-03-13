@@ -1,20 +1,20 @@
 # ThermoRawFileParser
 
-Wrapper around the .net (C#) ThermoFisher ThermoRawFileReader library for running on Linux with mono. It takes a thermo RAW file as input and outputs a metadata file and the spectra in 3 possible formats
+Wrapper around the .net (C#) ThermoFisher ThermoRawFileReader library for running on Linux with mono (works on Windows too). It takes a thermo RAW file as input and outputs a metadata file and the spectra in 3 possible formats
 * MGF: only MS2 spectra
 * mzML: both MS1 and MS2 spectra
 * Apache Parquet: under development
 
 RawFileReader reading tool. Copyright © 2016 by Thermo Fisher Scientific, Inc. All rights reserved
 
-## Requirements
+## (Linux) Requirements
 [Mono](https://www.mono-project.com/download/stable/#download-lin) (install mono-complete if you encounter "assembly not found" errors).
 
 ## Usage
 ```
 mono ThermoRawFileParser.exe -i=/home/user/data_input/raw_file.raw -o=/home/user/data_input/output/ -f=0 -g -m=0 -c=PXD00001
 ```
-The optional parameters only work in the -option=value format. The tool can output some RAW file metadata `-m=0|1` (0 for JSON format, 1 for TXT format) and the spectra file `-f` or both. For the MGF format, `-p` flag is used to exclude MS2 profile mode data (the MGF files can get big when the MS2 spectra were acquired in profile mode). 
+For running on Windows, omit `mono`. The optional parameters only work in the -option=value format. The tool can output some RAW file metadata `-m=0|1` (0 for JSON format, 1 for TXT format) and the spectra file `-f` or both. For the MGF format, `-p` flag is used to exclude MS2 profile mode data (the MGF files can get big when the MS2 spectra were acquired in profile mode). 
 
 ```
 ThermoRawFileParser.exe usage is (use -option=value for the optional arguments):
@@ -62,6 +62,14 @@ Run example:
 ```
 docker run -v /home/user/raw:/data_input -i -t thermorawparser mono /src/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0 -c=PXD00001
 ```
+Create example for reusing the container:
+```
+docker create -v /home/user/raw:/data_input --name=rawparser -it thermorawparser
+docker start rawparser
+docker exec rawparser mono /src/bin/x64/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0 -c=PXD00001
+docker exec rawparser mono /src/bin/x64/Debug/ThermoRawFileParser.exe -i=/data_input/another_raw_file.raw -o=/data_input/output/ -f=0 -g -m=0 -c=PXD00001
+docker stop rawparser
+```
 
 ### Biocontainers docker
 
@@ -71,7 +79,7 @@ docker build --no-cache -t thermorawparser .
 ```
 Run example:
 ```
-docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser mono /home/biodocker/bin/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0 -c=PXD00001
+docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser mono /home/biodocker/bin/bin/x64/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0 -c=PXD00001
 ```
 or with the bash script (`ThermoRawFileParser.sh`):
 ```
