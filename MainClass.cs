@@ -22,6 +22,9 @@ namespace ThermoRawFileParser
             string collection = null;
             string msRun = null;
             string subFolder = null;
+            string s3url = null;
+            string s3key = null; 
+            
             var help = false;
 
             var optionSet = new OptionSet
@@ -68,7 +71,18 @@ namespace ThermoRawFileParser
                     "s:|subfolder:",
                     "Optional, to disambiguate instances where the same collection has 2 or more MS runs with the same name.",
                     v => subFolder = v
+                },
+                {
+                    "s3|s3:",
+                    "Optional property to write directly the data into an S3 bucket", 
+                    v => s3url = v
+                },
+                {
+                    "s3key|s3key:", 
+                    "Optional key for the S3 bucket to write the file output", 
+                    v => s3key = v
                 }
+                    
             };
 
             try
