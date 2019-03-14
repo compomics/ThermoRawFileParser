@@ -27,7 +27,8 @@ namespace ThermoRawFileParser
             string s3AccessKeyId = null;
             string s3SecretAccessKey = null; 
             var verbose = false;
-            string bucketName = null; 
+            string bucketName = null;
+            var ignoreInstrumentErrors = false; 
             
             var help = false;
 
@@ -99,7 +100,13 @@ namespace ThermoRawFileParser
                 {
                     "v|verbose", "Verbose the programm and the individual steps",
                     v => verbose = v != null
+                },
+                {
+                    "ignoreInstrumentErrors", "", 
+                    v => ignoreInstrumentErrors = v != null
                 }
+                
+                
                     
             };
 
@@ -204,7 +211,7 @@ namespace ThermoRawFileParser
 
                 }
                 var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip, outputMetadataFormat, 
-                    includeProfileData, collection, msRun, subFolder, Log, s3url, s3AccessKeyId, s3SecretAccessKey, bucketName);
+                    includeProfileData, collection, msRun, subFolder, Log, s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors);
                 RawFileParser.Parse(parseInput);
             }
             catch (Exception ex)

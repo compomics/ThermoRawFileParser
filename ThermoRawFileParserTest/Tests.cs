@@ -23,7 +23,7 @@ namespace ThermoRawFileParserTest
             var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
             var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mgf, false, MetadataFormat.NON, false,
                 "coll",
-                "run", "sub", Log, null, null, null, null);
+                "run", "sub", Log, null, null, null, null ,false);
 
             RawFileParser.Parse(parseInput);
 
@@ -44,7 +44,7 @@ namespace ThermoRawFileParserTest
 
             var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
             var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mzml, false, MetadataFormat.NON, false,
-                "coll", "run", "sub", Log,  null, null, null, null);
+                "coll", "run", "sub", Log,  null, null, null, null, false);
 
             RawFileParser.Parse(parseInput);
 

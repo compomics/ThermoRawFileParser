@@ -610,12 +610,23 @@ namespace ThermoRawFileParser.Writer
             };
 
             // Add the ionization type if necessary
-            if (!_ionizationTypes.ContainsKey(scanFilter.IonizationMode))
+            try
             {
-                _ionizationTypes.Add(scanFilter.IonizationMode,
-                    OntologyMapping.IonizationTypes[scanFilter.IonizationMode]);
+                if (!_ionizationTypes.ContainsKey(scanFilter.IonizationMode))
+                {
+                    _ionizationTypes.Add(scanFilter.IonizationMode,
+                        OntologyMapping.IonizationTypes[scanFilter.IonizationMode]);
+                }
             }
-
+            catch (Exception e)
+            {
+                Log.Warn("The IonizationMode do not contains the following property --" + e.Message);
+                if (!_parseInput.IgnoreInstrumentErrors)
+                {
+                    throw e; 
+                }
+                    
+            }
             // Add the mass analyzer if necessary
             if (!_massAnalyzers.ContainsKey(scanFilter.MassAnalyzer) &&
                 OntologyMapping.MassAnalyzerTypes.ContainsKey(scanFilter.MassAnalyzer))
