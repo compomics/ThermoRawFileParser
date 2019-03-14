@@ -24,8 +24,10 @@ namespace ThermoRawFileParser
             string msRun = null;
             string subFolder = null;
             string s3url = null;
-            string s3key = null;
-            var verbose = false; 
+            string s3AccessKeyId = null;
+            string s3SecretAccessKey = null; 
+            var verbose = false;
+            string bucketName = null; 
             
             var help = false;
 
@@ -75,14 +77,24 @@ namespace ThermoRawFileParser
                     v => subFolder = v
                 },
                 {
-                    "s3|s3_bucket:",
-                    "Optional property to write directly the data into an S3 bucket", 
+                    "u:|s3_url:",
+                    "Optional property to write directly the data into S3 Storage", 
                     v => s3url = v
                 },
                 {
-                    "s3key|s3_key:", 
+                    "k:|s3_accesskeyid:", 
                     "Optional key for the S3 bucket to write the file output", 
-                    v => s3key = v
+                    v => s3AccessKeyId = v
+                },
+                {
+                    "t:|s3_secretaccesskey:", 
+                    "Optional key for the S3 bucket to write the file output", 
+                    v => s3SecretAccessKey = v
+                },
+                {
+                    "n:|s3_bucketName:", 
+                    "S3 bucket name", 
+                    v => bucketName = v 
                 },
                 {
                     "v|verbose", "Verbose the programm and the individual steps",
@@ -191,7 +203,8 @@ namespace ThermoRawFileParser
                     ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetLoggerRepository()).RaiseConfigurationChanged(EventArgs.Empty);
 
                 }
-                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip, outputMetadataFormat, includeProfileData, collection, msRun, subFolder,  Log);
+                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip, outputMetadataFormat, 
+                    includeProfileData, collection, msRun, subFolder, Log, s3url, s3AccessKeyId, s3SecretAccessKey, bucketName);
                 RawFileParser.Parse(parseInput);
             }
             catch (Exception ex)

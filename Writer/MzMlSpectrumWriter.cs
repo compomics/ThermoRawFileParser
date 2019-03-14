@@ -20,7 +20,9 @@ namespace ThermoRawFileParser.Writer
     {
         private IRawDataPlus _rawFile;
 
-        private log4net.ILog Log; 
+        private log4net.ILog Log;
+
+        private ParseInput _parseInput;
 
         // Dictionary to keep track of the different mass analyzers (key: Thermo MassAnalyzerType; value: the reference string)       
         private readonly Dictionary<MassAnalyzerType, string> _massAnalyzers =
@@ -35,7 +37,8 @@ namespace ThermoRawFileParser.Writer
 
         public MzMlSpectrumWriter(ParseInput parseInput , log4net.ILog log ) : base(parseInput)
         {
-            Log = log; 
+            Log = log;
+            _parseInput = parseInput; 
         }
 
         /// <inheritdoc />
@@ -91,6 +94,13 @@ namespace ThermoRawFileParser.Writer
             {
                 var mzmlSerializer = new XmlSerializer(typeof(mzMLType));
                 mzmlSerializer.Serialize(Writer, mzMl);
+                if (_parseInput.S3loader != null)
+                {
+                    Writer.Flush();
+                    Writer.BaseStream.Position = 0; 
+                    _parseInput.S3loader.loadObjectToS3(getFullPath(), getFullPath(), "mzML", getFullPath()); 
+                } 
+                    
             }
         }
 

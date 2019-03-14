@@ -40,17 +40,18 @@ USER biodocker
 
 RUN mkdir -p /home/biodocker/bin/
 WORKDIR /home/biodocker/bin/
-RUN git clone  -b master --single-branch https://github.com/compomics/ThermoRawFileParser /home/biodocker/bin
+RUN git clone  -b master --single-branch https://github.com/ypriverol/ThermoRawFileParser /home/biodocker/bin
 RUN msbuild
+RUN ls -l -R 
 
 
-COPY ThermoRawFileParser /home/biodocker/bin/bin/Debug/
+COPY ThermoRawFileParser /home/biodocker/bin/bin/x64/Debug/
 
 USER root
-RUN chmod +x /home/biodocker/bin/bin/Debug/ThermoRawFileParser
-RUN chmod +x /home/biodocker/bin/bin/Debug/ThermoRawFileParser.exe
-RUN chown biodocker:biodocker /home/biodocker/bin/bin/Debug/ThermoRawFileParser
+RUN chmod +x /home/biodocker/bin/bin/x64/Debug/ThermoRawFileParser
+RUN chmod +x /home/biodocker/bin/bin/x64/Debug/ThermoRawFileParser.exe
+RUN chown biodocker:biodocker /home/biodocker/bin/bin/x64/Debug/ThermoRawFileParser
 
 USER biodocker
-ENV PATH=/home/biodocker/bin/bin/Debug/:$PATH
+ENV PATH=/home/biodocker/bin/bin/x64/Debug/:$PATH
 

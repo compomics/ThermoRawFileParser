@@ -52,6 +52,12 @@ namespace ThermoRawFileParser.Writer
             }
         }
 
+        public string getFullPath()
+        {
+            FileStream fs = (FileStream) Writer.BaseStream;
+            return fs.Name; 
+        }
+
         /// <summary>
         /// Construct the spectrum title.
         /// </summary>
