@@ -40,7 +40,7 @@ USER biodocker
 
 RUN mkdir -p /home/biodocker/bin/
 WORKDIR /home/biodocker/bin/
-RUN git clone  -b master --single-branch https://github.com/ypriverol/ThermoRawFileParser /home/biodocker/bin
+RUN git clone  -b master --single-branch https://github.com/compomics/ThermoRawFileParser /home/biodocker/bin
 RUN msbuild
 RUN ls -l -R 
 
