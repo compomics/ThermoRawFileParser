@@ -102,7 +102,7 @@ namespace ThermoRawFileParser
                     v => verbose = v != null
                 },
                 {
-                    "ignoreInstrumentErrors", "", 
+                    "ignoreInstrumentErrors", "Ignore missing properties by the instrument", 
                     v => ignoreInstrumentErrors = v != null
                 }
                 

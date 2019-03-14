@@ -36,6 +36,20 @@ ThermoRawFileParser.exe usage is (use -option=value for the optional arguments):
   -s, --subfolder[=VALUE]    Optional, to disambiguate instances where the same
                                collection has 2 or more MS runs with the same
                                name.
+  -u, --s3_url[=VALUE]       Optional property to write directly the data into
+                               S3 Storage
+  -k, --s3_accesskeyid[=VALUE]
+                             Optional key for the S3 bucket to write the file
+                               output
+  -t, --s3_secretaccesskey[=VALUE]
+                             Optional key for the S3 bucket to write the file
+                               output
+  -n, --s3_bucketName[=VALUE]
+                             S3 bucket name
+  -v, --verbose              Verbose the programm and the individual steps
+      --ignoreInstrumentErrors
+                             Ignore missing properties by the instrument
+
 ```
 
 ## Download
