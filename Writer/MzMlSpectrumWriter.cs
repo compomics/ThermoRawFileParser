@@ -18,10 +18,11 @@ namespace ThermoRawFileParser.Writer
 {
     public class MzMlSpectrumWriter : SpectrumWriter
     {
-        private static readonly log4net.ILog Log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         private IRawDataPlus _rawFile;
+
+        private log4net.ILog Log;
+
+        private ParseInput _parseInput;
 
         // Dictionary to keep track of the different mass analyzers (key: Thermo MassAnalyzerType; value: the reference string)       
         private readonly Dictionary<MassAnalyzerType, string> _massAnalyzers =
@@ -34,8 +35,10 @@ namespace ThermoRawFileParser.Writer
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
         private int _precursorScanNumber;
 
-        public MzMlSpectrumWriter(ParseInput parseInput) : base(parseInput)
+        public MzMlSpectrumWriter(ParseInput parseInput, log4net.ILog log) : base(parseInput)
         {
+            Log = log;
+            _parseInput = parseInput;
         }
 
         /// <inheritdoc />
@@ -54,6 +57,7 @@ namespace ThermoRawFileParser.Writer
                 if (spectrum != null)
                 {
                     spectra.Add(spectrum);
+                    Log.Debug("Spectrum Added to List of Spectra -- ID " + spectrum.id);
                 }
             }
 
@@ -90,6 +94,12 @@ namespace ThermoRawFileParser.Writer
             {
                 var mzmlSerializer = new XmlSerializer(typeof(mzMLType));
                 mzmlSerializer.Serialize(Writer, mzMl);
+                if (_parseInput.S3loader != null)
+                {
+                    Writer.Flush();
+                    Writer.BaseStream.Position = 0;
+                    _parseInput.S3loader.loadObjectToS3(getFullPath(), getFullPath(), "mzML", getFullPath());
+                }
             }
         }
 
@@ -217,7 +227,7 @@ namespace ThermoRawFileParser.Writer
             mzMl.softwareList.software[0] = new SoftwareType
             {
                 id = "ThermoRawFileParser",
-                version = "1.0.0",
+                version = "1.0.7",
                 cvParam = new CVParamType[1]
             };
 
@@ -599,10 +609,21 @@ namespace ThermoRawFileParser.Writer
             };
 
             // Add the ionization type if necessary
-            if (!_ionizationTypes.ContainsKey(scanFilter.IonizationMode))
+            try
             {
-                _ionizationTypes.Add(scanFilter.IonizationMode,
-                    OntologyMapping.IonizationTypes[scanFilter.IonizationMode]);
+                if (!_ionizationTypes.ContainsKey(scanFilter.IonizationMode))
+                {
+                    _ionizationTypes.Add(scanFilter.IonizationMode,
+                        OntologyMapping.IonizationTypes[scanFilter.IonizationMode]);
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Warn("The IonizationMode does not contains the following property --" + e.Message);
+                if (!_parseInput.IgnoreInstrumentErrors)
+                {
+                    throw e;
+                }
             }
 
             // Add the mass analyzer if necessary

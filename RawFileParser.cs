@@ -21,6 +21,7 @@ namespace ThermoRawFileParser
             // Check to see if the RAW file name was supplied as an argument to the program
             if (string.IsNullOrEmpty(parseInput.RawFilePath))
             {
+                parseInput.Log.Debug("No raw file specified or found in path");
                 throw new Exception("No RAW file specified!");
             }
 
