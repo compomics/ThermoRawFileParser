@@ -1,9 +1,15 @@
-﻿using System.IO;
+﻿using System.ComponentModel;
+using System.IO;
+using NUnit.Framework.Constraints;
+using ThermoRawFileParser.Writer;
 
 namespace ThermoRawFileParser
 {
     public class ParseInput
     {
+        private string bucketName;
+        private bool ignoreInstrumentErrors;
+
         /// <summary>
         /// The RAW file path.
         /// </summary>
@@ -60,8 +66,27 @@ namespace ThermoRawFileParser
         /// </summary>
         public string RawFileNameWithoutExtension { get; }
 
+        public log4net.ILog Log { get; }
+        
+        public S3Loader S3loader { get; set; }
+        
+        public string S3AccessKeyId { get; set; }
+
+        public string S3SecretAccessKey { get; set; }
+        
+        public string S3url { get; set; }
+        
+        public bool IgnoreInstrumentErrors
+        {
+            get => ignoreInstrumentErrors;
+            set => ignoreInstrumentErrors = value;
+        }
+
+
         public ParseInput(string rawFilePath, string outputDirectory, OutputFormat outputFormat, bool gzip,
-            MetadataFormat outputMetadata, bool excludeProfileData, string collection, string msRun, string subFolder)
+            MetadataFormat outputMetadata, bool excludeProfileData, string collection, string msRun, string subFolder, 
+            log4net.ILog log, string s3url, string s3AccessKeyId, string s3SecretAccessKey, string bucketName, bool ignoreInstrumentErrors
+            )
         {
             RawFilePath = rawFilePath;
             var splittedPath = RawFilePath.Split('/');
@@ -75,6 +100,20 @@ namespace ThermoRawFileParser
             Collection = collection;
             MsRun = msRun;
             SubFolder = subFolder;
+            Log = log;
+            S3url = s3url; 
+            S3AccessKeyId = s3AccessKeyId;
+            S3SecretAccessKey = s3SecretAccessKey;
+            this.bucketName = bucketName;
+            this.ignoreInstrumentErrors = ignoreInstrumentErrors; 
+
+            if (S3url != null && S3AccessKeyId != null && S3SecretAccessKey != null)
+                initializeS3bucket(s3url, s3AccessKeyId, s3SecretAccessKey, bucketName); 
+
+        }
+        private void initializeS3bucket(string s3url, string s3AccessKeyId, string s3SecretAccessKey, string bucketName)
+        {
+            S3loader = new S3Loader(s3url, s3AccessKeyId, s3SecretAccessKey, bucketName);
         }
     }
 }

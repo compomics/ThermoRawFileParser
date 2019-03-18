@@ -1,4 +1,6 @@
 ﻿using System;
+using log4net;
+using log4net.Core;
 using Mono.Options;
 using ThermoFisher.CommonCore.Data;
 
@@ -6,8 +8,7 @@ namespace ThermoRawFileParser
 {
     public static class MainClass
     {
-        private static readonly log4net.ILog Log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public static void Main(string[] args)
         {
@@ -22,6 +23,13 @@ namespace ThermoRawFileParser
             string collection = null;
             string msRun = null;
             string subFolder = null;
+            string s3url = null;
+            string s3AccessKeyId = null;
+            string s3SecretAccessKey = null; 
+            var verbose = false;
+            string bucketName = null;
+            var ignoreInstrumentErrors = false; 
+            
             var help = false;
 
             var optionSet = new OptionSet
@@ -68,7 +76,38 @@ namespace ThermoRawFileParser
                     "s:|subfolder:",
                     "Optional, to disambiguate instances where the same collection has 2 or more MS runs with the same name.",
                     v => subFolder = v
+                },
+                {
+                    "u:|s3_url:",
+                    "Optional property to write directly the data into S3 Storage", 
+                    v => s3url = v
+                },
+                {
+                    "k:|s3_accesskeyid:", 
+                    "Optional key for the S3 bucket to write the file output", 
+                    v => s3AccessKeyId = v
+                },
+                {
+                    "t:|s3_secretaccesskey:", 
+                    "Optional key for the S3 bucket to write the file output", 
+                    v => s3SecretAccessKey = v
+                },
+                {
+                    "n:|s3_bucketName:", 
+                    "S3 bucket name", 
+                    v => bucketName = v 
+                },
+                {
+                    "v|verbose", "Verbose the programm and the individual steps",
+                    v => verbose = v != null
+                },
+                {
+                    "ignoreInstrumentErrors", "Ignore missing properties by the instrument", 
+                    v => ignoreInstrumentErrors = v != null
                 }
+                
+                
+                    
             };
 
             try
@@ -165,9 +204,14 @@ namespace ThermoRawFileParser
 
             try
             {
-                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip,
-                    outputMetadataFormat,
-                    includeProfileData, collection, msRun, subFolder);
+                if (verbose)
+                {
+                    ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetLoggerRepository()).Root.Level = Level.Debug;
+                    ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetLoggerRepository()).RaiseConfigurationChanged(EventArgs.Empty);
+
+                }
+                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip, outputMetadataFormat, 
+                    includeProfileData, collection, msRun, subFolder, Log, s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors);
                 RawFileParser.Parse(parseInput);
             }
             catch (Exception ex)
