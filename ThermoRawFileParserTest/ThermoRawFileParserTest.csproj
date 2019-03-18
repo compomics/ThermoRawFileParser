@@ -108,20 +108,12 @@
       <HintPath>..\packages\mzLib.1.0.329\lib\net471\Thermo.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ThermoFisher.CommonCore.BackgroundSubtraction, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
-      <HintPath>..\packages\ThermoFisher.CommonCore.RawFileReader.4.0.26\lib\ThermoFisher.CommonCore.BackgroundSubtraction.dll</HintPath>
+    <Reference Include="ThermoFisher.CommonCore.Data, Version=4.0.89.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
+      <HintPath>..\packages\ThermoFisher.CommonCore.Data.4.0.89\lib\net451\ThermoFisher.CommonCore.Data.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ThermoFisher.CommonCore.Data, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
-      <HintPath>..\packages\ThermoFisher.CommonCore.RawFileReader.4.0.26\lib\ThermoFisher.CommonCore.Data.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ThermoFisher.CommonCore.MassPrecisionEstimator, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\ThermoFisher.CommonCore.RawFileReader.4.0.26\lib\ThermoFisher.CommonCore.MassPrecisionEstimator.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ThermoFisher.CommonCore.RawFileReader, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
-      <HintPath>..\packages\ThermoFisher.CommonCore.RawFileReader.4.0.26\lib\ThermoFisher.CommonCore.RawFileReader.dll</HintPath>
+    <Reference Include="ThermoFisher.CommonCore.RawFileReader, Version=4.0.89.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
+      <HintPath>..\packages\ThermoFisher.CommonCore.RawFileReader.4.0.89\lib\net451\ThermoFisher.CommonCore.RawFileReader.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="UsefulProteomicsDatabases, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">

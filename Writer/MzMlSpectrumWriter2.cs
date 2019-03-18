@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
+using System.Xml;
 using System.Xml.Serialization;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
@@ -16,7 +17,7 @@ using UserParamType = ThermoRawFileParser.Writer.MzML.UserParamType;
 
 namespace ThermoRawFileParser.Writer
 {
-    public class MzMlSpectrumWriter : SpectrumWriter
+    public class MzMlSpectrumWriter2 : SpectrumWriter
     {
         private static readonly log4net.ILog Log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -34,7 +35,9 @@ namespace ThermoRawFileParser.Writer
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
         private int _precursorScanNumber;
 
-        public MzMlSpectrumWriter(ParseInput parseInput) : base(parseInput)
+        private XmlSerializerFactory factory = new XmlSerializerFactory();
+
+        public MzMlSpectrumWriter2(ParseInput parseInput) : base(parseInput)
         {
         }
 
@@ -43,62 +46,57 @@ namespace ThermoRawFileParser.Writer
         {
             _rawFile = rawFile;
 
-            // Initialize the mzML root element
-            var mzMl = InitializeMzMl();
+            string ns = "http://psi.hupo.org/ms/mzml";
+            string xsi = "http://www.w3.org/2001/XMLSchema-instance";
 
-            // Add the spectra to a temporary list
-            var spectra = new List<SpectrumType>();
-            for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
-            {
-                var spectrum = ConstructSpectrum(scanNumber);
-                if (spectrum != null)
-                {
-                    spectra.Add(spectrum);
-                }
-            }
+            XmlSerializer spectrumSerializer = factory.CreateSerializer(typeof(SpectrumType));
+            XmlSerializer cvParamSerializer = factory.CreateSerializer(typeof(CVParamType));
+            XmlSerializer serializer;
 
-            // Add the spectra to the spectrum list element
-            if (spectra.Count > 0)
-            {
-                mzMl.run.spectrumList.spectrum = new SpectrumType[spectra.Count];
-                mzMl.run.spectrumList.count = spectra.Count.ToString();
-                for (var i = 0; i < spectra.Count; i++)
-                {
-                    var spectrum = spectra[i];
-                    spectrum.index = i.ToString();
-                    mzMl.run.spectrumList.spectrum[i] = spectrum;
-                }
-            }
-
-            // Construct and add the instrument configuration(s)
-            ConstructInstrumentConfigurationList(mzMl);
-
-            // Add the chromatogram data
-            var chromatograms = ConstructChromatograms(firstScanNumber, lastScanNumber);
-            if (!chromatograms.IsNullOrEmpty())
-            {
-                mzMl.run.chromatogramList = new ChromatogramListType
-                {
-                    count = chromatograms.Count.ToString(),
-                    defaultDataProcessingRef = "ThermoRawFileParserProcessing",
-                    chromatogram = chromatograms.ToArray()
-                };
-            }
+            XmlWriterSettings settings = new XmlWriterSettings();
+            settings.Indent = true;
 
             ConfigureWriter(".mzML");
-            using (Writer)
+            using (XmlWriter writer =
+                XmlWriter.Create(Writer, settings))
             {
-                var mzmlSerializer = new XmlSerializer(typeof(mzMLType));
-                mzmlSerializer.Serialize(Writer, mzMl);
+                writer.WriteStartDocument();
+                writer.WriteStartElement("mzML", ns);
+                writer.WriteAttributeString("xmlns", "xsi", null,"http://www.w3.org/2001/XMLSchema-instance");
+                writer.WriteAttributeString("xsi", "schemaLocation", null,"http://psi.hupo.org/ms/mzml http://psidev.info/files/ms/mzML/xsd/mzML1.1.0.xsd");
+                writer.WriteAttributeString("version", "1.1.0");
+                writer.WriteAttributeString("id", ParseInput.RawFileNameWithoutExtension);
+
+                // CV list
+                serializer = factory.CreateSerializer(typeof(CVType));
+                writer.WriteStartElement("cvList");
+                writer.WriteAttributeString("count", "2");
+                
+                
+                for (var scanNumber = firstScanNumber; scanNumber <= firstScanNumber + 10; scanNumber++)
+                {
+                    var spectrum = ConstructSpectrum(scanNumber);
+                    if (spectrum != null)
+                    {
+                        spectrumSerializer.Serialize(writer, spectrum);
+                    }
+                }
+
+                writer.WriteEndElement(); // mzML               
+                writer.WriteEndDocument();
             }
         }
+
 
         /// <summary>
         /// Initialize the mzML root element
         /// </summary>
         /// <returns></returns>
-        private mzMLType InitializeMzMl()
+        private void InitializeMzMl(XmlWriter writer)
         {
+            writer.WriteStartDocument();
+            writer.WriteStartElement("http://psi.hupo.org/ms/mzml");
+
             var mzMl = new mzMLType
             {
                 version = "1.1.0",
@@ -265,17 +263,102 @@ namespace ThermoRawFileParser.Writer
                     defaultDataProcessingRef = "ThermoRawFileParserProcessing"
                 }
             };
+        }
 
-            return mzMl;
+        public void Write2(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
+        {
+//            _rawFile = rawFile;
+//
+//            // Initialize the mzML root element
+//            var mzMl = InitializeMzMl();
+//
+//            // Add the spectra to a temporary list
+//            var spectra = new List<SpectrumType>();
+//            for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
+//            {
+//                var spectrum = ConstructSpectrum(scanNumber);
+//                if (spectrum != null)
+//                {
+//                    spectra.Add(spectrum);
+//                }
+//            }
+//
+//            // Add the spectra to the spectrum list element
+//            if (spectra.Count > 0)
+//            {
+//                mzMl.run.spectrumList.spectrum = new SpectrumType[spectra.Count];
+//                mzMl.run.spectrumList.count = spectra.Count.ToString();
+//                for (var i = 0; i < spectra.Count; i++)
+//                {
+//                    var spectrum = spectra[i];
+//                    spectrum.index = i.ToString();
+//                    mzMl.run.spectrumList.spectrum[i] = spectrum;
+//                }
+//            }
+//
+//            // Construct and add the instrument configuration(s)
+//            ConstructInstrumentConfigurationList(mzMl, firstScanNumber);
+//
+//            // Add the chromatogram data
+//            var chromatograms = ConstructChromatograms(firstScanNumber, lastScanNumber);
+//            if (!chromatograms.IsNullOrEmpty())
+//            {
+//                mzMl.run.chromatogramList = new ChromatogramListType
+//                {
+//                    count = chromatograms.Count.ToString(),
+//                    defaultDataProcessingRef = "ThermoRawFileParserProcessing",
+//                    chromatogram = chromatograms.ToArray()
+//                };
+//            }
+//
+//            ConfigureWriter(".mzML");
+//            using (Writer)
+//            {
+//                var mzmlSerializer = new XmlSerializer(typeof(mzMLType));
+//                mzmlSerializer.Serialize(Writer, mzMl);
+//            }
         }
 
         /// <summary>
         /// Populate the instrument configuration list
         /// </summary>
         /// <param name="mzMl"></param>
-        private void ConstructInstrumentConfigurationList(mzMLType mzMl)
+        private void ConstructInstrumentConfigurationList(mzMLType mzMl, int firstScanNumber)
         {
-            var instrumentData = _rawFile.GetInstrumentData();            
+            var instrumentData = _rawFile.GetInstrumentData();
+
+            // go over the first scans until
+            var encounteredMs2 = false;
+            var scanNumber = firstScanNumber;
+            do
+            {
+                // Get each scan from the RAW file
+                var scan = Scan.FromFile(_rawFile, scanNumber);
+
+                // Get the scan filter for this scan number
+                var scanFilter = _rawFile.GetFilterForScanNumber(scanNumber);
+
+                // Add the ionization type if necessary
+                if (!_ionizationTypes.ContainsKey(scanFilter.IonizationMode))
+                {
+                    _ionizationTypes.Add(scanFilter.IonizationMode,
+                        OntologyMapping.IonizationTypes[scanFilter.IonizationMode]);
+                }
+
+                // Add the mass analyzer if necessary
+                if (!_massAnalyzers.ContainsKey(scanFilter.MassAnalyzer) &&
+                    OntologyMapping.MassAnalyzerTypes.ContainsKey(scanFilter.MassAnalyzer))
+                {
+                    _massAnalyzers.Add(scanFilter.MassAnalyzer, "IC" + (_massAnalyzers.Count + 1));
+                }
+
+                if (scanFilter.MSOrder == MSOrderType.Ms2)
+                {
+                    encounteredMs2 = true;
+                }
+
+                scanNumber++;
+            } while (!encounteredMs2);
 
             // Referenceable param group for common instrument properties
             mzMl.referenceableParamGroupList = new ReferenceableParamGroupListType
@@ -413,6 +496,8 @@ namespace ThermoRawFileParser.Writer
                     .cvParam[0] = detectorCvParam;
                 massAnalyzerIndex++;
             }
+
+            Console.WriteLine(instrumentConfigurationList);
 
             mzMl.instrumentConfigurationList = instrumentConfigurationList;
         }
@@ -597,20 +682,6 @@ namespace ThermoRawFileParser.Writer
                 id = ConstructSpectrumTitle(scanNumber),
                 defaultArrayLength = 0
             };
-
-            // Add the ionization type if necessary
-            if (!_ionizationTypes.ContainsKey(scanFilter.IonizationMode))
-            {
-                _ionizationTypes.Add(scanFilter.IonizationMode,
-                    OntologyMapping.IonizationTypes[scanFilter.IonizationMode]);
-            }
-
-            // Add the mass analyzer if necessary
-            if (!_massAnalyzers.ContainsKey(scanFilter.MassAnalyzer) &&
-                OntologyMapping.MassAnalyzerTypes.ContainsKey(scanFilter.MassAnalyzer))
-            {
-                _massAnalyzers.Add(scanFilter.MassAnalyzer, "IC" + (_massAnalyzers.Count + 1));
-            }
 
             // Keep the CV params in a list and convert to array afterwards
             var spectrumCvParams = new List<CVParamType>
@@ -1049,9 +1120,10 @@ namespace ThermoRawFileParser.Writer
                     accession = "MS:1000041",
                     cvRef = "MS"
                 });
-            }                        
+            }
 
-            var precursorIntensity = GetPrecursorIntensity(_rawFile, _precursorScanNumber, precursorMass, _rawFile.RetentionTimeFromScanNumber(scanNumber), isolationWidth);
+            var precursorIntensity = GetPrecursorIntensity(_rawFile, _precursorScanNumber, precursorMass,
+                _rawFile.RetentionTimeFromScanNumber(scanNumber), isolationWidth);
             if (precursorIntensity != null)
             {
                 ionCvParams.Add(new CVParamType

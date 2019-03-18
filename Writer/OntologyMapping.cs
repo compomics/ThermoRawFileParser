@@ -377,7 +377,7 @@ namespace ThermoRawFileParser.Writer
                             value = ""
                         }
                     }
-                },                
+                },
                 {
                     "MS:1000483", new List<CVParamType>
                     {

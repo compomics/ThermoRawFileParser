@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Compression;
 using System.Text;
 using ThermoFisher.CommonCore.Data;
@@ -9,6 +10,8 @@ namespace ThermoRawFileParser.Writer
 {
     public abstract class SpectrumWriter : ISpectrumWriter
     {
+        private const double Tolerance = 0.01;
+
         /// <summary>
         /// The parse input object
         /// </summary>
@@ -92,19 +95,84 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         /// <param name="rawFile">the RAW file object</param>
         /// <param name="precursorScanNumber">the precursor scan number</param>
-        protected static double GetPrecursorIntensity(IRawDataPlus rawFile, int precursorScanNumber)
+        protected static double? GetPrecursorIntensity(IRawDataPlus rawFile, int precursorScanNumber,
+            double precursorMass, double retentionTime, double? isolationWidth)
         {
-            // Define the settings for getting the Base Peak chromatogram            
-            var settings = new ChromatogramTraceSettings(TraceType.BasePeak);
+            double? precursorIntensity = null;
 
-            // Get the chromatogram from the RAW file. 
-            var data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, precursorScanNumber,
-                precursorScanNumber);
+            // Get the scan from the RAW file
+            var scan = Scan.FromFile(rawFile, precursorScanNumber);
 
-            // Split the data into the chromatograms
-            var trace = ChromatogramSignal.FromChromatogramData(data);
+            // Check if the scan has a centroid stream
+            if (scan.HasCentroidStream)
+            {
+                var centroidStream = rawFile.GetCentroidStream(precursorScanNumber, false);
+                if (scan.CentroidScan.Length > 0)
+                {
+                    for (var i = 0; i < centroidStream.Length; i++)
+                    {
+                        if (Math.Abs(precursorMass - centroidStream.Masses[i]) < Tolerance)
+                        {
+                            //Console.WriteLine(Math.Abs(precursorMass - centroidStream.Masses[i]));
+                            //Console.WriteLine(precursorMass + " - " + centroidStream.Masses[i] + " - " +
+                            //                  centroidStream.Intensities[i]);
+                            precursorIntensity = centroidStream.Intensities[i];
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                rawFile.SelectInstrument(Device.MS, 1);
 
-            return trace[0].Intensities[0];
+                var component = new Component
+                {
+                    MassRange = new Limit
+                    {
+                        Low = (double) (precursorMass - isolationWidth / 2) ,
+                        High = (double) (precursorMass + isolationWidth / 2)
+                    },
+                    RtRange = new Limit {Low = rawFile.RetentionTimeFromScanNumber(precursorScanNumber), High = rawFile.RetentionTimeFromScanNumber(precursorScanNumber)},
+                };
+                ;
+
+                IChromatogramSettings[] allSettings =
+                {
+                    new ChromatogramTraceSettings(TraceType.MassRange)
+                    {
+                        Filter = Component.Filter,
+                        MassRanges = new[]
+                        {
+                            new Range(component.MassRange.Low, component.MassRange.High)
+                        }
+                    }
+                };
+                
+                var rtFilteredScans = rawFile.GetFilteredScansListByTimeRange("",
+                    component.RtRange.Low,
+                    component.RtRange.High);
+                var data = rawFile.GetChromatogramData(allSettings, rtFilteredScans[0],
+                    rtFilteredScans[rtFilteredScans.Count - 1]);
+
+                var chromatogramTrace = ChromatogramSignal.FromChromatogramData(data);
+            }
+
+            return precursorIntensity;
         }
+    }
+
+    public class Limit
+    {
+        public double Low { get; set; }
+        public double High { get; set; }
+    }
+
+    public class Component
+    {
+        public Limit RtRange { get; set; }
+        public Limit MassRange { get; set; }
+        public static string Filter { get; set; }
+        public string Name { get; set; }
     }
 }
