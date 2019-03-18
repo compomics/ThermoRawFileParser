@@ -47,8 +47,8 @@ ThermoRawFileParser.exe usage is (use -option=value for the optional arguments):
   -n, --s3_bucketName[=VALUE]
                              S3 bucket name
   -v, --verbose              Verbose the programm and the individual steps
-      --ignoreInstrumentErrors
-                             Ignore missing properties by the instrument
+  -e, --ignoreInstrumentErrors
+                             Ignore missing properties by the instrument.
 
 ```
 
