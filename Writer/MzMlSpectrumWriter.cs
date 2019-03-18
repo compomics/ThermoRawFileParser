@@ -35,10 +35,10 @@ namespace ThermoRawFileParser.Writer
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
         private int _precursorScanNumber;
 
-        public MzMlSpectrumWriter(ParseInput parseInput , log4net.ILog log ) : base(parseInput)
+        public MzMlSpectrumWriter(ParseInput parseInput, log4net.ILog log) : base(parseInput)
         {
             Log = log;
-            _parseInput = parseInput; 
+            _parseInput = parseInput;
         }
 
         /// <inheritdoc />
@@ -97,10 +97,9 @@ namespace ThermoRawFileParser.Writer
                 if (_parseInput.S3loader != null)
                 {
                     Writer.Flush();
-                    Writer.BaseStream.Position = 0; 
-                    _parseInput.S3loader.loadObjectToS3(getFullPath(), getFullPath(), "mzML", getFullPath()); 
-                } 
-                    
+                    Writer.BaseStream.Position = 0;
+                    _parseInput.S3loader.loadObjectToS3(getFullPath(), getFullPath(), "mzML", getFullPath());
+                }
             }
         }
 
@@ -228,7 +227,7 @@ namespace ThermoRawFileParser.Writer
             mzMl.softwareList.software[0] = new SoftwareType
             {
                 id = "ThermoRawFileParser",
-                version = "1.0.0",
+                version = "1.0.7",
                 cvParam = new CVParamType[1]
             };
 
@@ -620,13 +619,13 @@ namespace ThermoRawFileParser.Writer
             }
             catch (Exception e)
             {
-                Log.Warn("The IonizationMode do not contains the following property --" + e.Message);
+                Log.Warn("The IonizationMode does not contains the following property --" + e.Message);
                 if (!_parseInput.IgnoreInstrumentErrors)
                 {
-                    throw e; 
+                    throw e;
                 }
-                    
             }
+
             // Add the mass analyzer if necessary
             if (!_massAnalyzers.ContainsKey(scanFilter.MassAnalyzer) &&
                 OntologyMapping.MassAnalyzerTypes.ContainsKey(scanFilter.MassAnalyzer))
@@ -1206,7 +1205,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     // Do nothing
                 }
-            }            
+            }
 
             precursor.activation =
                 new ParamGroupType
