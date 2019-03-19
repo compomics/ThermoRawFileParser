@@ -138,7 +138,7 @@ namespace ThermoRawFileParser.Writer
             mzMl.cvList = new CVListType
             {
                 count = cvs.Count.ToString(),
-                cv = cvs.ToArray()
+                CvType = cvs.ToArray()
             };
 
             // File description

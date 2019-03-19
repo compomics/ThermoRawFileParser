@@ -35,10 +35,16 @@ namespace ThermoRawFileParser.Writer
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
         private int _precursorScanNumber;
 
-        private XmlSerializerFactory factory = new XmlSerializerFactory();
+        private readonly XmlSerializerFactory factory = new XmlSerializerFactory();
+        private const string ns = "http://psi.hupo.org/ms/mzml";
+        private readonly XmlSerializer cvParamSerializer;
+        private readonly XmlSerializerNamespaces ns2;
 
         public MzMlSpectrumWriter2(ParseInput parseInput) : base(parseInput)
         {
+            cvParamSerializer = factory.CreateSerializer(typeof(CVParamType));
+            ns2 = new XmlSerializerNamespaces();
+            ns2.Add(String.Empty, "http://psi.hupo.org/ms/mzml");
         }
 
         /// <inheritdoc />
@@ -46,11 +52,7 @@ namespace ThermoRawFileParser.Writer
         {
             _rawFile = rawFile;
 
-            string ns = "http://psi.hupo.org/ms/mzml";
-            string xsi = "http://www.w3.org/2001/XMLSchema-instance";
-
             XmlSerializer spectrumSerializer = factory.CreateSerializer(typeof(SpectrumType));
-            XmlSerializer cvParamSerializer = factory.CreateSerializer(typeof(CVParamType));
             XmlSerializer serializer;
 
             XmlWriterSettings settings = new XmlWriterSettings();
@@ -62,8 +64,9 @@ namespace ThermoRawFileParser.Writer
             {
                 writer.WriteStartDocument();
                 writer.WriteStartElement("mzML", ns);
-                writer.WriteAttributeString("xmlns", "xsi", null,"http://www.w3.org/2001/XMLSchema-instance");
-                writer.WriteAttributeString("xsi", "schemaLocation", null,"http://psi.hupo.org/ms/mzml http://psidev.info/files/ms/mzML/xsd/mzML1.1.0.xsd");
+                writer.WriteAttributeString("xmlns", "xsi", null, "http://www.w3.org/2001/XMLSchema-instance");
+                writer.WriteAttributeString("xsi", "schemaLocation", null,
+                    "http://psi.hupo.org/ms/mzml http://psidev.info/files/ms/mzML/xsd/mzML1.1.0.xsd");
                 writer.WriteAttributeString("version", "1.1.0");
                 writer.WriteAttributeString("id", ParseInput.RawFileNameWithoutExtension);
 
@@ -71,270 +74,185 @@ namespace ThermoRawFileParser.Writer
                 serializer = factory.CreateSerializer(typeof(CVType));
                 writer.WriteStartElement("cvList");
                 writer.WriteAttributeString("count", "2");
-                
-                
-                for (var scanNumber = firstScanNumber; scanNumber <= firstScanNumber + 10; scanNumber++)
-                {
-                    var spectrum = ConstructSpectrum(scanNumber);
-                    if (spectrum != null)
-                    {
-                        spectrumSerializer.Serialize(writer, spectrum);
-                    }
-                }
-
-                writer.WriteEndElement(); // mzML               
-                writer.WriteEndDocument();
-            }
-        }
-
-
-        /// <summary>
-        /// Initialize the mzML root element
-        /// </summary>
-        /// <returns></returns>
-        private void InitializeMzMl(XmlWriter writer)
-        {
-            writer.WriteStartDocument();
-            writer.WriteStartElement("http://psi.hupo.org/ms/mzml");
-
-            var mzMl = new mzMLType
-            {
-                version = "1.1.0",
-                id = ParseInput.RawFileNameWithoutExtension
-            };
-
-            // Add the controlled vocabularies     
-            var cvs = new List<CVType>
-            {
-                new CVType
+                serializer.Serialize(writer, new CVType
                 {
                     URI = @"https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo",
                     fullName = "Mass spectrometry ontology",
                     id = "MS",
                     version = "4.1.12"
-                },
-                new CVType
+                }, ns2);
+                serializer.Serialize(writer, new CVType
                 {
                     URI =
                         @"https://raw.githubusercontent.com/bio-ontology-research-group/unit-ontology/master/unit.obo",
                     fullName = "Unit Ontology",
                     id = "UO",
                     version = "09:04:2014"
-                }
-            };
+                }, ns2);
+                writer.WriteEndElement(); // cvList
 
-            mzMl.cvList = new CVListType
-            {
-                count = cvs.Count.ToString(),
-                cv = cvs.ToArray()
-            };
-
-            // File description
-            mzMl.fileDescription = new FileDescriptionType
-            {
-                fileContent = new ParamGroupType(),
-                sourceFileList = new SourceFileListType()
-            };
-
-            // File description content
-            var fileContentCvParams = new List<CVParamType>
-            {
-                // MS1
-                new CVParamType
+                // fileDescription
+                writer.WriteStartElement("fileDescription");
+                //   fileContent
+                writer.WriteStartElement("fileContent");
+                //     MS1
+                cvParamSerializer.Serialize(writer, new CVParamType
                 {
-                    accession = "MS:1000579", // MS1 Data
+                    accession = "MS:1000579",
                     name = "MS1 spectrum",
                     cvRef = "MS",
                     value = ""
-                },
-                // MS2
-                new CVParamType
+                }, ns2);
+                //     MSn
+                cvParamSerializer.Serialize(writer, new CVParamType
                 {
-                    accession = "MS:1000580", // MSn Data
+                    accession = "MS:1000580",
                     name = "MSn spectrum",
                     cvRef = "MS",
                     value = ""
-                }
-            };
-            mzMl.fileDescription.fileContent.cvParam = fileContentCvParams.ToArray();
+                }, ns2);
+                writer.WriteEndElement(); // fileContent
 
-            // File description source files
-            mzMl.fileDescription.sourceFileList = new SourceFileListType
-            {
-                count = "1",
-                sourceFile = new SourceFileType[1]
-            };
-
-            var sourceFileCvParams = new List<CVParamType>
-            {
-                new CVParamType
+                //   sourceFileList
+                writer.WriteStartElement("sourceFileList");
+                writer.WriteAttributeString("count", "1");
+                //     sourceFile
+                writer.WriteStartElement("sourceFile");
+                writer.WriteAttributeString("id", ParseInput.RawFileName);
+                writer.WriteAttributeString("name", ParseInput.RawFileNameWithoutExtension);
+                writer.WriteAttributeString("location", ParseInput.RawFilePath);
+                cvParamSerializer.Serialize(writer, new CVParamType
                 {
                     accession = "MS:1000768",
                     name = "Thermo nativeID format",
                     cvRef = "MS",
                     value = ""
-                },
-                new CVParamType
+                }, ns2);
+                cvParamSerializer.Serialize(writer, new CVParamType
                 {
                     accession = "MS:1000563",
                     name = "Thermo RAW format",
                     cvRef = "MS",
                     value = ""
-                },
-                //new CVParamType
-                //{
-                //    accession = "MS:1000568",
-                //    name = "MD5",
-                //    cvRef = "MS",
-                //    value = CalculateMD5Checksum()
-                //},
-                new CVParamType
+                }, ns2);
+                cvParamSerializer.Serialize(writer, new CVParamType
                 {
                     accession = "MS:1000569",
                     name = "SHA-1",
                     cvRef = "MS",
                     value = CalculateSHAChecksum()
-                }
-            };
+                }, ns2);
+                writer.WriteEndElement(); // sourceFile
+                writer.WriteEndElement(); // sourceFileList
+                writer.WriteEndElement(); // fileDescription
 
-            mzMl.fileDescription.sourceFileList.sourceFile[0] = new SourceFileType
-            {
-                id = ParseInput.RawFileName,
-                name = ParseInput.RawFileNameWithoutExtension,
-                location = ParseInput.RawFilePath,
-                cvParam = sourceFileCvParams.ToArray()
-            };
+                var instrumentData = _rawFile.GetInstrumentData();
 
-            // Software            
-            mzMl.softwareList = new SoftwareListType
-            {
-                count = "1",
-                software = new SoftwareType[1]
-            };
-
-            mzMl.softwareList.software[0] = new SoftwareType
-            {
-                id = "ThermoRawFileParser",
-                version = "1.0.0",
-                cvParam = new CVParamType[1]
-            };
-
-            mzMl.softwareList.software[0].cvParam[0] = new CVParamType
-            {
-                accession = "MS:1000799",
-                value = "ThermoRawFileParser",
-                name = "custom unreleased software tool",
-                cvRef = "MS"
-            };
-
-            // Data processing
-            mzMl.dataProcessingList = new DataProcessingListType
-            {
-                count = "1",
-                dataProcessing = new DataProcessingType[1]
-            };
-            mzMl.dataProcessingList.dataProcessing[0] = new DataProcessingType
-            {
-                id = "ThermoRawFileParserProcessing",
-                processingMethod = new ProcessingMethodType[1]
-            };
-            mzMl.dataProcessingList.dataProcessing[0].processingMethod[0] = new ProcessingMethodType
-            {
-                order = "0",
-                softwareRef = "ThermoRawFileParser",
-                cvParam = new CVParamType[1]
-            };
-            mzMl.dataProcessingList.dataProcessing[0].processingMethod[0].cvParam[0] = new CVParamType
-            {
-                accession = "MS:1000544",
-                cvRef = "MS",
-                name = "Conversion to mzML",
-                value = ""
-            };
-
-            // Add the run element
-            mzMl.run = new RunType
-            {
-                id = ParseInput.RawFileNameWithoutExtension,
-                startTimeStampSpecified = true,
-                startTimeStamp = _rawFile.CreationDate,
-                spectrumList = new SpectrumListType
+                // referenceableParamGroupList   
+                writer.WriteStartElement("referenceableParamGroupList");
+                writer.WriteAttributeString("count", "1");
+                //   referenceableParamGroup
+                writer.WriteStartElement("referenceableParamGroup");
+                writer.WriteAttributeString("id", "commonInstrumentParams");
+                if (!OntologyMapping.InstrumentModels.TryGetValue(instrumentData.Name, out var instrumentModel))
                 {
-                    defaultDataProcessingRef = "ThermoRawFileParserProcessing"
+                    instrumentModel = new CVParamType
+                    {
+                        accession = "MS:1000483",
+                        name = "Thermo Fisher Scientific instrument model",
+                        cvRef = "MS",
+                        value = ""
+                    };
                 }
-            };
-        }
 
-        public void Write2(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
-        {
-//            _rawFile = rawFile;
-//
-//            // Initialize the mzML root element
-//            var mzMl = InitializeMzMl();
-//
-//            // Add the spectra to a temporary list
-//            var spectra = new List<SpectrumType>();
-//            for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
-//            {
-//                var spectrum = ConstructSpectrum(scanNumber);
-//                if (spectrum != null)
-//                {
-//                    spectra.Add(spectrum);
-//                }
-//            }
-//
-//            // Add the spectra to the spectrum list element
-//            if (spectra.Count > 0)
-//            {
-//                mzMl.run.spectrumList.spectrum = new SpectrumType[spectra.Count];
-//                mzMl.run.spectrumList.count = spectra.Count.ToString();
-//                for (var i = 0; i < spectra.Count; i++)
-//                {
-//                    var spectrum = spectra[i];
-//                    spectrum.index = i.ToString();
-//                    mzMl.run.spectrumList.spectrum[i] = spectrum;
-//                }
-//            }
-//
-//            // Construct and add the instrument configuration(s)
-//            ConstructInstrumentConfigurationList(mzMl, firstScanNumber);
-//
-//            // Add the chromatogram data
-//            var chromatograms = ConstructChromatograms(firstScanNumber, lastScanNumber);
-//            if (!chromatograms.IsNullOrEmpty())
-//            {
-//                mzMl.run.chromatogramList = new ChromatogramListType
-//                {
-//                    count = chromatograms.Count.ToString(),
-//                    defaultDataProcessingRef = "ThermoRawFileParserProcessing",
-//                    chromatogram = chromatograms.ToArray()
-//                };
-//            }
-//
-//            ConfigureWriter(".mzML");
-//            using (Writer)
-//            {
-//                var mzmlSerializer = new XmlSerializer(typeof(mzMLType));
-//                mzmlSerializer.Serialize(Writer, mzMl);
-//            }
+                cvParamSerializer.Serialize(writer, instrumentModel, ns2);
+                cvParamSerializer.Serialize(writer, new CVParamType
+                {
+                    cvRef = "MS",
+                    accession = "MS:1000529",
+                    name = "instrument serial number",
+                    value = instrumentData.SerialNumber
+                }, ns2);
+                writer.WriteEndElement(); // referenceableParamGroup
+                writer.WriteEndElement(); // referenceableParamGroupList
+
+                // softwareList      
+                writer.WriteStartElement("softwareList");
+                writer.WriteAttributeString("count", "1");
+                //   software
+                writer.WriteStartElement("software");
+                writer.WriteAttributeString("version", "1.0.7");
+                cvParamSerializer.Serialize(writer, new CVParamType
+                {
+                    accession = "MS:1000799",
+                    value = "ThermoRawFileParser",
+                    name = "custom unreleased software tool",
+                    cvRef = "MS"
+                }, ns2);
+                writer.WriteEndElement(); // software
+                writer.WriteEndElement(); // softwareList                                
+
+                ConstructInstrumentConfigurationList(writer, firstScanNumber, instrumentModel);
+                
+                // dataProcessingList
+                writer.WriteStartElement("dataProcessingList");
+                writer.WriteAttributeString("count", "1");
+                //    dataProcessing
+                writer.WriteStartElement("dataProcessing");
+                writer.WriteAttributeString("id", "ThermoRawFileParserProcessing");
+                //      processingMethod
+                writer.WriteStartElement("processingMethod");
+                writer.WriteAttributeString("order", "0");
+                writer.WriteAttributeString("softwareRef", "ThermoRawFileParser");
+                cvParamSerializer.Serialize(writer, new CVParamType
+                {
+                    accession = "MS:1000544",
+                    cvRef = "MS",
+                    name = "Conversion to mzML",
+                    value = ""
+                }, ns2);
+                writer.WriteEndElement(); // processingMethod
+                writer.WriteEndElement(); // dataProcessing
+                writer.WriteEndElement(); // dataProcessingList
+
+                // run
+                writer.WriteStartElement("run");
+                writer.WriteAttributeString("defaultInstrumentConfigurationRef", "IC1");
+                writer.WriteAttributeString("startTimeStamp", _rawFile.CreationDate.ToString());
+                //    spectrumList
+                writer.WriteStartElement("spectrumList");
+                writer.WriteAttributeString("count", _rawFile.RunHeaderEx.SpectraCount.ToString());
+                writer.WriteAttributeString("defaultDataProcessingRef", "ThermoRawFileParserProcessing");                
+                
+                for (var scanNumber = firstScanNumber; scanNumber <= firstScanNumber + 10; scanNumber++)
+                {
+                    var spectrum = ConstructSpectrum(scanNumber);
+                    if (spectrum != null)
+                    {
+                        spectrumSerializer.Serialize(writer, spectrum, ns2);
+                    }
+                }
+                
+                writer.WriteEndElement(); // spectrumList
+                writer.WriteEndElement(); // run
+                
+                writer.WriteEndElement(); // mzML               
+                writer.WriteEndDocument();
+            }
         }
 
         /// <summary>
         /// Populate the instrument configuration list
         /// </summary>
         /// <param name="mzMl"></param>
-        private void ConstructInstrumentConfigurationList(mzMLType mzMl, int firstScanNumber)
+        private void ConstructInstrumentConfigurationList(XmlWriter writer, int firstScanNumber,
+            CVParamType instrumentModel)
         {
-            var instrumentData = _rawFile.GetInstrumentData();
-
-            // go over the first scans until
+            // go over the first scans until an MS2 scan is encountered
             var encounteredMs2 = false;
             var scanNumber = firstScanNumber;
             do
             {
-                // Get each scan from the RAW file
-                var scan = Scan.FromFile(_rawFile, scanNumber);
-
                 // Get the scan filter for this scan number
                 var scanFilter = _rawFile.GetFilterForScanNumber(scanNumber);
 
@@ -360,125 +278,60 @@ namespace ThermoRawFileParser.Writer
                 scanNumber++;
             } while (!encounteredMs2);
 
-            // Referenceable param group for common instrument properties
-            mzMl.referenceableParamGroupList = new ReferenceableParamGroupListType
-            {
-                count = "1",
-                referenceableParamGroup = new ReferenceableParamGroupType[1]
-            };
-            mzMl.referenceableParamGroupList.referenceableParamGroup[0] = new ReferenceableParamGroupType
-            {
-                id = "commonInstrumentParams",
-                cvParam = new CVParamType[2]
-            };
-
-            // Instrument model
-            if (!OntologyMapping.InstrumentModels.TryGetValue(instrumentData.Name, out var instrumentModel))
-            {
-                instrumentModel = new CVParamType
-                {
-                    accession = "MS:1000483",
-                    name = "Thermo Fisher Scientific instrument model",
-                    cvRef = "MS",
-                    value = ""
-                };
-            }
-
-            mzMl.referenceableParamGroupList.referenceableParamGroup[0].cvParam[0] = instrumentModel;
-
-            // Instrument serial number
-            mzMl.referenceableParamGroupList.referenceableParamGroup[0].cvParam[1] = new CVParamType
-            {
-                cvRef = "MS",
-                accession = "MS:1000529",
-                name = "instrument serial number",
-                value = instrumentData.SerialNumber
-            };
-
             // Add a default analyzer if none were found
             if (_massAnalyzers.Count == 0)
             {
                 _massAnalyzers.Add(MassAnalyzerType.Any, "IC1");
             }
 
-            // Set the run default instrument configuration ref
-            mzMl.run.defaultInstrumentConfigurationRef = "IC1";
-
-            var instrumentConfigurationList = new InstrumentConfigurationListType
-            {
-                count = _massAnalyzers.Count.ToString(),
-                instrumentConfiguration = new InstrumentConfigurationType[_massAnalyzers.Count]
-            };
+            // instrumentConfigurationList
+            writer.WriteStartElement("instrumentConfigurationList");
+            writer.WriteAttributeString("count", _massAnalyzers.Count.ToString());
 
             // Make a new instrument configuration for each analyzer
             var massAnalyzerIndex = 0;
             foreach (var massAnalyzer in _massAnalyzers)
             {
-                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex] = new InstrumentConfigurationType
-                {
-                    id = massAnalyzer.Value,
-                    referenceableParamGroupRef = new ReferenceableParamGroupRefType[1],
-                    componentList = new ComponentListType(),
-                    cvParam = new CVParamType[3]
-                };
-                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].referenceableParamGroupRef[0] =
-                    new ReferenceableParamGroupRefType
-                    {
-                        @ref = "commonInstrumentParams"
-                    };
-                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList =
-                    new ComponentListType
-                    {
-                        count = "3",
-                        source = new SourceComponentType[1],
-                        analyzer = new AnalyzerComponentType[1],
-                        detector = new DetectorComponentType[1]
-                    };
+                //    instrumentConfiguration
+                writer.WriteStartElement("instrumentConfiguration");
+                writer.WriteAttributeString("id", massAnalyzer.Value);
+                //      referenceableParamGroupRef
+                writer.WriteStartElement("referenceableParamGroupRef");
+                writer.WriteAttributeString("ref", "commonInstrumentParams");
+                writer.WriteEndElement(); // referenceableParamGroupRef
+                //        componentList
+                writer.WriteStartElement("componentList");
+                writer.WriteAttributeString("count", "3");
 
-                // Instrument source                                
+                //          source
+                writer.WriteStartElement("source");
+                writer.WriteAttributeString("order", "1");
                 if (_ionizationTypes.IsNullOrEmpty())
                 {
                     _ionizationTypes.Add(IonizationModeType.Any,
                         OntologyMapping.IonizationTypes[IonizationModeType.Any]);
                 }
 
-                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.source[0] =
-                    new SourceComponentType
-                    {
-                        order = 1,
-                        cvParam = new CVParamType[_ionizationTypes.Count]
-                    };
-
                 var index = 0;
                 // Ionization type
                 foreach (var ionizationType in _ionizationTypes)
                 {
-                    instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.source[0]
-                            .cvParam[index] =
-                        ionizationType.Value;
+                    cvParamSerializer.Serialize(writer, ionizationType.Value, ns2);
                     index++;
                 }
 
-                // Instrument analyzer             
-                // Mass analyzer type                    
-                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.analyzer[0] =
-                    new AnalyzerComponentType
-                    {
-                        order = index + 1,
-                        cvParam = new CVParamType[1]
-                    };
-                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.analyzer[0]
-                        .cvParam[0] =
-                    OntologyMapping.MassAnalyzerTypes[massAnalyzer.Key];
-                index++;
+                writer.WriteEndElement(); // source
 
-                // Instrument detector                
-                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.detector[0] =
-                    new DetectorComponentType
-                    {
-                        order = index + 1,
-                        cvParam = new CVParamType[1]
-                    };
+                //          analyzer             
+                writer.WriteStartElement("analyzer");
+                writer.WriteAttributeString("order", (index + 1).ToString());
+                cvParamSerializer.Serialize(writer, OntologyMapping.MassAnalyzerTypes[massAnalyzer.Key], ns2);
+                index++;
+                writer.WriteEndElement(); // analyzer
+
+                //          detector
+                writer.WriteStartElement("detector");
+                writer.WriteAttributeString("order", (index + 1).ToString());
 
                 // Try to map the instrument to the detector
                 var detectorCvParams = OntologyMapping.InstrumentToDetectors[instrumentModel.accession];
@@ -492,14 +345,15 @@ namespace ThermoRawFileParser.Writer
                     detectorCvParam = OntologyMapping.InstrumentToDetectors["MS:1000483"][0];
                 }
 
-                instrumentConfigurationList.instrumentConfiguration[massAnalyzerIndex].componentList.detector[0]
-                    .cvParam[0] = detectorCvParam;
+                cvParamSerializer.Serialize(writer, detectorCvParam, ns2);
+                writer.WriteEndElement(); // detector
+                writer.WriteEndElement(); // componentList
+                writer.WriteEndElement(); // instrumentConfiguration
+
                 massAnalyzerIndex++;
             }
 
-            Console.WriteLine(instrumentConfigurationList);
-
-            mzMl.instrumentConfigurationList = instrumentConfigurationList;
+            writer.WriteEndElement(); // instrumentConfigurationList
         }
 
         /// <summary>

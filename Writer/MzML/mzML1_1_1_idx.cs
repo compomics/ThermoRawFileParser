@@ -179,18 +179,18 @@ namespace ThermoRawFileParser.Writer.MzML {
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://psi.hupo.org/ms/mzml")]
     public partial class CVListType {
         
-        private CVType[] cvField;
+        private CVType[] cvTypeField;
         
         private string countField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("cv")]
-        public CVType[] cv {
+        public CVType[] CvType {
             get {
-                return this.cvField;
+                return this.cvTypeField;
             }
             set {
-                this.cvField = value;
+                this.cvTypeField = value;
             }
         }
         
@@ -212,6 +212,7 @@ namespace ThermoRawFileParser.Writer.MzML {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://psi.hupo.org/ms/mzml")]
+    [System.Xml.Serialization.XmlRootAttribute("cv", Namespace="http://psi.hupo.org/ms/mzml", IsNullable=false)]
     public partial class CVType {
         
         private string idField;
@@ -586,6 +587,7 @@ namespace ThermoRawFileParser.Writer.MzML {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://psi.hupo.org/ms/mzml")]
+    [System.Xml.Serialization.XmlRootAttribute("cvParam", Namespace="http://psi.hupo.org/ms/mzml", IsNullable=false)]
     public partial class CVParamType {
         
         private string cvRefField;
@@ -1249,6 +1251,7 @@ namespace ThermoRawFileParser.Writer.MzML {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://psi.hupo.org/ms/mzml")]
+    [System.Xml.Serialization.XmlRootAttribute("spectrum", Namespace="http://psi.hupo.org/ms/mzml", IsNullable=false)]
     public partial class SpectrumType : ParamGroupType {
         
         private ScanListType scanListField;
