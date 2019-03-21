@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Security.Cryptography;
 using System.Xml.Serialization;
 using IO.Mgf;
 using NUnit.Framework;
@@ -58,6 +59,19 @@ namespace ThermoRawFileParserTest
 
             Assert.AreEqual("1", testMzMl.run.chromatogramList.count);
             Assert.AreEqual(1, testMzMl.run.chromatogramList.chromatogram.Length);
+        }
+        
+        [Test]
+        public void TestHash()
+        {
+            byte[] myHash;
+            using (var sha1 = new SHA1Managed())
+            {
+                using (var stream = File.OpenRead("/home/niels/Desktop/raw/test/small.pwiz.1.1_2.mzML"))
+                    myHash = sha1.ComputeHash(stream);
+                    
+                    Console.WriteLine(BitConverter.ToString(myHash).Replace("-", "").ToLowerInvariant());
+            }
         }
                 
     }

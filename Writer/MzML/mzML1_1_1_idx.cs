@@ -775,6 +775,7 @@ namespace ThermoRawFileParser.Writer.MzML {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://psi.hupo.org/ms/mzml")]
+    [System.Xml.Serialization.XmlRootAttribute("chromatogram", Namespace="http://psi.hupo.org/ms/mzml", IsNullable=false)]
     public partial class ChromatogramType : ParamGroupType {
         
         private PrecursorType precursorField;
@@ -1615,7 +1616,7 @@ namespace ThermoRawFileParser.Writer.MzML {
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://psi.hupo.org/ms/mzml")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://psi.hupo.org/ms/mzml")]    
     public partial class ChromatogramListType {
         
         private ChromatogramType[] chromatogramField;
