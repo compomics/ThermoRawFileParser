@@ -63,7 +63,7 @@ namespace ThermoRawFileParser
                 var firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
                 var lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
 
-                if (parseInput.OutputMetadata != MetadataFormat.NON)
+                if (parseInput.OutputMetadata != MetadataFormat.NONE)
                 {
                     var metadataWriter = new MetadataWriter(parseInput.OutputDirectory, parseInput.RawFileNameWithoutExtension);
                     if(parseInput.OutputMetadata == MetadataFormat.JSON)
@@ -73,16 +73,18 @@ namespace ThermoRawFileParser
                     
                 }
 
-                if (parseInput.OutputFormat != OutputFormat.NON)
+                if (parseInput.OutputFormat != OutputFormat.NONE)
                 {
                     SpectrumWriter spectrumWriter;
                     switch (parseInput.OutputFormat)
                     {
                         case OutputFormat.Mgf:
+                        case OutputFormat.MGFNoProfileData:   
                             spectrumWriter = new MgfSpectrumWriter(parseInput);
                             spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
                             break;
                         case OutputFormat.Mzml:
+                        case OutputFormat.IndexMzML:   
                             spectrumWriter = new MzMlSpectrumWriter2(parseInput);
                             spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
                             break;

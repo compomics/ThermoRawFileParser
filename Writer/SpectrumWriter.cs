@@ -55,45 +55,19 @@ namespace ThermoRawFileParser.Writer
             }
         }
 
-        public string getFullPath()
+        protected string GetFullPath()
         {
             FileStream fs = (FileStream) Writer.BaseStream;
-            return fs.Name; 
+            return fs.Name;
         }
 
         /// <summary>
         /// Construct the spectrum title.
         /// </summary>
         /// <param name="scanNumber">the spectrum scan number</param>
-        protected string ConstructSpectrumTitle(int scanNumber)
+        protected static string ConstructSpectrumTitle(int scanNumber)
         {
-            var spectrumTitle = new StringBuilder("mzspec=");
-
-            if (!ParseInput.Collection.IsNullOrEmpty())
-            {
-                spectrumTitle.Append(ParseInput.Collection).Append(":");
-            }
-
-            if (!ParseInput.SubFolder.IsNullOrEmpty())
-            {
-                spectrumTitle.Append(ParseInput.SubFolder).Append(":");
-            }
-
-            if (!ParseInput.MsRun.IsNullOrEmpty())
-            {
-                spectrumTitle.Append(ParseInput.MsRun).Append(":");
-            }
-            else
-            {
-                spectrumTitle.Append(ParseInput.RawFileName).Append(":");
-            }
-
-            // Use a fixed controller type and number
-            // because only MS detector data is considered for the moment
-            spectrumTitle.Append(" controllerType=0 controllerNumber=1 scan=");
-            spectrumTitle.Append(scanNumber);
-
-            return spectrumTitle.ToString();
+            return "controllerType=0 controllerNumber=1 scan=" + scanNumber;
         }
 
         /// <summary>
@@ -136,10 +110,14 @@ namespace ThermoRawFileParser.Writer
                 {
                     MassRange = new Limit
                     {
-                        Low = (double) (precursorMass - isolationWidth / 2) ,
+                        Low = (double) (precursorMass - isolationWidth / 2),
                         High = (double) (precursorMass + isolationWidth / 2)
                     },
-                    RtRange = new Limit {Low = rawFile.RetentionTimeFromScanNumber(precursorScanNumber), High = rawFile.RetentionTimeFromScanNumber(precursorScanNumber)},
+                    RtRange = new Limit
+                    {
+                        Low = rawFile.RetentionTimeFromScanNumber(precursorScanNumber),
+                        High = rawFile.RetentionTimeFromScanNumber(precursorScanNumber)
+                    },
                 };
                 ;
 
@@ -154,7 +132,7 @@ namespace ThermoRawFileParser.Writer
                         }
                     }
                 };
-                
+
                 var rtFilteredScans = rawFile.GetFilteredScansListByTimeRange("",
                     component.RtRange.Low,
                     component.RtRange.High);

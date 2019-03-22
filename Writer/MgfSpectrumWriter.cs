@@ -48,7 +48,7 @@ namespace ThermoRawFileParser.Writer
                         {
                             if (scanEvent.ScanData == ScanDataType.Centroid ||
                                 (scanEvent.ScanData == ScanDataType.Profile &&
-                                 (scan.HasCentroidStream || !ParseInput.ExcludeProfileData)))
+                                 (scan.HasCentroidStream || ParseInput.OutputFormat != OutputFormat.MGFNoProfileData)))
                             {
                                 Writer.WriteLine("BEGIN IONS");
                                 Writer.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");

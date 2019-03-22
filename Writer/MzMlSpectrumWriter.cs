@@ -98,7 +98,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     Writer.Flush();
                     Writer.BaseStream.Position = 0;
-                    _parseInput.S3loader.loadObjectToS3(getFullPath(), getFullPath(), "mzML", getFullPath());
+                    _parseInput.S3loader.loadObjectToS3(GetFullPath(), GetFullPath(), "mzML", GetFullPath());
                 }
             }
         }
