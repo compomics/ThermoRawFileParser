@@ -41,7 +41,7 @@ namespace ThermoRawFileParser.Writer
         protected void ConfigureWriter(string extension)
         {
             var fullExtension = ParseInput.Gzip ? extension + ".gzip" : extension;
-            if (!ParseInput.Gzip)
+            if (!ParseInput.Gzip || ParseInput.OutputFormat == OutputFormat.IndexMzML)
             {
                 Writer = File.CreateText(ParseInput.OutputDirectory + "//" + ParseInput.RawFileNameWithoutExtension +
                                          extension);

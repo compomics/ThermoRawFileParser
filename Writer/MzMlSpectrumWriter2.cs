@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml;
@@ -408,6 +409,30 @@ namespace ThermoRawFileParser.Writer
 
                 Writer.Flush();
                 Writer.Close();
+            }
+
+            // in case of indexed mzML, check for gzip option
+            if (doIndexing && ParseInput.Gzip)
+            {
+                var mzMLFile = new FileInfo(ParseInput.OutputDirectory + "//" +
+                                            ParseInput.RawFileNameWithoutExtension + ".mzML");
+                var gzipMzMLFile = new FileInfo(string.Concat(mzMLFile.FullName, ".gz"));
+                using (var fileToBeZippedAsStream = mzMLFile.OpenRead())
+                using (var gzipTargetAsStream = gzipMzMLFile.Create())
+                using (var gzipStream = new GZipStream(gzipTargetAsStream, CompressionMode.Compress))
+                {
+                    try
+                    {
+                        fileToBeZippedAsStream.CopyTo(gzipStream);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex);
+                    }
+                }
+
+                // remove the unzipped mzML file
+                mzMLFile.Delete();
             }
         }
 
