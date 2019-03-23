@@ -6,9 +6,8 @@ using ThermoRawFileParser.Writer;
 
 namespace ThermoRawFileParser
 {
-    public class RawFileParser
+    public static class RawFileParser
     {
-
         private static readonly log4net.ILog Log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -21,7 +20,7 @@ namespace ThermoRawFileParser
             // Check to see if the RAW file name was supplied as an argument to the program
             if (string.IsNullOrEmpty(parseInput.RawFilePath))
             {
-                parseInput.Log.Debug("No raw file specified or found in path");
+                Log.Debug("No raw file specified or found in path");
                 throw new Exception("No RAW file specified!");
             }
 
@@ -65,12 +64,17 @@ namespace ThermoRawFileParser
 
                 if (parseInput.OutputMetadata != MetadataFormat.NONE)
                 {
-                    var metadataWriter = new MetadataWriter(parseInput.OutputDirectory, parseInput.RawFileNameWithoutExtension);
-                    if(parseInput.OutputMetadata == MetadataFormat.JSON)
-                        metadataWriter.WriteJsonMetada(rawFile, firstScanNumber, lastScanNumber);
-                    if(parseInput.OutputMetadata == MetadataFormat.TXT)
-                        metadataWriter.WriteMetada(rawFile, firstScanNumber, lastScanNumber);
-                    
+                    var metadataWriter = new MetadataWriter(parseInput.OutputDirectory,
+                        parseInput.RawFileNameWithoutExtension);
+                    switch (parseInput.OutputMetadata)
+                    {
+                        case MetadataFormat.JSON:
+                            metadataWriter.WriteJsonMetada(rawFile, firstScanNumber, lastScanNumber);
+                            break;
+                        case MetadataFormat.TXT:
+                            metadataWriter.WriteMetada(rawFile, firstScanNumber, lastScanNumber);
+                            break;
+                    }
                 }
 
                 if (parseInput.OutputFormat != OutputFormat.NONE)
@@ -79,13 +83,13 @@ namespace ThermoRawFileParser
                     switch (parseInput.OutputFormat)
                     {
                         case OutputFormat.Mgf:
-                        case OutputFormat.MGFNoProfileData:   
+                        case OutputFormat.MGFNoProfileData:
                             spectrumWriter = new MgfSpectrumWriter(parseInput);
                             spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
                             break;
                         case OutputFormat.Mzml:
-                        case OutputFormat.IndexMzML:   
-                            spectrumWriter = new MzMlSpectrumWriter2(parseInput);
+                        case OutputFormat.IndexMzML:
+                            spectrumWriter = new MzMlSpectrumWriter(parseInput);
                             spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
                             break;
                         case OutputFormat.Parquet:
@@ -94,7 +98,6 @@ namespace ThermoRawFileParser
                             break;
                     }
                 }
-
                 Log.Info("Finished parsing " + parseInput.RawFilePath);
             }
         }

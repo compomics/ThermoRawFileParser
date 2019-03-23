@@ -191,7 +191,7 @@ namespace ThermoRawFileParser
                 }
 
                 var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip, outputMetadataFormat,
-                    Log, s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors);
+                    s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors);
                 RawFileParser.Parse(parseInput);
             }
             catch (Exception ex)
