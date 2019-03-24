@@ -16,14 +16,10 @@ namespace ThermoRawFileParser
             string rawFilePath = null;
             string outputDirectory = null;
             string outputFormatString = null;
-            var outputFormat = OutputFormat.NON;
+            var outputFormat = OutputFormat.NONE;
             var gzip = false;
             string outputMetadataString = null;
-            var outputMetadataFormat = MetadataFormat.NON;
-            var includeProfileData = false;
-            string collection = null;
-            string msRun = null;
-            string subFolder = null;
+            var outputMetadataFormat = MetadataFormat.NONE;
             string s3url = null;
             string s3AccessKeyId = null;
             string s3SecretAccessKey = null;
@@ -48,7 +44,8 @@ namespace ThermoRawFileParser
                     v => outputDirectory = v
                 },
                 {
-                    "f=|format=", "The output format for the spectra (0 for MGF, 1 for MzMl, 2 for Parquet)",
+                    "f=|format=",
+                    "The output format for the spectra (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet, 4 for MGF with profile data excluded)",
                     v => outputFormatString = v
                 },
                 {
@@ -58,25 +55,6 @@ namespace ThermoRawFileParser
                 {
                     "g|gzip", "GZip the output file if this flag is specified (without value).",
                     v => gzip = v != null
-                },
-                {
-                    "p|profiledata",
-                    "Exclude MS2 profile data if this flag is specified (without value). Only for MGF format!",
-                    v => includeProfileData = v != null
-                },
-                {
-                    "c:|collection", "The optional collection identifier (PXD identifier for example).",
-                    v => collection = v
-                },
-                {
-                    "r:|run:",
-                    "The optional mass spectrometry run name used in the spectrum title. The RAW file name will be used if not specified.",
-                    v => msRun = v
-                },
-                {
-                    "s:|subfolder:",
-                    "Optional, to disambiguate instances where the same collection has 2 or more MS runs with the same name.",
-                    v => subFolder = v
                 },
                 {
                     "u:|s3_url:",
@@ -140,18 +118,20 @@ namespace ThermoRawFileParser
                     }
                     catch (FormatException e)
                     {
-                        throw new OptionException("unknown output format value (0 for MGF, 1 for MzMl, 2 for Parquet)",
+                        throw new OptionException(
+                            "unknown output format value (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet, 4 for MGF with profile date excluded)",
                             "-f, --format");
                     }
 
                     if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt) &&
-                        ((OutputFormat) outPutFormatInt) != OutputFormat.NON)
+                        ((OutputFormat) outPutFormatInt) != OutputFormat.NONE)
                     {
                         outputFormat = (OutputFormat) outPutFormatInt;
                     }
                     else
                     {
-                        throw new OptionException("unknown output format value (0 for MGF, 1 for MzMl, 2 for Parquet)",
+                        throw new OptionException(
+                            "unknown output format value (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet, 4 for MGF with profile date excluded)",
                             "-f, --format");
                     }
                 }
@@ -170,7 +150,7 @@ namespace ThermoRawFileParser
                     }
 
                     if (Enum.IsDefined(typeof(MetadataFormat), metadataInt) &&
-                        ((MetadataFormat) metadataInt) != MetadataFormat.NON)
+                        ((MetadataFormat) metadataInt) != MetadataFormat.NONE)
                     {
                         outputMetadataFormat = (MetadataFormat) metadataInt;
                     }
@@ -211,8 +191,7 @@ namespace ThermoRawFileParser
                 }
 
                 var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip, outputMetadataFormat,
-                    includeProfileData, collection, msRun, subFolder, Log, s3url, s3AccessKeyId, s3SecretAccessKey,
-                    bucketName, ignoreInstrumentErrors);
+                    s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors);
                 RawFileParser.Parse(parseInput);
             }
             catch (Exception ex)

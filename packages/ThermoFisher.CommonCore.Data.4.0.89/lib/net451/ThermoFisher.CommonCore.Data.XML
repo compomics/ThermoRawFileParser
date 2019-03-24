@@ -136,6 +136,23 @@
             A factory to read instrument methods.
             </returns>
         </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Business.InstrumentMethodWriterExtensions">
+            <summary>
+            Instrument Method Writer Extension Methods
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.InstrumentMethodWriterExtensions.WriteSection(ThermoFisher.CommonCore.Data.Interfaces.IInstrumentMethodWriter,System.Byte[],System.String,System.String)">
+            <summary>
+            Creates a device section with the given device name and writes the binary data
+            and text data to it. If the same device name is already exist, it will get
+            overwritten.
+            </summary>
+            <param name="writer">The instrument method writer object.</param>
+            <param name="binaryData">The instrument method in binary format.</param>
+            <param name="textData">The instrument method in text string.</param>
+            <param name="deviceName">The device name</param>
+            <returns>True if </returns>
+        </member>
         <member name="T:ThermoFisher.CommonCore.Data.Business.InstrumentMethodWriterFactory">
             <summary>
             This static factory class provides methods to create an instrument method writer for creating/updating an instrument method file.
@@ -486,6 +503,27 @@
             <summary>
             Gets or sets the isolation width offset.
             </summary>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Business.NeutralChromatogramPointRequest">
+            <summary>
+            A request for a Neutral loss chromatogram
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.NeutralChromatogramPointRequest.Tolerance">
+            <summary>
+            Gets or sets tolerance applied to precursor mass
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.NeutralChromatogramPointRequest.DataForPoint(ThermoFisher.CommonCore.Data.Interfaces.ISimpleScanWithHeader)">
+            <summary>
+            Find the data for one scan.
+            </summary>
+            <param name="scanWithHeader">
+            The scan, including header and scan event.
+            </param>
+            <returns>
+            The chromatogram point value for this scan.
+            </returns>
         </member>
         <member name="T:ThermoFisher.CommonCore.Data.Business.NoiseAndBaseline">
             <summary>
@@ -1176,6 +1214,55 @@
             <returns>
             The <see cref="T:ThermoFisher.CommonCore.Data.Business.SimpleScan"/>.
             </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.CentroidStream.ToSegmentedScan">
+            <summary>
+            Convert to segmented scan.
+            This feature is intended for use where an application or algorithm in "SegmentedScan" format,
+            such as typical centroid data from ITMS, but the data in this scan came from an FTMS detector,
+            which would have the profile data in "SegmentedScan" and the centroid data in this object.
+            Data from this object is duplicated (deep copy),
+            such that changing values in the returned object will not affect data in
+            this object.
+            </summary>
+            <returns>
+            The <see cref="T:ThermoFisher.CommonCore.Data.Business.SegmentedScan"/>.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.CentroidStream.ToScan(ThermoFisher.CommonCore.Data.Business.ScanStatistics)">
+            <summary>
+            Convert to Scan.
+            This feature is intended for use where an application or algorithm needs data in "Scan" format,
+            with centroid information in the "SegmentedScan" property of the Scan.
+            (such as typical centroid data from ITMS), but the data in this scan came from an FTMS detector,
+            which would have the profile data in "SegmentedScan" and the centroid data in this object.
+            The data is first converted to SegmentedScan format (using ToSegmentedScan) then a new Scan is made
+            containing that data (with no data in "CentroidStream).
+            Data from this object is duplicated (deep copy),
+            such that changing values in the returned object will not affect data in
+            this object.
+            This initializes the returned scan's "ScanStatistics" based on the returned mass and intensity data.
+            If the (optional) originalScanStats parameter is included, information from 
+            that is used to initialize  RT, scan number and other fields
+            which cannot be calculated from this data.
+            The only values updated in the scan statistics are "BasePeakMass" and "BasePeakIntenity".
+            All other values are either as copied from the supplied parameter, or defaults.
+            Application should set any other values needed in the Scan,
+            such as "ScansCombined, ToleranceUnit, MassResolution",
+            which cannot be determined from the supplied parameters.
+            </summary>
+            <param name="originalScanStats">If this is supplied, the scan statistics are initialized as a deep clone
+            of the supplied object (so that RT etc. get preserved) then the values of BasePeakMass and 
+            BasePeakIntensity are updated from this object</param>
+            <returns>
+            The <see cref="T:ThermoFisher.CommonCore.Data.Business.SegmentedScan"/>.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.CentroidStream.GetMassRange">
+            <summary>
+            Find the mass limits of this data
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Business.CentroidStream.TryValidate">
             <summary>
@@ -1908,20 +1995,6 @@
             <param name="pointRequests">Methods to generate points from scans</param>
             <returns>Object to make chromatogram points</returns>
         </member>
-        <member name="M:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.DataForPoint(ThermoFisher.CommonCore.Data.Interfaces.IChromatogramPointRequest,ThermoFisher.CommonCore.Data.Interfaces.ISimpleScanWithHeader)">
-            <summary>
-            Find the data for one mass range.
-            </summary>
-            <param name="request">
-            The request. Defines what data is taken from the scan.
-            </param>
-            <param name="scanWithHeader">
-            The scan, including header and scan event.
-            </param>
-            <returns>
-            The max or sum for this mass range.
-            </returns>
-        </member>
         <member name="T:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramPointBuilderBase">
             <summary>
             Standard properties for chromatogram point builders
@@ -2067,6 +2140,9 @@
             Gets or sets the rule for how a chromatogram point is created from a mass range.
             </summary>
         </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ChromatogramPointRequest.DataForPoint(ThermoFisher.CommonCore.Data.Interfaces.ISimpleScanWithHeader)">
+            <inheritdoc />
+        </member>
         <member name="M:ThermoFisher.CommonCore.Data.Business.ChromatogramPointRequest.SingleIonRequest(System.Double,System.Double,ThermoFisher.CommonCore.Data.Business.ToleranceMode)">
             <summary>
             Create a request to make an "XIC" chromatogram, based on one ion plus mass tolerance.
@@ -2171,7 +2247,7 @@
             The factor to apply.
             </returns>
         </member>
-        <member name="M:ThermoFisher.CommonCore.Data.Business.ChromatogramPointRequest.FragmentRequest(System.Double,System.Double)">
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ChromatogramPointRequest.FragmentRequest(System.Double,System.Double,ThermoFisher.CommonCore.Data.Business.MassOptions)">
             <summary>
             Create a request to make a "neutral fragment" chromatogram.
             If this is a "fixed fragment" based on a given MS/MS scan filter,
@@ -2183,6 +2259,7 @@
             </summary>
             <param name="lowMass">Low mass of range</param>
             <param name="highMass">High mass of range</param>
+            <param name="toleranceOptions">Mass tolerance (applied to precursor in target scan). Defaults to 0.5 amu when null</param>
             <returns>Interface to generate a neural fragment chromatogram point</returns>
         </member>
         <member name="T:ThermoFisher.CommonCore.Data.Business.ChromatogramTraceSettings">
@@ -5994,6 +6071,19 @@
             Gets the total number of scan events, in all segments
             </summary>
         </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Business.SequenceFileReaderExtensions">
+            <summary>
+            Sequence File Writer Extension Methods
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.SequenceFileReaderExtensions.GetUserColumnLabel(ThermoFisher.CommonCore.Data.Interfaces.ISequenceFileAccess,System.Int32)">
+            <summary>
+            Retrieves the user label at given 0-based label index.
+            </summary>
+            <param name="sequenceFileAccess">The sequence file access interface object.</param>
+            <param name="index">Index of user label to be retrieved</param>
+            <returns>String containing the user label at given index</returns>
+        </member>
         <member name="T:ThermoFisher.CommonCore.Data.Business.SequenceFileWriterFactory">
             <summary>
             This static factory class provides methods to create and open existing sequence file.
@@ -7857,6 +7947,16 @@
             </summary>
             <returns>Auto generated list of unique filters</returns>
         </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ThreadSafeRawFileAccess.RawFileThreadAccessor.GetFiltersForScanRange(System.Int32,System.Int32)">
+            <summary>
+            Calculate the filters for this raw file within the range of scans supplied, and return as an array.
+            </summary>
+            <param name="startScan">First scan to analyze</param>
+            <param name="endScan">Last scan to analyze</param>
+            <returns>
+            Auto generated list of unique filters
+            </returns>
+        </member>
         <member name="M:ThermoFisher.CommonCore.Data.Business.ThreadSafeRawFileAccess.RawFileThreadAccessor.GetFilterForScanNumber(System.Int32)">
             <summary>
             Get the filter for a scan number.
@@ -8250,6 +8350,12 @@
             <param name="firstScanNumber">The first scan whose event is needed</param>
             <param name="lastScanNumber">The last scan</param>
             <returns>An array of scan events</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ThreadSafeRawFileAccess.RawFileThreadAccessor.GetScanFiltersFromCompoundNames(System.String[])">
+            <inheritdoc />
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ThreadSafeRawFileAccess.RawFileThreadAccessor.GetCompoundNamesForScanRange(System.Int32,System.Int32)">
+            <inheritdoc />
         </member>
         <member name="T:ThermoFisher.CommonCore.Data.Business.UvScanIndex">
             <summary>
@@ -8792,9 +8898,27 @@
             </summary>
             <returns>Interface to perform subtraction</returns>
         </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.Scan.ScanAdder">
+            <summary>
+            Gets or sets IScanAdd interface.
+            This delegates addition of FT profile scans.
+            </summary>
+            <returns>Interface to perform addition</returns>
+        </member>
         <member name="P:ThermoFisher.CommonCore.Data.Business.Scan.ToleranceUnit">
             <summary>
             Gets or sets the Tolerance value.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.Scan.AlwaysMergeSegments">
+            <summary>
+            Get or sets a value indicating whether scan + and - operators will merge data from scans
+            which were not scanned over a similar range.
+            Only applicable when scans only have a single segment.
+            By default: Scans are considered incompatible if:
+            The span of the scanned mass range differs by 10%
+            The start or end of the scanned mass range differs by 10%
+            If this is set as "true" then any mass ranges will be merged.
             </summary>
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Business.Scan.AtTime(ThermoFisher.CommonCore.Data.Interfaces.IRawData,System.Double)">
@@ -8991,7 +9115,7 @@
             The right segment.
             </param>
             <param name="iterator">
-            The iterator.
+            The segment number.
             </param>
             <param name="resultScanSegments">
             The result scan segments.
@@ -9653,6 +9777,19 @@
         <member name="M:ThermoFisher.CommonCore.Data.Business.Scan.SubFTProfileData(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Business.Scan)">
             <summary>
             Subtract FT Profile Data
+            </summary>
+            <param name="currentScan">
+            The object subtract from this
+            </param>
+            <param name="inputScan">
+            </param>
+            <returns>
+            The result of the subtraction of the two scans
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Scan.AddFTProfileData(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Business.Scan)">
+            <summary>
+            Add FT Profile Data
             </summary>
             <param name="currentScan">
             The object subtract from this
@@ -15190,6 +15327,17 @@
             Gets or sets the rule for how a chromatogram point is created from a mass range.
             </summary>
         </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IChromatogramPointRequest.DataForPoint(ThermoFisher.CommonCore.Data.Interfaces.ISimpleScanWithHeader)">
+            <summary>
+            Find the data for one scan.
+            </summary>
+            <param name="scanWithHeader">
+            The scan, including header and scan event.
+            </param>
+            <returns>
+            The chromatogram point value for this scan.
+            </returns>
+        </member>
         <member name="T:ThermoFisher.CommonCore.Data.Interfaces.ChromatogramPointMode">
             <summary>
             The chromatogram point mode.
@@ -16211,9 +16359,9 @@
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IProcessingMethodOptionsAccess.GetDilutionFactors">
             <summary>
-            Gets a copy of the dilution factors table
+            Gets a copy of the dilution target component factors table
             </summary>
-            <returns>The dilution factors table</returns>
+            <returns>The dilution target component factors table</returns>
         </member>
         <member name="T:ThermoFisher.CommonCore.Data.Interfaces.IDilutionLevelAccess">
             <summary>
@@ -16228,6 +16376,26 @@
         <member name="P:ThermoFisher.CommonCore.Data.Interfaces.IDilutionLevelAccess.TestPercent">
             <summary>
             Gets QC test standard: <c>100 * (yobserved-ypredicted)/ypreditced</c>
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Interfaces.IDilutionLevelAccess.LevelName">
+            <summary>
+            Gets the level name
+            </summary>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Interfaces.IDilutionTargetCompFactorAccess">
+            <summary>
+            Access to the Dilution Target Component (subset of a calibration level).
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Interfaces.IDilutionTargetCompFactorAccess.BaseAmount">
+            <summary>
+            Gets Anticipated amount of target component.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Interfaces.IDilutionTargetCompFactorAccess.TargetComponentName">
+            <summary>
+            Gets the target component name.
             </summary>
         </member>
         <member name="T:ThermoFisher.CommonCore.Data.Interfaces.ChroAnalysisReport">
@@ -17327,7 +17495,7 @@
         </member>
         <member name="F:ThermoFisher.CommonCore.Data.Interfaces.ReportTemplateType.Pdf">
             <summary>
-            Report creates pdf file
+            Report creates PDF file
             </summary>
         </member>
         <member name="F:ThermoFisher.CommonCore.Data.Interfaces.ReportTemplateType.Rtf">
@@ -17337,7 +17505,7 @@
         </member>
         <member name="F:ThermoFisher.CommonCore.Data.Interfaces.ReportTemplateType.Xls">
             <summary>
-            Report creates Xls file (spreadsheet)
+            Report creates XLS file (spreadsheet)
             </summary>
         </member>
         <member name="T:ThermoFisher.CommonCore.Data.Interfaces.IXcaliburReportSampleTypes">
@@ -17955,6 +18123,16 @@
             <returns>Auto generated list of unique filters</returns>
             <exception cref="T:ThermoFisher.CommonCore.Data.Business.NoSelectedMsDeviceException">Thrown if the selected device is not of type MS</exception>
         </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus.GetFiltersForScanRange(System.Int32,System.Int32)">
+            <summary>
+            Calculate the filters for this raw file within the range of scans supplied, and return as an array.
+            </summary>
+            <param name="startScan">First scan to analyze</param>
+            <param name="endScan">Last scan to analyze</param>
+            <returns>
+            Auto generated list of unique filters
+            </returns>
+        </member>
         <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus.GetFilterForScanNumber(System.Int32)">
             <summary>
             Get the filter (scanning method) for a scan number.
@@ -18213,6 +18391,17 @@
             </returns>
             <exception cref="T:ThermoFisher.CommonCore.Data.Business.NoSelectedMsDeviceException">Thrown if the selected device is not of type MS</exception>
         </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus.GetCompoundNamesForScanRange(System.Int32,System.Int32)">
+            <summary>
+            Gets the unique compound names within the range of scans supplied, and return as an array.
+            </summary>
+            <param name="startScan">First scan to analyze</param>
+            <param name="endScan">Last scan to analyze</param>
+            <returns>
+            The Compound Names.
+            </returns>
+            <exception cref="T:ThermoFisher.CommonCore.Data.Business.NoSelectedMsDeviceException">Thrown if the selected device is not of type MS</exception>
+        </member>
         <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus.GetCompoundNames(System.String)">
             <summary>
             Gets the unique compound names as arrays of strings by given filter.
@@ -18240,6 +18429,19 @@
             The array of matching scan filters (in string format).
             </returns>
             <exception cref="T:ThermoFisher.CommonCore.Data.Business.NoSelectedMsDeviceException">Thrown if the selected device is not of type MS</exception>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus.GetScanFiltersFromCompoundNames(System.String[])">
+            <summary>
+            Get the scan filters which match each compound name.
+            When implemented against raw files, this may have a performance impact on applications.
+            For files which have a programmed event table, this will be fast,
+            as the information can be taken directly from the events.
+            If there is no event table, then event data is checked for every scan in the file (slower).
+            </summary>
+            <param name="compoundNames">The compound names.</param>
+            <returns>
+            The arrays of matching scan filters (in string format) for each compound.
+            </returns>
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus.GetChromatogramDataEx(ThermoFisher.CommonCore.Data.Interfaces.IChromatogramSettingsEx[],System.Int32,System.Int32,ThermoFisher.CommonCore.Data.Business.MassOptions)">
             <summary>
@@ -19016,6 +19218,19 @@
             <returns>
             The array of <see cref="T:ThermoFisher.CommonCore.Data.Business.LabelPeak"/>.
             </returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Interfaces.IScanAdd">
+            <summary>
+            Interface to provide algorithms to add scans.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IScanAdd.Add(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Business.Scan)">
+            <summary>
+            Creates a sum of two scans.
+            </summary>
+            <param name="firstScan">The first scan.</param>
+            <param name="secondScan">The second scan</param>
+            <returns>The sum"first+second"</returns>
         </member>
         <member name="T:ThermoFisher.CommonCore.Data.Interfaces.IScanDependentDetails">
             <summary>
@@ -21393,7 +21608,7 @@
             The average of the listed scans.
             </returns>
         </member>
-        <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IScanAveragePlus.AverageScans(System.Collections.Generic.List{System.Int32},ThermoFisher.CommonCore.Data.Business.MassOptions)">
+        <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IScanAveragePlus.AverageScans(System.Collections.Generic.List{System.Int32},ThermoFisher.CommonCore.Data.Business.MassOptions,System.Boolean)">
             <summary>
             Calculates the average spectra based upon the list supplied.
             The application should filter the data before making this code, to ensure that
@@ -21414,6 +21629,16 @@
             list of scans to average
             </param>
             <param name="options">mass tolerance settings. If not supplied, these are default from the raw file</param>
+            <param name="alwaysMergeSegments">
+            Merge data from scans
+            which were not scanned over a similar range.
+            Only applicable when scans only have a single segment.
+            By default: Scans are considered incompatible if:
+            The span of the scanned mass range differs by 10%
+            The start or end of the scanned mass range differs by 10%
+            If this is set as "true" then any mass ranges will be merged.
+            Default: false
+            </param>
             <returns>
             The average of the listed scans.
             </returns>
@@ -21552,7 +21777,7 @@
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IScanSubtract.Subtract(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Business.Scan)">
             <summary>
-            Creates a difference of two raw scans.
+            Creates a difference of two scans.
             </summary>
             <param name="foregroundScan">The scan containing signal.</param>
             <param name="backgroundScan">The scan containing background</param>
@@ -23092,6 +23317,39 @@
             The collection of scans
             </returns>
         </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.GetFiltersForTimeRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Double,System.Double)">
+             <summary>
+             Calculate the filters for this raw file for scans within the time range supplied.
+             </summary>
+            <param name="data">the raw data</param>
+             <param name="startTime">start of time window</param>
+             <param name="endTime">end of time window</param>
+             <returns>
+             Auto generated list of unique filters
+             </returns>  
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.GetCompoundNamesForTimeRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Double,System.Double)">
+             <summary>
+             Calculate the compound names for this raw file for scans within the time range supplied.
+             </summary>
+            <param name="data">the raw data</param>
+             <param name="startTime">start of time window</param>
+             <param name="endTime">end of time window</param>
+             <returns>
+             Array of compound names within the supplied time range
+             </returns>  
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.ScansIncludedInTimeRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Double,System.Double,System.Int32@,System.Int32@)">
+            <summary>
+            Get the scans included in the time range
+            </summary>
+            <param name="data">raw file</param>
+            <param name="startTime">start time of range</param>
+            <param name="endTime">end time of range</param>
+            <param name="first">first scan in range</param>
+            <param name="last">last scan in range</param>
+            <returns>True if scans numbers are returned</returns>
+        </member>
         <member name="M:ThermoFisher.CommonCore.Data.Extensions.GetFilteredScanEnumerator(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.String)">
             <summary>
             Get a filtered scan enumerator, to obtain the collection of scans matching given filter rules.
@@ -23104,6 +23362,48 @@
             </param>
             <returns>
             The collection of scans
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.GetCompoundScanEnumerator(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.String)">
+            <summary>
+            Get a scan enumerator, to obtain the collection of scans matching a given compound.
+            </summary>
+            <param name="data">
+            The raw data.
+            </param>
+            <param name="compound">
+            The filter.
+            </param>
+            <returns>
+            The collection of scans
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.ScanIsOfCompound(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Int32,System.String)">
+            <summary>
+            Test is a scan is of a given compound
+            </summary>
+            <param name="file">raw file</param>
+            <param name="scanNumber">scan number</param>
+            <param name="compound">compound name</param>
+            <returns>true if this is a scan of the compound</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.GetCompoundScanEnumeratorOverTime(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.String,System.Double,System.Double)">
+            <summary>
+            Get a scan enumerator, to obtain the collection of scans matching a given compound, within a given time range
+            </summary>
+            <param name="data">
+            The raw data.
+            </param>
+            <param name="compound">
+            The compound name.
+            </param>
+            <param name="startTime">
+            The start Time.
+            </param>
+            <param name="endTime">
+            The end Time.
+            </param>/// <returns>
+            The collection of scans within the supplied time range, which have this compound name
             </returns>
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Extensions.TestScan(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Int32,ThermoFisher.CommonCore.Data.Interfaces.IScanFilter)">
@@ -23290,6 +23590,50 @@
             the averaged scan. Use Scan.ScansCombined to find how many scans were averaged.
             </returns>
         </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.AverageCompoundScansInTimeRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Double,System.Double,System.String,ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Interfaces.FtAverageOptions)">
+            <summary>
+            Gets the average of scans between the given times, which match a compound name.
+            </summary>
+            <param name="data">File to read from</param>
+            <param name="startTime">
+            start time
+            </param>
+            <param name="endTime">
+            end time
+            </param>
+            <param name="compound">
+            compound name
+            </param>
+            <param name="options">mass tolerance settings. If not supplied, these are default from the raw file</param>
+            <param name="averageOptions">
+            The average Options (for FT format data).
+            </param>
+            <returns>
+            the averaged scan. Use Scan.ScansCombined to find how many scans were averaged.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.AverageCompoundScansInScanRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Int32,System.Int32,System.String,ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Interfaces.FtAverageOptions)">
+            <summary>
+            Gets the average of scans between the given scan numbers, which match a compound name.
+            </summary>
+            <param name="data">File to read from</param>
+            <param name="startScan">
+            start scan number
+            </param>
+            <param name="endscan">
+            end scan number
+            </param>
+            <param name="compound">
+            compound name
+            </param>
+            <param name="options">mass tolerance settings. If not supplied, these are default from the raw file</param>
+            <param name="averageOptions">
+            The average Options (for FT format data).
+            </param>
+            <returns>
+            the averaged scan. Use Scan.ScansCombined to find how many scans were averaged.
+            </returns>
+        </member>
         <member name="M:ThermoFisher.CommonCore.Data.Extensions.AverageScansInScanRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Int32,System.Int32,System.String,ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Interfaces.FtAverageOptions)">
             <summary>
             Gets the average of scans between the given scan numbers, which match a filter string.
@@ -23374,7 +23718,7 @@
             the averaged scan. Use Scan.ScansCombined to find how many scans were averaged.
             </returns>
         </member>
-        <member name="M:ThermoFisher.CommonCore.Data.Extensions.AverageScans(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Collections.Generic.List{System.Int32},ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Interfaces.FtAverageOptions)">
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.AverageScans(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Collections.Generic.List{System.Int32},ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Interfaces.FtAverageOptions,System.Boolean)">
             <summary>
             Calculates the average spectra based upon the list supplied.
             The application should filter the data before making this code, to ensure that
@@ -23399,6 +23743,8 @@
             <param name="averageOptions">
             The average Options (for FT format data).
             </param>
+            <param name="alwaysMergeSegments">Merge segments, even if mass ranges are not similar.
+            Only applies to data with 1 mass segment</param>
             <returns>
             The average of the listed scans. Use Scan.ScansCombined to find how many scans were averaged.
             </returns>
@@ -23499,12 +23845,66 @@
             The average of the listed scans. Use Scan.ScansCombined to find how many scans were averaged.
             </returns>
         </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.AverageAndSubtractScansForCompound(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,ThermoFisher.CommonCore.Data.Business.Range,System.Collections.Generic.IList{ThermoFisher.CommonCore.Data.Business.Range},System.String,ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Interfaces.FtAverageOptions)">
+            <summary>
+            Calculates the averaged and subtracted spectra based upon the lists supplied,
+            which include the named compound.
+            If the first scan in the list contains "FT Profile",
+            then the FT data profile is averaged for each
+            scan in the list. The combined profile is then centroided.
+            If the first scan is profile data, but not orbitrap data:
+            All scans are summed, starting from the final scan in this list, moving back to the first scan in
+            the list, and the average is then computed.
+            For simple centroid data formats: The scan stats "TIC" value is used to find the "most abundant scan".
+            This scan is then used as the "first scan of the average".
+            Scans are then added to this average, taking scans alternatively before and after
+            the apex, merging data within tolerance.
+            </summary>
+            <param name="data">File to read from</param>
+            <param name="foregroundTimeRange">
+            time range to average.
+            </param>
+            <param name="backgroundTimeRanges">
+            time ranges to subtract. The sets of scans matching the filter in each of these time ranges
+            are joined to define the background.
+            </param>
+            <param name="compound">
+            Compound to select scans for averaging
+            </param>
+            <param name="options">mass tolerance settings. If not supplied, these are default from the raw file</param>
+            <param name="averageOptions">
+            The average Options (for FT format data).
+            </param>
+            <returns>
+            The average of the listed scans. Use Scan.ScansCombined to find how many scans were averaged.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.GetCompoundScanListByTimeRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.String,ThermoFisher.CommonCore.Data.Business.Range)">
+            <summary>
+            Get the list of scans which conatin a given copound, in the range
+            "nearest scan time to range.Low" to "nearest scan time to range.High"
+            </summary>
+            <param name="data">Raw file</param>
+            <param name="compound">Compound name to match against scan event</param>
+            <param name="range">Retention Time range</param>
+            <returns></returns>
+        </member>
         <member name="M:ThermoFisher.CommonCore.Data.Extensions.GetFilteredScansListByScanRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.String,System.Int32,System.Int32)">
             <summary>
             Creates a list of all scans in the given range, which pass a filter string
             </summary>
             <param name="rawFile">The raw file.</param>
             <param name="filter">The filter.</param>
+            <param name="startScanNumber">The start scan number.</param>
+            <param name="endScanNumber">The end scan number.</param>
+            <returns>List of filtered scan numbers</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.GetCompoundScansListByScanRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.String,System.Int32,System.Int32)">
+            <summary>
+            Creates a list of all scans in the given range, which have a component name
+            </summary>
+            <param name="rawFile">The raw file.</param>
+            <param name="compound">The compound.</param>
             <param name="startScanNumber">The start scan number.</param>
             <param name="endScanNumber">The end scan number.</param>
             <returns>List of filtered scan numbers</returns>
@@ -23532,6 +23932,17 @@
         <member name="M:ThermoFisher.CommonCore.Data.Extensions.GetFilteredScansListByTimeRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,ThermoFisher.CommonCore.Data.Interfaces.IScanFilter,ThermoFisher.CommonCore.Data.Business.Range)">
             <summary>
             Creates a list of all scans in the given time range, which pass the supplied filter rules.
+            This version returds scans from the "nearest scan to start time" to "nearest scan to end time".
+            </summary>
+            <param name="rawFile">The raw file.</param>
+            <param name="filter">The filter.</param>
+            <param name="timeRange">The time range.</param>
+            <returns>List of filtered scan numbers</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.GetFilteredScansListWithinTimeRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,ThermoFisher.CommonCore.Data.Interfaces.IScanFilter,ThermoFisher.CommonCore.Data.Business.Range)">
+            <summary>
+            Creates a list of all scans in the given time range, which pass the supplied filter rules.
+            This version returds scans from the "first scan >= start time" to "last scan Less or equal to end time".
             </summary>
             <param name="rawFile">The raw file.</param>
             <param name="filter">The filter.</param>
@@ -23550,7 +23961,7 @@
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Extensions.ScanRangeFromTimeRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,ThermoFisher.CommonCore.Data.Business.Range)">
             <summary>
-            Convert a time range to a scan range
+            Convert a time range to a the nearest scan range
             </summary>
             <param name="rawFile">
             The raw File.
@@ -23559,7 +23970,23 @@
             The time range.
             </param>
             <returns>
-            The scan range.
+            The scan range of the nearest scans to the start and end times
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.ScanRangeWithinTimeRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,ThermoFisher.CommonCore.Data.Business.Range)">
+            <summary>
+            Convert a time range to am inlcuded scan range,
+            include scans which are within or equal to the time limits supplied.
+            </summary>
+            <param name="rawFile">
+            The raw File.
+            </param>
+            <param name="timeRange">
+            The time range.
+            </param>
+            <returns>
+            The scan range of the lowest and highest scans in the time range supplied,
+            including scans at the boundary times.
             </returns>
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Extensions.FilteredScansListByScanRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Int32,System.Int32,ThermoFisher.CommonCore.Data.Business.ScanFilterHelper)">
@@ -23576,6 +24003,26 @@
             The end scan number.
             </param>
             <param name="filterHelper">
+            The (analyzed) filter.
+            </param>
+            <returns>
+            The list of matching scans.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.CompoundScansListByScanRange(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus,System.Int32,System.Int32,System.String)">
+            <summary>
+            Creates a list of all scans in the given scan range, which pass a filter
+            </summary>
+            <param name="sampleRawFile">
+            The sample raw file.
+            </param>
+            <param name="startScanNum">
+            The start scan number.
+            </param>
+            <param name="endScanNum">
+            The end scan number.
+            </param>
+            <param name="compound">
             The (analyzed) filter.
             </param>
             <returns>
