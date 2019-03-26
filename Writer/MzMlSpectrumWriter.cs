@@ -1,30 +1,28 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using log4net;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
 using ThermoRawFileParser.Writer.MzML;
 using zlib;
-using CVParamType = ThermoRawFileParser.Writer.MzML.CVParamType;
-using SourceFileType = ThermoRawFileParser.Writer.MzML.SourceFileType;
-using UserParamType = ThermoRawFileParser.Writer.MzML.UserParamType;
 
 namespace ThermoRawFileParser.Writer
 {
     public class MzMlSpectrumWriter : SpectrumWriter
     {
-        private static readonly log4net.ILog Log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private IRawDataPlus _rawFile;
 
@@ -52,7 +50,7 @@ namespace ThermoRawFileParser.Writer
             cvParamSerializer = factory.CreateSerializer(typeof(CVParamType));
             mzMlNamespace = new XmlSerializerNamespaces();
             mzMlNamespace.Add(string.Empty, "http://psi.hupo.org/ms/mzml");
-            doIndexing = ParseInput.OutputFormat == OutputFormat.IndexMzML ? true : false;
+            doIndexing = ParseInput.OutputFormat == OutputFormat.IndexMzML;
         }
 
         /// <inheritdoc />
@@ -250,7 +248,8 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteStartElement("run");
                 _writer.WriteAttributeString("id", ParseInput.RawFileNameWithoutExtension);
                 _writer.WriteAttributeString("defaultInstrumentConfigurationRef", "IC1");
-                _writer.WriteAttributeString("startTimeStamp", XmlConvert.ToString(_rawFile.CreationDate));
+                _writer.WriteAttributeString("startTimeStamp",
+                    XmlConvert.ToString(_rawFile.CreationDate, XmlDateTimeSerializationMode.Utc));
                 //    spectrumList
                 _writer.WriteStartElement("spectrumList");
                 _writer.WriteAttributeString("count", _rawFile.RunHeaderEx.SpectraCount.ToString());
@@ -272,11 +271,11 @@ namespace ThermoRawFileParser.Writer
                             Writer.Flush();
                             if (spectrumOffSets.Count != 0)
                             {
-                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 6);
+                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 6 + GetOsOffset());
                             }
                             else
                             {
-                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 7);
+                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 7 + GetOsOffset());
                             }
                         }
 
@@ -309,11 +308,11 @@ namespace ThermoRawFileParser.Writer
                             Writer.Flush();
                             if (chromatogramOffSets.Count != 0)
                             {
-                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 6);
+                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 6 + GetOsOffset());
                             }
                             else
                             {
-                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 7);
+                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 7 + GetOsOffset());
                             }
                         }
 
@@ -333,8 +332,7 @@ namespace ThermoRawFileParser.Writer
                     _writer.Flush();
                     Writer.Flush();
 
-                    var indexListPosition = Writer.BaseStream.Position;
-                    //var indexListPosition = memoryStream.Position;                
+                    var indexListPosition = Writer.BaseStream.Position + GetOsOffset();              
 
                     //  indexList
                     _writer.WriteStartElement("indexList");
@@ -391,6 +389,10 @@ namespace ThermoRawFileParser.Writer
                     cryptoStream.FlushFinalBlock();
                     var hash = sha1.Hash;
 
+                    // do this for avoiding the "Hash must be finalized before the hash value is retrieved"
+                    // error on Windows 
+                    sha1.Initialize();
+
                     _writer.WriteValue(BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant());
                     _writer.WriteEndElement(); // fileChecksum
 
@@ -437,6 +439,11 @@ namespace ThermoRawFileParser.Writer
                 // remove the unzipped mzML file
                 mzMLFile.Delete();
             }
+        }
+
+        private int GetOsOffset()
+        {
+            return System.Environment.NewLine == "\n" ? 0 : 1;
         }
 
         /// <summary>
@@ -796,12 +803,14 @@ namespace ThermoRawFileParser.Writer
 
                 if (trailerData.Labels[i] == "Monoisotopic M/Z:")
                 {
-                    monoisotopicMass = float.Parse(trailerData.Values[i]);
+                    monoisotopicMass = float.Parse(trailerData.Values[i], NumberStyles.Any,
+                        CultureInfo.InvariantCulture);
                 }
 
                 if (trailerData.Labels[i] == "Ion Injection Time (ms):")
                 {
-                    ionInjectionTime = float.Parse(trailerData.Values[i]);
+                    ionInjectionTime = float.Parse(trailerData.Values[i], NumberStyles.Any,
+                        CultureInfo.InvariantCulture);
                 }
             }
 
@@ -966,7 +975,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     name = "base peak m/z",
                     accession = "MS:1000504",
-                    value = basePeakMass.ToString(),
+                    value = basePeakMass.Value.ToString(CultureInfo.InvariantCulture),
                     unitCvRef = "MS",
                     unitName = "m/z",
                     unitAccession = "MS:1000040",
@@ -981,7 +990,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     name = "base peak intensity",
                     accession = "MS:1000505",
-                    value = basePeakIntensity.ToString(),
+                    value = basePeakIntensity.Value.ToString(CultureInfo.InvariantCulture),
                     unitCvRef = "MS",
                     unitName = "number of detector counts",
                     unitAccession = "MS:1000131",
@@ -996,7 +1005,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     name = "lowest observed m/z",
                     accession = "MS:1000528",
-                    value = lowestObservedMz.ToString(),
+                    value = lowestObservedMz.Value.ToString(CultureInfo.InvariantCulture),
                     unitCvRef = "MS",
                     unitAccession = "MS:1000040",
                     unitName = "m/z",
@@ -1011,7 +1020,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     name = "highest observed m/z",
                     accession = "MS:1000527",
-                    value = highestObservedMz.ToString(),
+                    value = highestObservedMz.Value.ToString(CultureInfo.InvariantCulture),
                     unitAccession = "MS:1000040",
                     unitName = "m/z",
                     unitCvRef = "MS",
@@ -1151,14 +1160,11 @@ namespace ThermoRawFileParser.Writer
 
             var precursor = new PrecursorType
             {
-                selectedIonList = new SelectedIonListType
-                {
-                    count = 1.ToString(),
-                    selectedIon = new ParamGroupType[1]
-                }
+                selectedIonList =
+                    new SelectedIonListType {count = 1.ToString(), selectedIon = new ParamGroupType[1]},
+                spectrumRef = ConstructSpectrumTitle(_precursorScanNumber)
             };
 
-            precursor.spectrumRef = ConstructSpectrumTitle(_precursorScanNumber);
 
             precursor.selectedIonList.selectedIon[0] =
                 new ParamGroupType
@@ -1403,28 +1409,28 @@ namespace ThermoRawFileParser.Writer
                 instrumentConfigurationRef = "IC1";
             }
 
-            var scanTypeCvParams = new List<CVParamType>();
+            var scanTypeCvParams = new List<CVParamType>
+            {
+                new CVParamType
+                {
+                    name = "scan start time",
+                    accession = "MS:1000016",
+                    value = _rawFile.RetentionTimeFromScanNumber(scanNumber)
+                        .ToString(CultureInfo.InvariantCulture),
+                    unitCvRef = "UO",
+                    unitAccession = "UO:0000031",
+                    unitName = "minute",
+                    cvRef = "MS"
+                },
+                new CVParamType
+                {
+                    name = "filter string", accession = "MS:1000512", value = scanEvent.ToString(), cvRef = "MS"
+                }
+            };
 
             // Scan start time
-            scanTypeCvParams.Add(new CVParamType
-            {
-                name = "scan start time",
-                accession = "MS:1000016",
-                value = _rawFile.RetentionTimeFromScanNumber(scanNumber).ToString(CultureInfo.InvariantCulture),
-                unitCvRef = "UO",
-                unitAccession = "UO:0000031",
-                unitName = "minute",
-                cvRef = "MS"
-            });
 
             // Scan filter string
-            scanTypeCvParams.Add(new CVParamType
-            {
-                name = "filter string",
-                accession = "MS:1000512",
-                value = scanEvent.ToString(),
-                cvRef = "MS"
-            });
 
             // Ion injection time
             if (ionInjectionTime.HasValue)
@@ -1434,7 +1440,7 @@ namespace ThermoRawFileParser.Writer
                     name = "ion injection time",
                     cvRef = "MS",
                     accession = "MS:1000927",
-                    value = ionInjectionTime.ToString(),
+                    value = ionInjectionTime.Value.ToString(CultureInfo.InvariantCulture),
                     unitCvRef = "UO",
                     unitAccession = "UO:0000028",
                     unitName = "millisecond"

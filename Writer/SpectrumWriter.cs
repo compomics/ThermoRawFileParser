@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
-using System.Text;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
@@ -57,7 +56,7 @@ namespace ThermoRawFileParser.Writer
 
         protected string GetFullPath()
         {
-            FileStream fs = (FileStream) Writer.BaseStream;
+            var fs = (FileStream) Writer.BaseStream;
             return fs.Name;
         }
 
@@ -117,7 +116,7 @@ namespace ThermoRawFileParser.Writer
                     {
                         Low = rawFile.RetentionTimeFromScanNumber(precursorScanNumber),
                         High = rawFile.RetentionTimeFromScanNumber(precursorScanNumber)
-                    },
+                    }
                 };
                 ;
 

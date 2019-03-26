@@ -2,8 +2,8 @@
 {
     public enum OutputFormat
     {
-        Mgf,
-        Mzml,
+        MGF,
+        MzML,
         IndexMzML,
         Parquet,
         MGFNoProfileData,
