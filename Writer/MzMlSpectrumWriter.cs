@@ -271,11 +271,11 @@ namespace ThermoRawFileParser.Writer
                             Writer.Flush();
                             if (spectrumOffSets.Count != 0)
                             {
-                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 6);
+                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 6 + GetOsOffset());
                             }
                             else
                             {
-                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 7);
+                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 7 + GetOsOffset());
                             }
                         }
 
@@ -308,11 +308,11 @@ namespace ThermoRawFileParser.Writer
                             Writer.Flush();
                             if (chromatogramOffSets.Count != 0)
                             {
-                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 6);
+                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 6 + GetOsOffset());
                             }
                             else
                             {
-                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 7);
+                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 7 + GetOsOffset());
                             }
                         }
 
@@ -332,8 +332,7 @@ namespace ThermoRawFileParser.Writer
                     _writer.Flush();
                     Writer.Flush();
 
-                    var indexListPosition = Writer.BaseStream.Position;
-                    //var indexListPosition = memoryStream.Position;                
+                    var indexListPosition = Writer.BaseStream.Position + GetOsOffset();              
 
                     //  indexList
                     _writer.WriteStartElement("indexList");
@@ -440,6 +439,11 @@ namespace ThermoRawFileParser.Writer
                 // remove the unzipped mzML file
                 mzMLFile.Delete();
             }
+        }
+
+        private int GetOsOffset()
+        {
+            return System.Environment.NewLine == "\n" ? 0 : 1;
         }
 
         /// <summary>
