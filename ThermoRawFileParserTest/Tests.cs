@@ -1,21 +1,17 @@
 ﻿using System;
 using System.IO;
-using System.Security.Cryptography;
 using System.Xml.Serialization;
 using IO.Mgf;
-using IO.MzML;
 using NUnit.Framework;
 using ThermoRawFileParser;
 using ThermoRawFileParser.Writer.MzML;
+using UsefulProteomicsDatabases;
 
 namespace ThermoRawFileParserTest
 {
     [TestFixture]
     public class Tests
     {
-        private static readonly log4net.ILog Log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         [Test]
         public void TestMgf()
         {
@@ -23,14 +19,14 @@ namespace ThermoRawFileParserTest
             var tempFilePath = Path.GetTempPath();
 
             var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
-            var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mgf, false, MetadataFormat.NONE,
+            var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.MGF, false, MetadataFormat.NONE,
                 null, null, null, null, false);
 
             RawFileParser.Parse(parseInput);
 
             // Do this for the mzLib library issue
             var tempFileName = Path.GetTempPath() + "elements.dat";
-            UsefulProteomicsDatabases.Loaders.LoadElements(tempFileName);
+            Loaders.LoadElements(tempFileName);
 
             var mgfData = Mgf.LoadAllStaticData(Path.Combine(tempFilePath, "small.mgf"));
             Assert.AreEqual(34, mgfData.NumSpectra);
@@ -44,7 +40,7 @@ namespace ThermoRawFileParserTest
             var tempFilePath = Path.GetTempPath();
 
             var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
-            var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.Mzml, false, MetadataFormat.NONE,
+            var parseInput = new ParseInput(testRawFile, tempFilePath, OutputFormat.MzML, false, MetadataFormat.NONE,
                 null, null, null, null, false);
 
             RawFileParser.Parse(parseInput);

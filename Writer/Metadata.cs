@@ -1,26 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using ThermoRawFileParser.Writer.MzML;
+﻿using System.Collections.Generic;
 
 namespace ThermoRawFileParser.Writer
 {
     public class Metadata
     {
         /** The general Path properties contains: RAW path , RAW file version **/
-        private readonly List<CVTerm> fileProperties = new List<CVTerm>();
 
-        /** The Instruments properties contains the information of the instrument **/ 
-        private readonly List<CVTerm> instrumentProperties = new List<CVTerm>();
+        /** The Instruments properties contains the information of the instrument **/
 
         /** Scan Settings **/
-        private readonly List<CVTerm> scanSettings = new List<CVTerm>();
 
         /** MS and MS data including number of MS and MS/MS **/
-        private readonly List<CVTerm> msData = new List<CVTerm>(); 
-        
-        private readonly List<CVTerm> sampleData = new List<CVTerm>();
-        
+
         /**
          * Default constructor 
          */
@@ -30,59 +21,59 @@ namespace ThermoRawFileParser.Writer
             List<CVTerm> instrumentProperties,
             List<CVTerm> msData)
         {
-            this.fileProperties = fileProperties;
-            this.instrumentProperties = instrumentProperties;
-            this.msData = msData;
+            FileProperties = fileProperties;
+            InstrumentProperties = instrumentProperties;
+            MsData = msData;
         }
 
-        public List<CVTerm> FileProperties => fileProperties;
+        public List<CVTerm> FileProperties { get; } = new List<CVTerm>();
 
-        public List<CVTerm> InstrumentProperties => instrumentProperties;
+        public List<CVTerm> InstrumentProperties { get; } = new List<CVTerm>();
 
-        public List<CVTerm> MsData => msData;
+        public List<CVTerm> MsData { get; } = new List<CVTerm>();
 
-        public List<CVTerm> SampleData => sampleData;
+        public List<CVTerm> SampleData { get; } = new List<CVTerm>();
 
-        public List<CVTerm> ScanSettings => scanSettings;
+        public List<CVTerm> ScanSettings { get; } = new List<CVTerm>();
 
         /**
          * Add a File property to the fileProperties 
          */
         public void addFileProperty(CVTerm value)
         {
-            fileProperties.Add(value);
+            FileProperties.Add(value);
         }
 
         public void addInstrumentProperty( CVTerm value)
         {
-            instrumentProperties.Add(value);
+            InstrumentProperties.Add(value);
         }
 
         public void addScanSetting(CVTerm value)
         {
-            scanSettings.Add(value);
+            ScanSettings.Add(value);
         }
         
         public void addScanSetting(ICollection<CVTerm> value)
         {
-            scanSettings.AddRange(value);
+            ScanSettings.AddRange(value);
         }
 
         
 
         public void addMSData(CVTerm value)
         {
-            msData.Add(value);
+            MsData.Add(value);
         }
         
         public void addMSData(HashSet<CVTerm> value)
         {
-            msData.AddRange(value);
+            MsData.AddRange(value);
         }
 
         public void addSampleProperty(CVTerm value)
         {
-            sampleData.Add(value);
+            SampleData.Add(value);
         }     
     }
 

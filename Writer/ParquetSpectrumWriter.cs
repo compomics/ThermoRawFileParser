@@ -1,10 +1,11 @@
-﻿using Parquet;
-using Parquet.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using log4net;
+using Parquet;
+using Parquet.Data;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
@@ -15,8 +16,8 @@ namespace ThermoRawFileParser.Writer
 {
     public class ParquetSpectrumWriter : SpectrumWriter
     {
-        private static readonly log4net.ILog Log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private IRawDataPlus _rawFile;
 

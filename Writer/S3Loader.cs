@@ -1,10 +1,8 @@
-﻿using Amazon.S3;
-using Amazon.S3.Model;
-using System;
-using System.IO;
+﻿using System;
 using Amazon;
 using Amazon.Runtime;
-
+using Amazon.S3;
+using Amazon.S3.Model;
 
 namespace ThermoRawFileParser.Writer
 {
@@ -31,11 +29,11 @@ namespace ThermoRawFileParser.Writer
 
             var s3Config = new AmazonS3Config
             {
-                RegionEndpoint = Amazon.RegionEndpoint.EUWest2,
+                RegionEndpoint = RegionEndpoint.EUWest2,
                 ForcePathStyle = true,
                 SignatureVersion = "2",
                 ServiceURL = s3url,
-                SignatureMethod = Amazon.Runtime.SigningAlgorithm.HmacSHA1
+                SignatureMethod = SigningAlgorithm.HmacSHA1
             };
 
             client = new AmazonS3Client(new BasicAWSCredentials(s3AccessKeyId, s3SecretAccessKey), s3Config);
@@ -47,7 +45,7 @@ namespace ThermoRawFileParser.Writer
                 throw new AmazonS3Exception("Connection to AWS url -- " + this.s3url);
         }
 
-        public bool loadObjectToS3(String filePath, string name, string contentType, string label)
+        public bool loadObjectToS3(string filePath, string name, string contentType, string label)
         {
             try
             {
@@ -62,11 +60,11 @@ namespace ThermoRawFileParser.Writer
                 // https://github.com/aws/aws-sdk-net/issues/856. In addition  
                 var s3Config = new AmazonS3Config
                 {
-                    RegionEndpoint = Amazon.RegionEndpoint.EUWest2,
+                    RegionEndpoint = RegionEndpoint.EUWest2,
                     ForcePathStyle = true,
                     SignatureVersion = "2",
                     ServiceURL = s3url,
-                    SignatureMethod = Amazon.Runtime.SigningAlgorithm.HmacSHA1
+                    SignatureMethod = SigningAlgorithm.HmacSHA1
                 };
 
                 putRequest.Metadata.Add("x-amz-meta-title", label);

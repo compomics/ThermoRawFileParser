@@ -134,6 +134,7 @@
     <Compile Include="Writer\ParquetSpectrumWriter.cs" />
     <Compile Include="Writer\S3Loader.cs" />
     <Compile Include="Writer\SpectrumWriter.cs" />
+    <Compile Include="Writer\StreamWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

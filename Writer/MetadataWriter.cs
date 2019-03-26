@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
+using log4net;
 using Newtonsoft.Json;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
@@ -9,8 +11,8 @@ namespace ThermoRawFileParser.Writer
 {
     public class MetadataWriter
     {
-        private static readonly log4net.ILog Log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         
         private readonly string _outputDirectory;
         private readonly string _rawFileNameWithoutExtension;
@@ -170,11 +172,11 @@ namespace ThermoRawFileParser.Writer
                             for (var i = 0; i < trailerData.Length; i++)
                             {
                                 if (trailerData.Labels[i] == "Charge State:")
-                                { if (Int32.Parse(trailerData.Values[i]) > maxCharge)
-                                        maxCharge = Int32.Parse(trailerData.Values[i]); 
+                                { if (int.Parse(trailerData.Values[i]) > maxCharge)
+                                        maxCharge = int.Parse(trailerData.Values[i]); 
                                     
-                                    if (Int32.Parse(trailerData.Values[i]) < minCharge)
-                                        maxCharge = Int32.Parse(trailerData.Values[i]); 
+                                    if (int.Parse(trailerData.Values[i]) < minCharge)
+                                        maxCharge = int.Parse(trailerData.Values[i]); 
 
                                 }
                             }

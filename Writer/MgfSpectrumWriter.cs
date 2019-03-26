@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Globalization;
+using System.Reflection;
+using log4net;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
@@ -7,8 +10,8 @@ namespace ThermoRawFileParser.Writer
 {
     public class MgfSpectrumWriter : SpectrumWriter
     {
-        private static readonly log4net.ILog Log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
         private int _precursorScanNumber;
@@ -53,17 +56,19 @@ namespace ThermoRawFileParser.Writer
                                 Writer.WriteLine("BEGIN IONS");
                                 Writer.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
                                 Writer.WriteLine($"SCAN={scanNumber}");
-                                Writer.WriteLine($"RTINSECONDS={time * 60}");
+                                Writer.WriteLine($"RTINSECONDS={(time * 60).ToString(CultureInfo.InvariantCulture)}");
                                 // Get the reaction information for the first precursor
                                 try
                                 {
                                     var reaction = scanEvent.GetReaction(0);
                                     var precursorMass = reaction.PrecursorMass;
-                                    var precursorIntensity = 0.0;
+                                    Writer.WriteLine("PEPMASS=" +
+                                                     precursorMass.ToString("0.0000000", CultureInfo.InvariantCulture));
+                                    //var precursorIntensity = 0.0;
                                     //GetPrecursorIntensity(rawFile, _precursorScanNumber, precursorMass);
-                                    Writer.WriteLine(precursorIntensity != null
-                                        ? $"PEPMASS={precursorMass:F7} {precursorIntensity}"
-                                        : $"PEPMASS={precursorMass:F7}");
+                                    //Writer.WriteLine(precursorIntensity != null
+                                    //    ? $"PEPMASS={precursorMass:F7} {precursorIntensity}"
+                                    //    : $"PEPMASS={precursorMass:F7}");                                    
                                 }
                                 catch (ArgumentOutOfRangeException exception)
                                 {
@@ -95,7 +100,11 @@ namespace ThermoRawFileParser.Writer
                                         for (var i = 0; i < centroidStream.Length; i++)
                                         {
                                             Writer.WriteLine(
-                                                $"{centroidStream.Masses[i]:F7} {centroidStream.Intensities[i]:F10}");
+                                                centroidStream.Masses[i].ToString("0.0000000",
+                                                    CultureInfo.InvariantCulture)
+                                                + " "
+                                                + centroidStream.Intensities[i].ToString("0.0000000",
+                                                    CultureInfo.InvariantCulture));
                                         }
                                     }
                                 }
@@ -111,7 +120,11 @@ namespace ThermoRawFileParser.Writer
                                     for (var i = 0; i < segmentedScan.Positions.Length; i++)
                                     {
                                         Writer.WriteLine(
-                                            $"{segmentedScan.Positions[i]:F7} {segmentedScan.Intensities[i]:F10}");
+                                            segmentedScan.Positions[i].ToString("0.0000000",
+                                                CultureInfo.InvariantCulture)
+                                            + " "
+                                            + segmentedScan.Intensities[i].ToString("0.0000000000",
+                                                CultureInfo.InvariantCulture));
                                     }
                                 }
 
