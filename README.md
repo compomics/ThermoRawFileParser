@@ -14,7 +14,7 @@ RawFileReader reading tool. Copyright © 2016 by Thermo Fisher Scientific, Inc. 
 ```
 mono ThermoRawFileParser.exe -i=/home/user/data_input/raw_file.raw -o=/home/user/data_input/output/ -f=0 -g -m=0
 ```
-For running on Windows, omit `mono`. The optional parameters only work in the -option=value format. The tool can output some RAW file metadata `-m=0|1` (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet, 4 for MGF with profile data excluded) and the spectra file `-f` or both. The 'MGF with profile data excluded format' is used to exclude MS2 profile mode data (the MGF files can get big when the MS2 spectra were acquired in profile mode). 
+For running on Windows, omit `mono`. The optional parameters only work in the -option=value format. The tool can output some RAW file metadata `-m=0|1` (0 for JSON, 1 for TXT) and the spectra file `-f=0|1|2|3|4` (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet, 4 for MGF with profile data excluded) or both. The 'MGF with profile data excluded format' is used to exclude MS2 profile mode data (the MGF files can get big when the MS2 spectra were acquired in profile mode). 
 
 ```
 ThermoRawFileParser.exe  usage is (use -option=value for the optional arguments):
