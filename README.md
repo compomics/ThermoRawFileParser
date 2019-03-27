@@ -64,7 +64,7 @@ docker build --no-cache -t thermorawparser -f Dockerfile_basic .
 ```
 Run example:
 ```
-docker run -v /home/user/raw:/data_input -i -t thermorawparser mono /src/bin/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0
+docker run -v /home/user/raw:/data_input -i -t thermorawparser mono /src/bin/x64/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0
 ```
 Create example for reusing the container:
 ```
