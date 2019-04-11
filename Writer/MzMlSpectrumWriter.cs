@@ -221,7 +221,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteEndElement(); // software                
                 _writer.WriteEndElement(); // softwareList                                                                                
 
-                PopulateInstrumentConfigurationList(firstScanNumber, instrumentModel);
+                PopulateInstrumentConfigurationList(firstScanNumber, lastScanNumber, instrumentModel);
 
                 // dataProcessingList
                 _writer.WriteStartElement("dataProcessingList");
@@ -451,7 +451,7 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         /// <param name="firstScanNumber"></param>
         /// <param name="instrumentModel"></param>
-        private void PopulateInstrumentConfigurationList(int firstScanNumber, CVParamType instrumentModel)
+        private void PopulateInstrumentConfigurationList(int firstScanNumber, int lastScanNumber, CVParamType instrumentModel)
         {
             // go over the first scans until an MS2 scan is encountered
             // to collect all mass analyzer and ionization types
@@ -460,40 +460,52 @@ namespace ThermoRawFileParser.Writer
             do
             {
                 // Get the scan filter for this scan number
-                var scanFilter = _rawFile.GetFilterForScanNumber(scanNumber);
 
-                // Add the ionization type if necessary
                 try
                 {
-                    if (!_ionizationTypes.ContainsKey(scanFilter.IonizationMode))
+                    var scanFilter = _rawFile.GetFilterForScanNumber(scanNumber);
+
+                    // Add the ionization type if necessary
+                    try
                     {
-                        _ionizationTypes.Add(scanFilter.IonizationMode,
-                            OntologyMapping.IonizationTypes[scanFilter.IonizationMode]);
+                        if (!_ionizationTypes.ContainsKey(scanFilter.IonizationMode))
+                        {
+                            _ionizationTypes.Add(scanFilter.IonizationMode,
+                                OntologyMapping.IonizationTypes[scanFilter.IonizationMode]);
+                        }
                     }
+                    catch (Exception e)
+                    {
+                        Log.Warn("The IonizationMode does not contains the following property --" + e.Message);
+                        if (!ParseInput.IgnoreInstrumentErrors)
+                        {
+                            throw e;
+                        }
+                    }
+
+                    // Add the mass analyzer if necessary
+                    if (!_massAnalyzers.ContainsKey(scanFilter.MassAnalyzer) &&
+                        OntologyMapping.MassAnalyzerTypes.ContainsKey(scanFilter.MassAnalyzer))
+                    {
+                        _massAnalyzers.Add(scanFilter.MassAnalyzer, "IC" + (_massAnalyzers.Count + 1));
+                    }
+
+                    if (scanFilter.MSOrder == MSOrderType.Ms2)
+                    {
+                        encounteredMs2 = true;
+                    }
+
                 }
                 catch (Exception e)
                 {
-                    Log.Warn("The IonizationMode does not contains the following property --" + e.Message);
+                    Log.Warn("No Scan Filter found for the following scan --" + scanNumber);
                     if (!ParseInput.IgnoreInstrumentErrors)
                     {
                         throw e;
                     }
                 }
-
-                // Add the mass analyzer if necessary
-                if (!_massAnalyzers.ContainsKey(scanFilter.MassAnalyzer) &&
-                    OntologyMapping.MassAnalyzerTypes.ContainsKey(scanFilter.MassAnalyzer))
-                {
-                    _massAnalyzers.Add(scanFilter.MassAnalyzer, "IC" + (_massAnalyzers.Count + 1));
-                }
-
-                if (scanFilter.MSOrder == MSOrderType.Ms2)
-                {
-                    encounteredMs2 = true;
-                }
-
                 scanNumber++;
-            } while (!encounteredMs2);
+            } while (!encounteredMs2 && scanNumber <= lastScanNumber);
 
             // Add a default analyzer if none were found
             if (_massAnalyzers.Count == 0)
