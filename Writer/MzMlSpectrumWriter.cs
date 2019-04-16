@@ -450,6 +450,7 @@ namespace ThermoRawFileParser.Writer
         /// Populate the instrument configuration list
         /// </summary>
         /// <param name="firstScanNumber"></param>
+        /// <param name="lastScanNumber"></param>
         /// <param name="instrumentModel"></param>
         private void PopulateInstrumentConfigurationList(int firstScanNumber, int lastScanNumber, CVParamType instrumentModel)
         {
