@@ -42,6 +42,7 @@ namespace ThermoRawFileParser.Writer
         private readonly XmlSerializer cvParamSerializer;
         private readonly XmlSerializerNamespaces mzMlNamespace;
         private readonly bool doIndexing;
+        private readonly int osOffset;
 
         private XmlWriter _writer;
 
@@ -51,6 +52,7 @@ namespace ThermoRawFileParser.Writer
             mzMlNamespace = new XmlSerializerNamespaces();
             mzMlNamespace.Add(string.Empty, "http://psi.hupo.org/ms/mzml");
             doIndexing = ParseInput.OutputFormat == OutputFormat.IndexMzML;
+            osOffset = System.Environment.NewLine == "\n" ? 0 : 1;
         }
 
         /// <inheritdoc />
@@ -271,11 +273,11 @@ namespace ThermoRawFileParser.Writer
                             Writer.Flush();
                             if (spectrumOffSets.Count != 0)
                             {
-                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 6 + GetOsOffset());
+                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 6 + osOffset);
                             }
                             else
                             {
-                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 7 + GetOsOffset());
+                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 7 + osOffset);
                             }
                         }
 
@@ -308,11 +310,11 @@ namespace ThermoRawFileParser.Writer
                             Writer.Flush();
                             if (chromatogramOffSets.Count != 0)
                             {
-                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 6 + GetOsOffset());
+                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 6 + osOffset);
                             }
                             else
                             {
-                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 7 + GetOsOffset());
+                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 7 + osOffset);
                             }
                         }
 
@@ -332,7 +334,7 @@ namespace ThermoRawFileParser.Writer
                     _writer.Flush();
                     Writer.Flush();
 
-                    var indexListPosition = Writer.BaseStream.Position + GetOsOffset();              
+                    var indexListPosition = Writer.BaseStream.Position + osOffset;
 
                     //  indexList
                     _writer.WriteStartElement("indexList");
@@ -439,11 +441,6 @@ namespace ThermoRawFileParser.Writer
                 // remove the unzipped mzML file
                 mzMLFile.Delete();
             }
-        }
-
-        private int GetOsOffset()
-        {
-            return System.Environment.NewLine == "\n" ? 0 : 1;
         }
 
         /// <summary>
