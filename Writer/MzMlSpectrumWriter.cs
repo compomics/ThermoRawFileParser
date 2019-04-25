@@ -37,6 +37,7 @@ namespace ThermoRawFileParser.Writer
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
         private int _precursorScanNumber;
 
+        private const string SourceFileId = "RAW1";
         private readonly XmlSerializerFactory factory = new XmlSerializerFactory();
         private const string Ns = "http://psi.hupo.org/ms/mzml";
         private readonly XmlSerializer cvParamSerializer;
@@ -148,7 +149,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteAttributeString("count", "1");
                 //     sourceFile
                 _writer.WriteStartElement("sourceFile");
-                _writer.WriteAttributeString("id", ParseInput.RawFileName);
+                _writer.WriteAttributeString("id", SourceFileId);
                 _writer.WriteAttributeString("name", ParseInput.RawFileNameWithoutExtension);
                 _writer.WriteAttributeString("location", ParseInput.RawFilePath);
                 SerializeCvParam(new CVParamType
@@ -252,6 +253,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteAttributeString("defaultInstrumentConfigurationRef", "IC1");
                 _writer.WriteAttributeString("startTimeStamp",
                     XmlConvert.ToString(_rawFile.CreationDate, XmlDateTimeSerializationMode.Utc));
+                _writer.WriteAttributeString("defaultSourceFileRef", SourceFileId);
                 //    spectrumList
                 _writer.WriteStartElement("spectrumList");
                 _writer.WriteAttributeString("count", _rawFile.RunHeaderEx.SpectraCount.ToString());
