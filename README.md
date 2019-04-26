@@ -56,6 +56,12 @@ The default log file is `ThermoRawFileParser.log`. The log settings can be chang
 
 ## Docker
 
+Run ThermoRawFileParser simply with the pre-build biocontainer:
+
+```bash
+docker run -i -t -v /home/user/raw:/data_input quay.io/biocontainers/thermorawfileparser:1.1.2--0 ThermoRawFileParser.sh --help
+```
+
 ### Basic docker
 
 Use the `Dockerfile_basic` docker file to build an image. It fetches to source code from github and builds it.
