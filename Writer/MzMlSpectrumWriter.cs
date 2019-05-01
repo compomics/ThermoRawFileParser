@@ -854,7 +854,7 @@ namespace ThermoRawFileParser.Writer
                         name = "MSn spectrum",
                         value = ""
                     });
-
+                
                     // Construct and set the precursor list element of the spectrum                    
                     var precursorListType = ConstructPrecursorList(scanEvent, charge);
                     spectrum.precursorList = precursorListType;
@@ -868,6 +868,15 @@ namespace ThermoRawFileParser.Writer
                 case MSOrderType.Any:
                     break;
                 case MSOrderType.Ms3:
+                    spectrumCvParams.Add(new CVParamType
+                    {
+                        accession = "MS:1000580",
+                        cvRef = "MS",
+                        name = "MSn spectrum",
+                        value = ""
+                    });
+                    precursorListType = ConstructPrecursorList(scanEvent, charge);
+                    spectrum.precursorList = precursorListType;
                     break;
                 case MSOrderType.Ms4:
                     break;
