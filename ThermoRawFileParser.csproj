@@ -124,6 +124,7 @@
     <Compile Include="MainClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RawFileParser.cs" />
+    <Compile Include="Util\LimitedSizeDictionary.cs" />
     <Compile Include="Writer\ISpectrumWriter.cs" />
     <Compile Include="Writer\Metadata.cs" />
     <Compile Include="Writer\MetadataWriter.cs" />

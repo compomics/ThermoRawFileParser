@@ -55,7 +55,7 @@ namespace ThermoRawFileParser.Writer
                             {
                                 Writer.WriteLine("BEGIN IONS");
                                 Writer.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
-                                Writer.WriteLine($"SCAN={scanNumber}");
+                                Writer.WriteLine($"SCANS={scanNumber}");
                                 Writer.WriteLine($"RTINSECONDS={(time * 60).ToString(CultureInfo.InvariantCulture)}");
                                 // Get the reaction information for the first precursor
                                 try

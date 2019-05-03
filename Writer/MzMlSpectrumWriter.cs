@@ -4,16 +4,20 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 using log4net;
+using NUnit.Framework;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
+using ThermoRawFileParser.Util;
 using ThermoRawFileParser.Writer.MzML;
 using zlib;
 
@@ -23,6 +27,8 @@ namespace ThermoRawFileParser.Writer
     {
         private static readonly ILog Log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        private const string FilterStringIsolationMzPattern = @"ms2 (.*?)@";
 
         private IRawDataPlus _rawFile;
 
@@ -35,25 +41,29 @@ namespace ThermoRawFileParser.Writer
             new Dictionary<IonizationModeType, CVParamType>();
 
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
-        private int _precursorScanNumber;
+        private int _precursorMs1ScanNumber;
+
+        // Precursor scan number (value) and isolation m/z (key) for reference in the precursor element of an MS3 spectrum
+        private readonly LimitedSizeDictionary<string, int> _precursorMs2ScanNumbers =
+            new LimitedSizeDictionary<string, int>(40);
 
         private const string SourceFileId = "RAW1";
-        private readonly XmlSerializerFactory factory = new XmlSerializerFactory();
+        private readonly XmlSerializerFactory _factory = new XmlSerializerFactory();
         private const string Ns = "http://psi.hupo.org/ms/mzml";
-        private readonly XmlSerializer cvParamSerializer;
-        private readonly XmlSerializerNamespaces mzMlNamespace;
-        private readonly bool doIndexing;
-        private readonly int osOffset;
+        private readonly XmlSerializer _cvParamSerializer;
+        private readonly XmlSerializerNamespaces _mzMlNamespace;
+        private readonly bool _doIndexing;
+        private readonly int _osOffset;
 
         private XmlWriter _writer;
 
         public MzMlSpectrumWriter(ParseInput parseInput) : base(parseInput)
         {
-            cvParamSerializer = factory.CreateSerializer(typeof(CVParamType));
-            mzMlNamespace = new XmlSerializerNamespaces();
-            mzMlNamespace.Add(string.Empty, "http://psi.hupo.org/ms/mzml");
-            doIndexing = ParseInput.OutputFormat == OutputFormat.IndexMzML;
-            osOffset = System.Environment.NewLine == "\n" ? 0 : 1;
+            _cvParamSerializer = _factory.CreateSerializer(typeof(CVParamType));
+            _mzMlNamespace = new XmlSerializerNamespaces();
+            _mzMlNamespace.Add(string.Empty, "http://psi.hupo.org/ms/mzml");
+            _doIndexing = ParseInput.OutputFormat == OutputFormat.IndexMzML;
+            _osOffset = System.Environment.NewLine == "\n" ? 0 : 1;
         }
 
         /// <inheritdoc />
@@ -70,7 +80,7 @@ namespace ThermoRawFileParser.Writer
             var settings = new XmlWriterSettings {Indent = true, Encoding = Encoding.UTF8};
             var sha1 = SHA1.Create();
             CryptoStream cryptoStream = null;
-            if (doIndexing)
+            if (_doIndexing)
             {
                 cryptoStream = new CryptoStream(Writer.BaseStream, sha1, CryptoStreamMode.Write);
                 _writer = XmlWriter.Create(cryptoStream, settings);
@@ -84,7 +94,7 @@ namespace ThermoRawFileParser.Writer
             {
                 _writer.WriteStartDocument();
 
-                if (doIndexing)
+                if (_doIndexing)
                 {
                     //indexedmzML
                     WriteStartElementWithNamespace("indexedmzML");
@@ -102,7 +112,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteAttributeString("id", ParseInput.RawFileNameWithoutExtension);
 
                 // CV list
-                serializer = factory.CreateSerializer(typeof(CVType));
+                serializer = _factory.CreateSerializer(typeof(CVType));
                 _writer.WriteStartElement("cvList");
                 _writer.WriteAttributeString("count", "2");
                 Serialize(serializer, new CVType
@@ -259,7 +269,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteAttributeString("count", _rawFile.RunHeaderEx.SpectraCount.ToString());
                 _writer.WriteAttributeString("defaultDataProcessingRef", "ThermoRawFileParserProcessing");
 
-                serializer = factory.CreateSerializer(typeof(SpectrumType));
+                serializer = _factory.CreateSerializer(typeof(SpectrumType));
 
                 var index = 0;
                 for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
@@ -268,18 +278,18 @@ namespace ThermoRawFileParser.Writer
                     if (spectrum != null)
                     {
                         spectrum.index = index.ToString();
-                        if (doIndexing)
+                        if (_doIndexing)
                         {
                             // flush the writers before getting the position                
                             _writer.Flush();
                             Writer.Flush();
                             if (spectrumOffSets.Count != 0)
                             {
-                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 6 + osOffset);
+                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 6 + _osOffset);
                             }
                             else
                             {
-                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 7 + osOffset);
+                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 7 + _osOffset);
                             }
                         }
 
@@ -301,22 +311,22 @@ namespace ThermoRawFileParser.Writer
                     _writer.WriteStartElement("chromatogramList");
                     _writer.WriteAttributeString("count", chromatograms.Count.ToString());
                     _writer.WriteAttributeString("defaultDataProcessingRef", "ThermoRawFileParserProcessing");
-                    serializer = factory.CreateSerializer(typeof(ChromatogramType));
+                    serializer = _factory.CreateSerializer(typeof(ChromatogramType));
                     chromatograms.ForEach(chromatogram =>
                     {
                         chromatogram.index = index.ToString();
-                        if (doIndexing)
+                        if (_doIndexing)
                         {
                             // flush the writers before getting the posistion
                             _writer.Flush();
                             Writer.Flush();
                             if (chromatogramOffSets.Count != 0)
                             {
-                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 6 + osOffset);
+                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 6 + _osOffset);
                             }
                             else
                             {
-                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 7 + osOffset);
+                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 7 + _osOffset);
                             }
                         }
 
@@ -331,12 +341,12 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteEndElement(); // run                
                 _writer.WriteEndElement(); // mzML                
 
-                if (doIndexing)
+                if (_doIndexing)
                 {
                     _writer.Flush();
                     Writer.Flush();
 
-                    var indexListPosition = Writer.BaseStream.Position + osOffset;
+                    var indexListPosition = Writer.BaseStream.Position + _osOffset;
 
                     //  indexList
                     _writer.WriteStartElement("indexList");
@@ -413,7 +423,7 @@ namespace ThermoRawFileParser.Writer
                 Writer.Flush();
                 Writer.Close();
 
-                if (doIndexing)
+                if (_doIndexing)
                 {
                     cryptoStream.Flush();
                     cryptoStream.Close();
@@ -421,7 +431,7 @@ namespace ThermoRawFileParser.Writer
             }
 
             // in case of indexed mzML, change the extension from xml to mzML and check for the gzip option
-            if (doIndexing && ParseInput.Gzip)
+            if (_doIndexing && ParseInput.Gzip)
             {
                 var mzMLFile = new FileInfo(ParseInput.OutputDirectory + "//" +
                                             ParseInput.RawFileNameWithoutExtension + ".mzML");
@@ -451,7 +461,8 @@ namespace ThermoRawFileParser.Writer
         /// <param name="firstScanNumber"></param>
         /// <param name="lastScanNumber"></param>
         /// <param name="instrumentModel"></param>
-        private void PopulateInstrumentConfigurationList(int firstScanNumber, int lastScanNumber, CVParamType instrumentModel)
+        private void PopulateInstrumentConfigurationList(int firstScanNumber, int lastScanNumber,
+            CVParamType instrumentModel)
         {
             // go over the first scans until an MS2 scan is encountered
             // to collect all mass analyzer and ionization types
@@ -494,7 +505,6 @@ namespace ThermoRawFileParser.Writer
                     {
                         encounteredMs2 = true;
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -504,6 +514,7 @@ namespace ThermoRawFileParser.Writer
                         throw e;
                     }
                 }
+
                 scanNumber++;
             } while (!encounteredMs2 && scanNumber <= lastScanNumber);
 
@@ -597,12 +608,12 @@ namespace ThermoRawFileParser.Writer
 
         private void SerializeCvParam(CVParamType cvParam)
         {
-            cvParamSerializer.Serialize(_writer, cvParam, mzMlNamespace);
+            _cvParamSerializer.Serialize(_writer, cvParam, _mzMlNamespace);
         }
 
         private void Serialize<T>(XmlSerializer serializer, T t)
         {
-            serializer.Serialize(_writer, t, mzMlNamespace);
+            serializer.Serialize(_writer, t, _mzMlNamespace);
         }
 
         /// <summary>
@@ -843,7 +854,7 @@ namespace ThermoRawFileParser.Writer
                     });
 
                     // Keep track of scan number for precursor reference
-                    _precursorScanNumber = scanNumber;
+                    _precursorMs1ScanNumber = scanNumber;
 
                     break;
                 case MSOrderType.Ms2:
@@ -855,8 +866,23 @@ namespace ThermoRawFileParser.Writer
                         value = ""
                     });
 
+                    // Keep track of scan number and isolation m/z for precursor reference                   
+                    var result = Regex.Match(scanEvent.ToString(), FilterStringIsolationMzPattern);
+                    if (result.Success )
+                    {
+                        if (!_precursorMs2ScanNumbers.ContainsKey(result.Groups[1].Value))
+                        {
+                            _precursorMs2ScanNumbers.Add(result.Groups[1].Value, scanNumber);
+                        }
+                        else
+                        {                            
+                            // update the existing value
+                            _precursorMs2ScanNumbers[result.Groups[1].Value] = scanNumber;
+                        }
+                    }
+
                     // Construct and set the precursor list element of the spectrum                    
-                    var precursorListType = ConstructPrecursorList(scanEvent, charge);
+                    var precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder);
                     spectrum.precursorList = precursorListType;
                     break;
                 case MSOrderType.Ng:
@@ -868,6 +894,15 @@ namespace ThermoRawFileParser.Writer
                 case MSOrderType.Any:
                     break;
                 case MSOrderType.Ms3:
+                    spectrumCvParams.Add(new CVParamType
+                    {
+                        accession = "MS:1000580",
+                        cvRef = "MS",
+                        name = "MSn spectrum",
+                        value = ""
+                    });
+                    precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder);
+                    spectrum.precursorList = precursorListType;
                     break;
                 case MSOrderType.Ms4:
                     break;
@@ -996,7 +1031,7 @@ namespace ThermoRawFileParser.Writer
             }
 
             // Base peak intensity
-            if (basePeakMass != null)
+            if (basePeakIntensity != null)
             {
                 spectrumCvParams.Add(new CVParamType
                 {
@@ -1160,8 +1195,9 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         /// <param name="scanEvent">the scan event</param>
         /// <param name="charge">the charge</param>
+        /// <param name="msLevel">the MS level</param>
         /// <returns>the precursor list</returns>
-        private PrecursorListType ConstructPrecursorList(IScanEventBase scanEvent, int? charge)
+        private PrecursorListType ConstructPrecursorList(IScanEventBase scanEvent, int? charge, MSOrderType msLevel)
         {
             // Construct the precursor
             var precursorList = new PrecursorListType
@@ -1170,13 +1206,31 @@ namespace ThermoRawFileParser.Writer
                 precursor = new PrecursorType[1]
             };
 
+            var spectrumRef = "";
+            switch (msLevel)
+            {
+                case MSOrderType.Ms2:
+                    spectrumRef = ConstructSpectrumTitle(_precursorMs1ScanNumber);
+                    break;
+                case MSOrderType.Ms3:
+                    var precursorMs2ScanNumber = _precursorMs2ScanNumbers.Keys.FirstOrDefault(isolationMz => scanEvent.ToString().Contains(isolationMz));
+                    if (!precursorMs2ScanNumber.IsNullOrEmpty())
+                    {
+                        spectrumRef = ConstructSpectrumTitle(_precursorMs2ScanNumbers[precursorMs2ScanNumber]);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Couldn't find a MS2 precursor scan for MS3 scan " + scanEvent.ToString());
+                    }                    
+                    break;
+            }
+
             var precursor = new PrecursorType
             {
                 selectedIonList =
                     new SelectedIonListType {count = 1.ToString(), selectedIon = new ParamGroupType[1]},
-                spectrumRef = ConstructSpectrumTitle(_precursorScanNumber)
+                spectrumRef = spectrumRef
             };
-
 
             precursor.selectedIonList.selectedIon[0] =
                 new ParamGroupType
@@ -1189,7 +1243,16 @@ namespace ThermoRawFileParser.Writer
             double? isolationWidth = null;
             try
             {
-                reaction = scanEvent.GetReaction(0);
+                switch (msLevel)
+                {
+                    case MSOrderType.Ms2:
+                        reaction = scanEvent.GetReaction(0);
+                        break;
+                    case MSOrderType.Ms3:
+                        reaction = scanEvent.GetReaction(1);
+                        break;
+                }
+
                 precursorMass = reaction.PrecursorMass;
                 isolationWidth = reaction.IsolationWidth;
             }

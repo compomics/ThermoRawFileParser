@@ -10,7 +10,7 @@ using UsefulProteomicsDatabases;
 namespace ThermoRawFileParserTest
 {
     [TestFixture]
-    public class Tests
+    public class WriterTests
     {
         [Test]
         public void TestMgf()
