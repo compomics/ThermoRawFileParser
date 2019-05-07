@@ -41,6 +41,8 @@ namespace ThermoRawFileParser.Writer
                     // Get the scan event for this scan number
                     var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
 
+                    IReaction reaction = null;
+
                     switch (scanFilter.MSOrder)
                     {
                         case MSOrderType.Ms:
@@ -48,31 +50,52 @@ namespace ThermoRawFileParser.Writer
                             _precursorScanNumber = scanNumber;
                             break;
                         case MSOrderType.Ms2:
+                            try
+                            {
+                                reaction = scanEvent.GetReaction(0);
+                            }
+                            catch (ArgumentOutOfRangeException exception)
+                            {
+                                Log.Warn("No reaction found for scan " + scanNumber);
+                            }
+
+                            goto default;
+                        case MSOrderType.Ms3:
                         {
+                            try
+                            {
+                                reaction = scanEvent.GetReaction(1);
+                            }
+                            catch (ArgumentOutOfRangeException exception)
+                            {
+                                Log.Warn("No reaction found for scan " + scanNumber);
+                            }
+
+                            goto default;
+                        }
+                        default:
                             if (scanEvent.ScanData == ScanDataType.Centroid ||
                                 (scanEvent.ScanData == ScanDataType.Profile &&
-                                 (scan.HasCentroidStream || ParseInput.OutputFormat != OutputFormat.MGFNoProfileData)))
+                                 (scan.HasCentroidStream ||
+                                  ParseInput.OutputFormat != OutputFormat.MGFNoProfileData)))
                             {
                                 Writer.WriteLine("BEGIN IONS");
                                 Writer.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
                                 Writer.WriteLine($"SCANS={scanNumber}");
-                                Writer.WriteLine($"RTINSECONDS={(time * 60).ToString(CultureInfo.InvariantCulture)}");
-                                // Get the reaction information for the first precursor
-                                try
+                                Writer.WriteLine(
+                                    $"RTINSECONDS={(time * 60).ToString(CultureInfo.InvariantCulture)}");
+
+                                if (reaction != null)
                                 {
-                                    var reaction = scanEvent.GetReaction(0);
                                     var precursorMass = reaction.PrecursorMass;
                                     Writer.WriteLine("PEPMASS=" +
-                                                     precursorMass.ToString("0.0000000", CultureInfo.InvariantCulture));
+                                                     precursorMass.ToString("0.0000000",
+                                                         CultureInfo.InvariantCulture));
                                     //var precursorIntensity = 0.0;
                                     //GetPrecursorIntensity(rawFile, _precursorScanNumber, precursorMass);
                                     //Writer.WriteLine(precursorIntensity != null
                                     //    ? $"PEPMASS={precursorMass:F7} {precursorIntensity}"
                                     //    : $"PEPMASS={precursorMass:F7}");                                    
-                                }
-                                catch (ArgumentOutOfRangeException exception)
-                                {
-                                    Log.Warn("No reaction found for scan " + scanNumber);
                                 }
 
                                 // trailer extra data list
@@ -132,7 +155,6 @@ namespace ThermoRawFileParser.Writer
                             }
 
                             break;
-                        }
                     }
                 }
             }

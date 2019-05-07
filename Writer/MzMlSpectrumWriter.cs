@@ -273,7 +273,7 @@ namespace ThermoRawFileParser.Writer
 
                 var index = 0;
                 for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
-                {
+                {                    
                     var spectrum = ConstructSpectrum(scanNumber);
                     if (spectrum != null)
                     {
@@ -322,11 +322,13 @@ namespace ThermoRawFileParser.Writer
                             Writer.Flush();
                             if (chromatogramOffSets.Count != 0)
                             {
-                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 6 + _osOffset);
+                                chromatogramOffSets.Add(chromatogram.id,
+                                    Writer.BaseStream.Position + 6 + _osOffset);
                             }
                             else
                             {
-                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 7 + _osOffset);
+                                chromatogramOffSets.Add(chromatogram.id,
+                                    Writer.BaseStream.Position + 7 + _osOffset);
                             }
                         }
 
@@ -868,14 +870,14 @@ namespace ThermoRawFileParser.Writer
 
                     // Keep track of scan number and isolation m/z for precursor reference                   
                     var result = Regex.Match(scanEvent.ToString(), FilterStringIsolationMzPattern);
-                    if (result.Success )
+                    if (result.Success)
                     {
                         if (!_precursorMs2ScanNumbers.ContainsKey(result.Groups[1].Value))
                         {
                             _precursorMs2ScanNumbers.Add(result.Groups[1].Value, scanNumber);
                         }
                         else
-                        {                            
+                        {
                             // update the existing value
                             _precursorMs2ScanNumbers[result.Groups[1].Value] = scanNumber;
                         }
@@ -1213,15 +1215,19 @@ namespace ThermoRawFileParser.Writer
                     spectrumRef = ConstructSpectrumTitle(_precursorMs1ScanNumber);
                     break;
                 case MSOrderType.Ms3:
-                    var precursorMs2ScanNumber = _precursorMs2ScanNumbers.Keys.FirstOrDefault(isolationMz => scanEvent.ToString().Contains(isolationMz));
+                    var precursorMs2ScanNumber =
+                        _precursorMs2ScanNumbers.Keys.FirstOrDefault(isolationMz =>
+                            scanEvent.ToString().Contains(isolationMz));
                     if (!precursorMs2ScanNumber.IsNullOrEmpty())
                     {
                         spectrumRef = ConstructSpectrumTitle(_precursorMs2ScanNumbers[precursorMs2ScanNumber]);
                     }
                     else
                     {
-                        throw new InvalidOperationException("Couldn't find a MS2 precursor scan for MS3 scan " + scanEvent.ToString());
-                    }                    
+                        throw new InvalidOperationException("Couldn't find a MS2 precursor scan for MS3 scan " +
+                                                            scanEvent.ToString());
+                    }
+
                     break;
             }
 
