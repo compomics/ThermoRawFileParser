@@ -273,7 +273,7 @@ namespace ThermoRawFileParser.Writer
 
                 var index = 0;
                 for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
-                {
+                {                    
                     var spectrum = ConstructSpectrum(scanNumber);
                     if (spectrum != null)
                     {
@@ -322,11 +322,13 @@ namespace ThermoRawFileParser.Writer
                             Writer.Flush();
                             if (chromatogramOffSets.Count != 0)
                             {
-                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 6 + _osOffset);
+                                chromatogramOffSets.Add(chromatogram.id,
+                                    Writer.BaseStream.Position + 6 + _osOffset);
                             }
                             else
                             {
-                                chromatogramOffSets.Add(chromatogram.id, Writer.BaseStream.Position + 7 + _osOffset);
+                                chromatogramOffSets.Add(chromatogram.id,
+                                    Writer.BaseStream.Position + 7 + _osOffset);
                             }
                         }
 
