@@ -868,14 +868,14 @@ namespace ThermoRawFileParser.Writer
 
                     // Keep track of scan number and isolation m/z for precursor reference                   
                     var result = Regex.Match(scanEvent.ToString(), FilterStringIsolationMzPattern);
-                    if (result.Success )
+                    if (result.Success)
                     {
                         if (!_precursorMs2ScanNumbers.ContainsKey(result.Groups[1].Value))
                         {
                             _precursorMs2ScanNumbers.Add(result.Groups[1].Value, scanNumber);
                         }
                         else
-                        {                            
+                        {
                             // update the existing value
                             _precursorMs2ScanNumbers[result.Groups[1].Value] = scanNumber;
                         }
@@ -884,14 +884,6 @@ namespace ThermoRawFileParser.Writer
                     // Construct and set the precursor list element of the spectrum                    
                     var precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder);
                     spectrum.precursorList = precursorListType;
-                    break;
-                case MSOrderType.Ng:
-                    break;
-                case MSOrderType.Nl:
-                    break;
-                case MSOrderType.Par:
-                    break;
-                case MSOrderType.Any:
                     break;
                 case MSOrderType.Ms3:
                     spectrumCvParams.Add(new CVParamType
@@ -903,20 +895,6 @@ namespace ThermoRawFileParser.Writer
                     });
                     precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder);
                     spectrum.precursorList = precursorListType;
-                    break;
-                case MSOrderType.Ms4:
-                    break;
-                case MSOrderType.Ms5:
-                    break;
-                case MSOrderType.Ms6:
-                    break;
-                case MSOrderType.Ms7:
-                    break;
-                case MSOrderType.Ms8:
-                    break;
-                case MSOrderType.Ms9:
-                    break;
-                case MSOrderType.Ms10:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -958,6 +936,29 @@ namespace ThermoRawFileParser.Writer
                 value = scan.ScanStatistics.TIC.ToString(CultureInfo.InvariantCulture),
                 cvRef = "MS"
             });
+            
+            // Scan type, centroid or profile
+            switch (scanEvent.ScanData)
+            {
+                case ScanDataType.Centroid:
+                    spectrumCvParams.Add(new CVParamType
+                    {
+                        accession = "MS:1000127",
+                        cvRef = "MS",
+                        name = "centroid spectrum",
+                        value = ""
+                    });
+                    break;
+                case ScanDataType.Profile:
+                    spectrumCvParams.Add(new CVParamType
+                    {
+                        accession = "MS:1000128",
+                        cvRef = "MS",
+                        name = "profile spectrum",
+                        value = ""
+                    });
+                    break;
+            }            
 
             double? basePeakMass = null;
             double? basePeakIntensity = null;
@@ -965,8 +966,11 @@ namespace ThermoRawFileParser.Writer
             double? highestObservedMz = null;
             double[] masses = null;
             double[] intensities = null;
-            if (scan.HasCentroidStream)
-            {
+            if (scan.HasCentroidStream){
+//            if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||
+//                                           (scanEvent.ScanData == ScanDataType.Profile &&
+//                                            !ParseInput.AlwaysUseProfileData)))
+//            {
                 var centroidStream = _rawFile.GetCentroidStream(scanNumber, false);
                 if (scan.CentroidScan.Length > 0)
                 {
@@ -976,16 +980,6 @@ namespace ThermoRawFileParser.Writer
                     highestObservedMz = centroidStream.Masses[centroidStream.Masses.Length - 1];
                     masses = centroidStream.Masses;
                     intensities = centroidStream.Intensities;
-
-                    // Note that although the scan data type is profile,
-                    // centroid data might be available
-                    spectrumCvParams.Add(new CVParamType
-                    {
-                        accession = "MS:1000127",
-                        cvRef = "MS",
-                        name = "centroid spectrum",
-                        value = ""
-                    });
                 }
             }
             else
@@ -1003,15 +997,7 @@ namespace ThermoRawFileParser.Writer
                     lowestObservedMz = segmentedScan.Positions[0];
                     highestObservedMz = segmentedScan.Positions[segmentedScan.Positions.Length - 1];
                     masses = segmentedScan.Positions;
-                    intensities = segmentedScan.Intensities;
-
-                    spectrumCvParams.Add(new CVParamType
-                    {
-                        accession = "MS:1000128",
-                        cvRef = "MS",
-                        name = "profile spectrum",
-                        value = ""
-                    });
+                    intensities = segmentedScan.Intensities;                    
                 }
             }
 
@@ -1213,15 +1199,19 @@ namespace ThermoRawFileParser.Writer
                     spectrumRef = ConstructSpectrumTitle(_precursorMs1ScanNumber);
                     break;
                 case MSOrderType.Ms3:
-                    var precursorMs2ScanNumber = _precursorMs2ScanNumbers.Keys.FirstOrDefault(isolationMz => scanEvent.ToString().Contains(isolationMz));
+                    var precursorMs2ScanNumber =
+                        _precursorMs2ScanNumbers.Keys.FirstOrDefault(isolationMz =>
+                            scanEvent.ToString().Contains(isolationMz));
                     if (!precursorMs2ScanNumber.IsNullOrEmpty())
                     {
                         spectrumRef = ConstructSpectrumTitle(_precursorMs2ScanNumbers[precursorMs2ScanNumber]);
                     }
                     else
                     {
-                        throw new InvalidOperationException("Couldn't find a MS2 precursor scan for MS3 scan " + scanEvent.ToString());
-                    }                    
+                        throw new InvalidOperationException("Couldn't find a MS2 precursor scan for MS3 scan " +
+                                                            scanEvent.ToString());
+                    }
+
                     break;
             }
 

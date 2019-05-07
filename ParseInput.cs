@@ -50,12 +50,14 @@ namespace ThermoRawFileParser
 
         public bool IgnoreInstrumentErrors { get; }
 
+        public bool AlwaysUseProfileData { get; }
+
         private string bucketName;
 
         public ParseInput(string rawFilePath, string outputDirectory, OutputFormat outputFormat, bool gzip,
             MetadataFormat outputMetadata, string s3url, string s3AccessKeyId,
             string s3SecretAccessKey, string bucketName,
-            bool ignoreInstrumentErrors
+            bool ignoreInstrumentErrors, bool alwaysUseProfileData
         )
         {
             RawFilePath = rawFilePath;
@@ -71,6 +73,7 @@ namespace ThermoRawFileParser
             S3SecretAccessKey = s3SecretAccessKey;
             this.bucketName = bucketName;
             IgnoreInstrumentErrors = ignoreInstrumentErrors;
+            AlwaysUseProfileData = alwaysUseProfileData;
 
             if (S3url != null && S3AccessKeyId != null && S3SecretAccessKey != null && bucketName != null)
                 InitializeS3Bucket();

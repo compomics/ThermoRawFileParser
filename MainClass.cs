@@ -26,6 +26,7 @@ namespace ThermoRawFileParser
             var verbose = false;
             string bucketName = null;
             var ignoreInstrumentErrors = false;
+            var alwaysUseProfileData = false;
 
             var help = false;
 
@@ -83,6 +84,11 @@ namespace ThermoRawFileParser
                 {
                     "e|ignoreInstrumentErrors", "Ignore missing properties by the instrument.",
                     v => ignoreInstrumentErrors = v != null
+                },
+                {
+                    "p|profile",
+                    "Always use profile data, even though in some profile scans centroided data is available.",
+                    v => alwaysUseProfileData = v != null
                 }
             };
 
@@ -191,7 +197,7 @@ namespace ThermoRawFileParser
                 }
 
                 var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip, outputMetadataFormat,
-                    s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors);
+                    s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors, alwaysUseProfileData);
                 RawFileParser.Parse(parseInput);
             }
             catch (Exception ex)
