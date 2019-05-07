@@ -968,11 +968,10 @@ namespace ThermoRawFileParser.Writer
             double? highestObservedMz = null;
             double[] masses = null;
             double[] intensities = null;
-            if (scan.HasCentroidStream){
-//            if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||
-//                                           (scanEvent.ScanData == ScanDataType.Profile &&
-//                                            !ParseInput.AlwaysUseProfileData)))
-//            {
+            if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||
+                                           (scanEvent.ScanData == ScanDataType.Profile &&
+                                            !ParseInput.NoPeakPicking)))
+            {
                 var centroidStream = _rawFile.GetCentroidStream(scanNumber, false);
                 if (scan.CentroidScan.Length > 0)
                 {

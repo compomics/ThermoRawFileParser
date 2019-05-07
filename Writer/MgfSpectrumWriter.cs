@@ -74,85 +74,81 @@ namespace ThermoRawFileParser.Writer
                             goto default;
                         }
                         default:
-                            if (scanEvent.ScanData == ScanDataType.Centroid ||
-                                (scanEvent.ScanData == ScanDataType.Profile &&
-                                 (scan.HasCentroidStream ||
-                                  ParseInput.OutputFormat != OutputFormat.MGFNoProfileData)))
+                            Writer.WriteLine("BEGIN IONS");
+                            Writer.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
+                            Writer.WriteLine($"SCANS={scanNumber}");
+                            Writer.WriteLine(
+                                $"RTINSECONDS={(time * 60).ToString(CultureInfo.InvariantCulture)}");
+
+                            if (reaction != null)
                             {
-                                Writer.WriteLine("BEGIN IONS");
-                                Writer.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
-                                Writer.WriteLine($"SCANS={scanNumber}");
-                                Writer.WriteLine(
-                                    $"RTINSECONDS={(time * 60).ToString(CultureInfo.InvariantCulture)}");
+                                var precursorMass = reaction.PrecursorMass;
+                                Writer.WriteLine("PEPMASS=" +
+                                                 precursorMass.ToString("0.0000000",
+                                                     CultureInfo.InvariantCulture));
+                                //var precursorIntensity = 0.0;
+                                //GetPrecursorIntensity(rawFile, _precursorScanNumber, precursorMass);
+                                //Writer.WriteLine(precursorIntensity != null
+                                //    ? $"PEPMASS={precursorMass:F7} {precursorIntensity}"
+                                //    : $"PEPMASS={precursorMass:F7}");                                    
+                            }
 
-                                if (reaction != null)
+                            // trailer extra data list
+                            var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
+                            for (var i = 0; i < trailerData.Length; i++)
+                            {
+                                if (trailerData.Labels[i] == "Charge State:")
                                 {
-                                    var precursorMass = reaction.PrecursorMass;
-                                    Writer.WriteLine("PEPMASS=" +
-                                                     precursorMass.ToString("0.0000000",
-                                                         CultureInfo.InvariantCulture));
-                                    //var precursorIntensity = 0.0;
-                                    //GetPrecursorIntensity(rawFile, _precursorScanNumber, precursorMass);
-                                    //Writer.WriteLine(precursorIntensity != null
-                                    //    ? $"PEPMASS={precursorMass:F7} {precursorIntensity}"
-                                    //    : $"PEPMASS={precursorMass:F7}");                                    
-                                }
-
-                                // trailer extra data list
-                                var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
-                                for (var i = 0; i < trailerData.Length; i++)
-                                {
-                                    if (trailerData.Labels[i] == "Charge State:")
+                                    if (Convert.ToInt32(trailerData.Values[i]) > 0)
                                     {
-                                        if (Convert.ToInt32(trailerData.Values[i]) > 0)
-                                        {
-                                            Writer.WriteLine($"CHARGE={trailerData.Values[i]}+");
-                                        }
+                                        Writer.WriteLine($"CHARGE={trailerData.Values[i]}+");
                                     }
                                 }
+                            }
 
-                                // write the filter string
-                                //Writer.WriteLine($"SCANEVENT={scanEvent.ToString()}");
+                            // write the filter string
+                            //Writer.WriteLine($"SCANEVENT={scanEvent.ToString()}");
 
-                                // Check if the scan has a centroid stream
-                                if (scan.HasCentroidStream)
+                            // Check if the scan has a centroid stream
+                            if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||
+                                                           (scanEvent.ScanData == ScanDataType.Profile &&
+                                                            !ParseInput.NoPeakPicking)))
+                            {
+                                var centroidStream = rawFile.GetCentroidStream(scanNumber, false);
+                                if (scan.CentroidScan.Length > 0)
                                 {
-                                    var centroidStream = rawFile.GetCentroidStream(scanNumber, false);
-                                    if (scan.CentroidScan.Length > 0)
-                                    {
-                                        for (var i = 0; i < centroidStream.Length; i++)
-                                        {
-                                            Writer.WriteLine(
-                                                centroidStream.Masses[i].ToString("0.0000000",
-                                                    CultureInfo.InvariantCulture)
-                                                + " "
-                                                + centroidStream.Intensities[i].ToString("0.0000000",
-                                                    CultureInfo.InvariantCulture));
-                                        }
-                                    }
-                                }
-                                // Otherwise take the profile data
-                                else
-                                {
-                                    // Get the scan statistics from the RAW file for this scan number
-                                    var scanStatistics = rawFile.GetScanStatsForScanNumber(scanNumber);
-
-                                    // Get the segmented (low res and profile) scan data
-                                    var segmentedScan =
-                                        rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
-                                    for (var i = 0; i < segmentedScan.Positions.Length; i++)
+                                    for (var i = 0; i < centroidStream.Length; i++)
                                     {
                                         Writer.WriteLine(
-                                            segmentedScan.Positions[i].ToString("0.0000000",
+                                            centroidStream.Masses[i].ToString("0.0000000",
                                                 CultureInfo.InvariantCulture)
                                             + " "
-                                            + segmentedScan.Intensities[i].ToString("0.0000000000",
+                                            + centroidStream.Intensities[i].ToString("0.0000000",
                                                 CultureInfo.InvariantCulture));
                                     }
                                 }
-
-                                Writer.WriteLine("END IONS");
                             }
+                            // Otherwise take the profile data
+                            else
+                            {
+                                // Get the scan statistics from the RAW file for this scan number
+                                var scanStatistics = rawFile.GetScanStatsForScanNumber(scanNumber);
+
+                                // Get the segmented (low res and profile) scan data
+                                var segmentedScan =
+                                    rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
+                                for (var i = 0; i < segmentedScan.Positions.Length; i++)
+                                {
+                                    Writer.WriteLine(
+                                        segmentedScan.Positions[i].ToString("0.0000000",
+                                            CultureInfo.InvariantCulture)
+                                        + " "
+                                        + segmentedScan.Intensities[i].ToString("0.0000000000",
+                                            CultureInfo.InvariantCulture));
+                                }
+                            }
+
+                            Writer.WriteLine("END IONS");
 
                             break;
                     }

@@ -83,7 +83,6 @@ namespace ThermoRawFileParser
                     switch (parseInput.OutputFormat)
                     {
                         case OutputFormat.MGF:
-                        case OutputFormat.MGFNoProfileData:
                             spectrumWriter = new MgfSpectrumWriter(parseInput);
                             spectrumWriter.Write(rawFile, firstScanNumber, lastScanNumber);
                             break;
@@ -98,6 +97,7 @@ namespace ThermoRawFileParser
                             break;
                     }
                 }
+                
                 Log.Info("Finished parsing " + parseInput.RawFilePath);
             }
         }

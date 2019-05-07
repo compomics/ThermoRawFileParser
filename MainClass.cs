@@ -26,7 +26,7 @@ namespace ThermoRawFileParser
             var verbose = false;
             string bucketName = null;
             var ignoreInstrumentErrors = false;
-            var alwaysUseProfileData = false;
+            var noPeakPicking = false;
 
             var help = false;
 
@@ -46,7 +46,7 @@ namespace ThermoRawFileParser
                 },
                 {
                     "f=|format=",
-                    "The output format for the spectra (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet, 4 for MGF with profile data excluded)",
+                    "The output format for the spectra (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet)",
                     v => outputFormatString = v
                 },
                 {
@@ -56,6 +56,19 @@ namespace ThermoRawFileParser
                 {
                     "g|gzip", "GZip the output file if this flag is specified (without value).",
                     v => gzip = v != null
+                },                
+                {
+                    "p|noPeakPicking",
+                    "Don't use the peak picking provided by the native thermo library (by default peak picking is enabled)",
+                    v => noPeakPicking = v != null
+                },
+                {
+                    "v|verbose", "Enable verbose logging.",
+                    v => verbose = v != null
+                },
+                {
+                    "e|ignoreInstrumentErrors", "Ignore missing properties by the instrument.",
+                    v => ignoreInstrumentErrors = v != null
                 },
                 {
                     "u:|s3_url:",
@@ -76,20 +89,7 @@ namespace ThermoRawFileParser
                     "n:|s3_bucketName:",
                     "S3 bucket name",
                     v => bucketName = v
-                },
-                {
-                    "v|verbose", "Enable verbose logging.",
-                    v => verbose = v != null
-                },
-                {
-                    "e|ignoreInstrumentErrors", "Ignore missing properties by the instrument.",
-                    v => ignoreInstrumentErrors = v != null
-                },
-                {
-                    "p|profile",
-                    "Always use profile data, even though in some profile scans centroided data is available.",
-                    v => alwaysUseProfileData = v != null
-                }
+                }                
             };
 
             try
@@ -125,7 +125,7 @@ namespace ThermoRawFileParser
                     catch (FormatException e)
                     {
                         throw new OptionException(
-                            "unknown output format value (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet, 4 for MGF with profile date excluded)",
+                            "unknown output format value (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet)",
                             "-f, --format");
                     }
 
@@ -137,7 +137,7 @@ namespace ThermoRawFileParser
                     else
                     {
                         throw new OptionException(
-                            "unknown output format value (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet, 4 for MGF with profile date excluded)",
+                            "unknown output format value (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet)",
                             "-f, --format");
                     }
                 }
@@ -197,7 +197,7 @@ namespace ThermoRawFileParser
                 }
 
                 var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip, outputMetadataFormat,
-                    s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors, alwaysUseProfileData);
+                    s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors, noPeakPicking);
                 RawFileParser.Parse(parseInput);
             }
             catch (Exception ex)

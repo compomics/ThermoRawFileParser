@@ -6,7 +6,6 @@
         MzML,
         IndexMzML,
         Parquet,
-        MGFNoProfileData,
         NONE
     }
 
