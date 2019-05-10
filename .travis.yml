@@ -1,2 +1,12 @@
 language: csharp
 solution: ThermoRawFileParser.sln
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key: $GH_TOKEN
+  file_glob: true
+  file:
+    - "bin/Debug/*"
+  on:
+    tags: true
