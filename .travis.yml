@@ -1,6 +1,11 @@
 language: csharp
 solution: ThermoRawFileParser.sln
 
+branches:
+    only:
+    - master
+    - /v\d+\.\d+[a-z]/
+
 deploy:
   provider: releases
   skip_cleanup: true
