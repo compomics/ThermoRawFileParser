@@ -33,7 +33,6 @@ namespace ThermoRawFileParser
             Log.Info("Started parsing " + parseInput.RawFilePath);
 
             // Create the IRawDataPlus object for accessing the RAW file
-            //var rawFile = RawFileReaderAdapter.FileFactory(rawFilePath);
             IRawDataPlus rawFile;
             using (rawFile = RawFileReaderFactory.ReadFile(parseInput.RawFilePath))
             {
