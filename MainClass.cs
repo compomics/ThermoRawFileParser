@@ -15,6 +15,7 @@ namespace ThermoRawFileParser
         {
             string rawFilePath = null;
             string outputDirectory = null;
+            string outputFile = null; 
             string outputFormatString = null;
             var outputFormat = OutputFormat.NONE;
             var gzip = false;
@@ -44,6 +45,10 @@ namespace ThermoRawFileParser
                     "o=|output=", "The output directory.",
                     v => outputDirectory = v
                 },
+                {
+                    "b=|output_file", "The output file to export spectra", 
+                    v => outputFile = v 
+                }, 
                 {
                     "f=|format=",
                     "The output format for the spectra (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet)",
@@ -196,7 +201,7 @@ namespace ThermoRawFileParser
                         .RaiseConfigurationChanged(EventArgs.Empty);
                 }
 
-                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFormat, gzip, outputMetadataFormat,
+                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFile, outputFormat, gzip, outputMetadataFormat,
                     s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors, noPeakPicking);
                 RawFileParser.Parse(parseInput);
             }

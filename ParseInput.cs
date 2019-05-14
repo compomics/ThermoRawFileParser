@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Resources;
 using ThermoRawFileParser.Writer;
 
 namespace ThermoRawFileParser
@@ -19,6 +20,11 @@ namespace ThermoRawFileParser
         /// The output format.
         /// </summary>
         public OutputFormat OutputFormat { get; }
+
+        /// <summary>
+        /// The output file 
+        /// </summary>>
+        public string OutputFile { get; }
 
         /// <summary>
         /// Gzip the output file.
@@ -54,7 +60,7 @@ namespace ThermoRawFileParser
 
         private string bucketName;
 
-        public ParseInput(string rawFilePath, string outputDirectory, OutputFormat outputFormat, bool gzip,
+        public ParseInput(string rawFilePath, string outputDirectory, string outputFile, OutputFormat outputFormat, bool gzip,
             MetadataFormat outputMetadata, string s3url, string s3AccessKeyId,
             string s3SecretAccessKey, string bucketName,
             bool ignoreInstrumentErrors, bool noPeakPicking
@@ -65,6 +71,7 @@ namespace ThermoRawFileParser
             RawFileName = splittedPath[splittedPath.Length - 1];
             RawFileNameWithoutExtension = Path.GetFileNameWithoutExtension(RawFileName);
             OutputDirectory = outputDirectory;
+            OutputFile = outputFile; 
             OutputFormat = outputFormat;
             Gzip = gzip;
             OutputMetadata = outputMetadata;
@@ -77,6 +84,10 @@ namespace ThermoRawFileParser
 
             if (S3url != null && S3AccessKeyId != null && S3SecretAccessKey != null && bucketName != null)
                 InitializeS3Bucket();
+
+            if (OutputDirectory == null && OutputFile != null)
+                OutputDirectory = Path.GetDirectoryName(OutputFile); 
+
         }
 
         private void InitializeS3Bucket()
