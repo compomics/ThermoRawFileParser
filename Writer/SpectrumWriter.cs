@@ -9,7 +9,8 @@ namespace ThermoRawFileParser.Writer
 {
     public abstract class SpectrumWriter : ISpectrumWriter
     {
-        private const double Tolerance = 0.01;        
+        private const double Tolerance = 0.01;  
+        protected const double ZeroDelta = 0.0001;
 
         /// <summary>
         /// The parse input object

@@ -13,6 +13,12 @@ namespace ThermoRawFileParser.Writer
         private static readonly ILog Log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+        private const string PositivePolarity = "+";
+        private const string NegativePolarity = "-";
+        private const double PrecursorMzDelta = 0.0001;
+        private const double defaultIsolationWindowLowerOffset = 1.5;
+        private const double defaultIsolationWindowUpperOffset = 2.5;
+
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
         private int _precursorScanNumber;
 
@@ -42,7 +48,6 @@ namespace ThermoRawFileParser.Writer
                     var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
 
                     IReaction reaction = null;
-
                     switch (scanFilter.MSOrder)
                     {
                         case MSOrderType.Ms:
@@ -80,30 +85,85 @@ namespace ThermoRawFileParser.Writer
                             Writer.WriteLine(
                                 $"RTINSECONDS={(time * 60).ToString(CultureInfo.InvariantCulture)}");
 
-                            if (reaction != null)
-                            {
-                                var precursorMass = reaction.PrecursorMass;
-                                Writer.WriteLine("PEPMASS=" +
-                                                 precursorMass.ToString("0.0000000",
-                                                     CultureInfo.InvariantCulture));
-                                //var precursorIntensity = 0.0;
-                                //GetPrecursorIntensity(rawFile, _precursorScanNumber, precursorMass);
-                                //Writer.WriteLine(precursorIntensity != null
-                                //    ? $"PEPMASS={precursorMass:F7} {precursorIntensity}"
-                                //    : $"PEPMASS={precursorMass:F7}");                                    
-                            }
-
                             // trailer extra data list
                             var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
+                            int? charge = null;
+                            double? monoisotopicMass = null;
+                            double? isolationWidth = null;
                             for (var i = 0; i < trailerData.Length; i++)
                             {
                                 if (trailerData.Labels[i] == "Charge State:")
                                 {
-                                    if (Convert.ToInt32(trailerData.Values[i]) > 0)
+                                    charge = Convert.ToInt32(trailerData.Values[i]);
+                                }
+
+                                if (trailerData.Labels[i] == "Monoisotopic M/Z:")
+                                {
+                                    monoisotopicMass = double.Parse(trailerData.Values[i], NumberStyles.Any,
+                                        CultureInfo.InvariantCulture);
+                                }
+
+                                if (trailerData.Labels[i] == "MS" + (int) scanFilter.MSOrder + " Isolation Width:")
+                                {
+                                    isolationWidth = double.Parse(trailerData.Values[i], NumberStyles.Any,
+                                        CultureInfo.InvariantCulture);
+                                }
+                            }
+
+                            if (reaction != null)
+                            {
+                                var truePrecursorMass = reaction.PrecursorMass;
+
+                                // take isolation width from the reaction if no value was found in the trailer data
+                                if (isolationWidth == null || isolationWidth < ZeroDelta)
+                                {
+                                    isolationWidth = reaction.IsolationWidth;
+                                }
+
+                                isolationWidth = isolationWidth / 2;
+
+                                if (monoisotopicMass != null && monoisotopicMass > ZeroDelta
+                                                             && Math.Abs(
+                                                                 reaction.PrecursorMass - monoisotopicMass.Value) >
+                                                             PrecursorMzDelta)
+                                {
+                                    truePrecursorMass = monoisotopicMass.Value;
+
+                                    // check if the monoisotopic mass lies in the precursor mass isolation window
+                                    // otherwise take the precursor mass                                    
+                                    if (isolationWidth <= 2.0)
                                     {
-                                        Writer.WriteLine($"CHARGE={trailerData.Values[i]}+");
+                                        if ((truePrecursorMass <
+                                             (reaction.PrecursorMass - defaultIsolationWindowLowerOffset * 2)) ||
+                                            (truePrecursorMass >
+                                             (reaction.PrecursorMass + defaultIsolationWindowUpperOffset)))
+                                        {
+                                            truePrecursorMass = reaction.PrecursorMass;
+                                        }
+                                    }
+                                    else if ((truePrecursorMass < (reaction.PrecursorMass - isolationWidth)) ||
+                                             (truePrecursorMass > (reaction.PrecursorMass + isolationWidth)))
+                                    {
+                                        truePrecursorMass = reaction.PrecursorMass;
                                     }
                                 }
+
+                                Writer.WriteLine("PEPMASS=" +
+                                                 truePrecursorMass.ToString("0.0000000",
+                                                     CultureInfo.InvariantCulture));
+                            }
+
+                            // charge
+                            if (charge != null)
+                            {
+                                // Scan polarity            
+                                var polarity = PositivePolarity;
+                                if (scanFilter.Polarity == PolarityType.Negative)
+                                {
+                                    polarity = NegativePolarity;
+                                }
+
+                                Writer.WriteLine($"CHARGE={charge}{polarity}");
                             }
 
                             // write the filter string

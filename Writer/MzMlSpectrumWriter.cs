@@ -273,7 +273,7 @@ namespace ThermoRawFileParser.Writer
 
                 var index = 0;
                 for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
-                {                    
+                {
                     var spectrum = ConstructSpectrum(scanNumber);
                     if (spectrum != null)
                     {
@@ -814,8 +814,9 @@ namespace ThermoRawFileParser.Writer
             // Trailer extra data list
             var trailerData = _rawFile.GetTrailerExtraInformation(scanNumber);
             int? charge = null;
-            float? monoisotopicMass = null;
-            float? ionInjectionTime = null;
+            double? monoisotopicMass = null;
+            double? ionInjectionTime = null;
+            double? isolationWidth = null;
             for (var i = 0; i < trailerData.Length; i++)
             {
                 if (trailerData.Labels[i] == "Charge State:")
@@ -828,13 +829,19 @@ namespace ThermoRawFileParser.Writer
 
                 if (trailerData.Labels[i] == "Monoisotopic M/Z:")
                 {
-                    monoisotopicMass = float.Parse(trailerData.Values[i], NumberStyles.Any,
+                    monoisotopicMass = double.Parse(trailerData.Values[i], NumberStyles.Any,
                         CultureInfo.InvariantCulture);
                 }
 
                 if (trailerData.Labels[i] == "Ion Injection Time (ms):")
                 {
-                    ionInjectionTime = float.Parse(trailerData.Values[i], NumberStyles.Any,
+                    ionInjectionTime = double.Parse(trailerData.Values[i], NumberStyles.Any,
+                        CultureInfo.InvariantCulture);
+                }
+
+                if (trailerData.Labels[i] == "MS" + (int) scanFilter.MSOrder + " Isolation Width:")
+                {
+                    isolationWidth = double.Parse(trailerData.Values[i], NumberStyles.Any,
                         CultureInfo.InvariantCulture);
                 }
             }
@@ -884,7 +891,8 @@ namespace ThermoRawFileParser.Writer
                     }
 
                     // Construct and set the precursor list element of the spectrum                    
-                    var precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder);
+                    var precursorListType =
+                        ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, isolationWidth);
                     spectrum.precursorList = precursorListType;
                     break;
                 case MSOrderType.Ms3:
@@ -895,7 +903,7 @@ namespace ThermoRawFileParser.Writer
                         name = "MSn spectrum",
                         value = ""
                     });
-                    precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder);
+                    precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, isolationWidth);
                     spectrum.precursorList = precursorListType;
                     break;
                 default:
@@ -938,7 +946,7 @@ namespace ThermoRawFileParser.Writer
                 value = scan.ScanStatistics.TIC.ToString(CultureInfo.InvariantCulture),
                 cvRef = "MS"
             });
-            
+
             // Scan type, centroid or profile
             switch (scanEvent.ScanData)
             {
@@ -960,7 +968,7 @@ namespace ThermoRawFileParser.Writer
                         value = ""
                     });
                     break;
-            }            
+            }
 
             double? basePeakMass = null;
             double? basePeakIntensity = null;
@@ -998,7 +1006,7 @@ namespace ThermoRawFileParser.Writer
                     lowestObservedMz = segmentedScan.Positions[0];
                     highestObservedMz = segmentedScan.Positions[segmentedScan.Positions.Length - 1];
                     masses = segmentedScan.Positions;
-                    intensities = segmentedScan.Intensities;                    
+                    intensities = segmentedScan.Intensities;
                 }
             }
 
@@ -1183,8 +1191,10 @@ namespace ThermoRawFileParser.Writer
         /// <param name="scanEvent">the scan event</param>
         /// <param name="charge">the charge</param>
         /// <param name="msLevel">the MS level</param>
+        /// <param name="isolationWidth">the isolation width</param>
         /// <returns>the precursor list</returns>
-        private PrecursorListType ConstructPrecursorList(IScanEventBase scanEvent, int? charge, MSOrderType msLevel)
+        private PrecursorListType ConstructPrecursorList(IScanEventBase scanEvent, int? charge, MSOrderType msLevel,
+            double? isolationWidth)
         {
             // Construct the precursor
             var precursorList = new PrecursorListType
@@ -1231,7 +1241,6 @@ namespace ThermoRawFileParser.Writer
 
             IReaction reaction = null;
             var precursorMass = 0.0;
-            double? isolationWidth = null;
             try
             {
                 switch (msLevel)
@@ -1245,7 +1254,12 @@ namespace ThermoRawFileParser.Writer
                 }
 
                 precursorMass = reaction.PrecursorMass;
-                isolationWidth = reaction.IsolationWidth;
+
+                // take isolation width from the reaction if no value was found in the trailer data               
+                if (isolationWidth == null || isolationWidth < ZeroDelta)
+                {
+                    isolationWidth = reaction.IsolationWidth;
+                }
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -1451,7 +1465,7 @@ namespace ThermoRawFileParser.Writer
         /// <param name="ionInjectionTime">the ion injection time</param>
         /// <returns></returns>
         private ScanListType ConstructScanList(int scanNumber, Scan scan, IScanFilter scanFilter, IScanEvent scanEvent,
-            float? monoisotopicMass, float? ionInjectionTime)
+            double? monoisotopicMass, double? ionInjectionTime)
         {
             // Scan list
             var scanList = new ScanListType
