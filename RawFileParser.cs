@@ -64,8 +64,7 @@ namespace ThermoRawFileParser
 
                 if (parseInput.OutputMetadata != MetadataFormat.NONE)
                 {
-                    var metadataWriter = new MetadataWriter(parseInput.OutputDirectory,
-                        parseInput.RawFileNameWithoutExtension);
+                    var metadataWriter = new MetadataWriter(parseInput.OutputDirectory, parseInput.RawFileNameWithoutExtension);
                     switch (parseInput.OutputMetadata)
                     {
                         case MetadataFormat.JSON:
