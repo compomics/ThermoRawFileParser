@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using log4net;
 using log4net.Core;
 using Mono.Options;
@@ -15,7 +16,7 @@ namespace ThermoRawFileParser
         {
             string rawFilePath = null;
             string outputDirectory = null;
-            string outputFile = null; 
+            string outputFile = null;
             string outputFormatString = null;
             var outputFormat = OutputFormat.NONE;
             var gzip = false;
@@ -46,9 +47,9 @@ namespace ThermoRawFileParser
                     v => outputDirectory = v
                 },
                 {
-                    "b=|output_file", "The output file to export spectra", 
-                    v => outputFile = v 
-                }, 
+                    "b=|output_file", "The output file to export spectra",
+                    v => outputFile = v
+                },
                 {
                     "f=|format=",
                     "The output format for the spectra (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet)",
@@ -61,7 +62,7 @@ namespace ThermoRawFileParser
                 {
                     "g|gzip", "GZip the output file if this flag is specified (without value).",
                     v => gzip = v != null
-                },                
+                },
                 {
                     "p|noPeakPicking",
                     "Don't use the peak picking provided by the native thermo library (by default peak picking is enabled)",
@@ -94,7 +95,7 @@ namespace ThermoRawFileParser
                     "n:|s3_bucketName:",
                     "S3 bucket name",
                     v => bucketName = v
-                }                
+                }
             };
 
             try
@@ -171,6 +172,27 @@ namespace ThermoRawFileParser
                             "-m, --metadata");
                     }
                 }
+
+                if (outputFile == null && outputDirectory == null)
+                {
+                    throw new OptionException(
+                        "specify an output directory or output file",
+                        "-o, --output or -b, --output_file");
+                }
+
+                if (outputFile != null && Directory.Exists(outputFile))
+                {
+                    throw new OptionException(
+                        "specify a valid output file, not a directory",
+                        "-b, --output_file");
+                }
+
+                if (outputDirectory != null && !Directory.Exists(outputDirectory))
+                {
+                    throw new OptionException(
+                        "specify a valid output directory",
+                        "-o, --output");
+                }
             }
             catch (OptionException optionException)
             {
@@ -201,7 +223,8 @@ namespace ThermoRawFileParser
                         .RaiseConfigurationChanged(EventArgs.Empty);
                 }
 
-                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFile, outputFormat, gzip, outputMetadataFormat,
+                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFile, outputFormat, gzip,
+                    outputMetadataFormat,
                     s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors, noPeakPicking);
                 RawFileParser.Parse(parseInput);
             }
