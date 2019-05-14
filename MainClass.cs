@@ -43,11 +43,11 @@ namespace ThermoRawFileParser
                     v => rawFilePath = v
                 },
                 {
-                    "o=|output=", "The output directory.",
+                    "o=|output=", "The output directory. Specify this or an output file.",
                     v => outputDirectory = v
                 },
                 {
-                    "b=|output_file", "The output file to export spectra",
+                    "b=|output_file", "The output file. Specify this or an output directory",
                     v => outputFile = v
                 },
                 {
