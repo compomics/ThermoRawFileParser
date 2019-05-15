@@ -223,7 +223,7 @@ namespace ThermoRawFileParser.Writer
                 //   software
                 _writer.WriteStartElement("software");
                 _writer.WriteAttributeString("id", "ThermoRawFileParser");
-                _writer.WriteAttributeString("version", "1.0.7");
+                _writer.WriteAttributeString("version", "1.1.5");
                 SerializeCvParam(new CVParamType
                 {
                     accession = "MS:1000799",
@@ -830,19 +830,19 @@ namespace ThermoRawFileParser.Writer
                 if (trailerData.Labels[i] == "Monoisotopic M/Z:")
                 {
                     monoisotopicMass = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                        CultureInfo.InvariantCulture);
+                        CultureInfo.CurrentCulture);
                 }
 
                 if (trailerData.Labels[i] == "Ion Injection Time (ms):")
                 {
                     ionInjectionTime = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                        CultureInfo.InvariantCulture);
+                        CultureInfo.CurrentCulture);
                 }
 
                 if (trailerData.Labels[i] == "MS" + (int) scanFilter.MSOrder + " Isolation Width:")
                 {
                     isolationWidth = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                        CultureInfo.InvariantCulture);
+                        CultureInfo.CurrentCulture);
                 }
             }
 

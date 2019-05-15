@@ -100,13 +100,13 @@ namespace ThermoRawFileParser.Writer
                                 if (trailerData.Labels[i] == "Monoisotopic M/Z:")
                                 {
                                     monoisotopicMass = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                                        CultureInfo.InvariantCulture);
+                                        CultureInfo.CurrentCulture);
                                 }
 
                                 if (trailerData.Labels[i] == "MS" + (int) scanFilter.MSOrder + " Isolation Width:")
                                 {
                                     isolationWidth = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                                        CultureInfo.InvariantCulture);
+                                        CultureInfo.CurrentCulture);
                                 }
                             }
 
