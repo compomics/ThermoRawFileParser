@@ -16,8 +16,8 @@ namespace ThermoRawFileParser.Writer
         private const string PositivePolarity = "+";
         private const string NegativePolarity = "-";
         private const double PrecursorMzDelta = 0.0001;
-        private const double defaultIsolationWindowLowerOffset = 1.5;
-        private const double defaultIsolationWindowUpperOffset = 2.5;
+        private const double DefaultIsolationWindowLowerOffset = 1.5;
+        private const double DefaultIsolationWindowUpperOffset = 2.5;
 
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
         private int _precursorScanNumber;
@@ -134,9 +134,9 @@ namespace ThermoRawFileParser.Writer
                                     if (isolationWidth <= 2.0)
                                     {
                                         if ((truePrecursorMass <
-                                             (reaction.PrecursorMass - defaultIsolationWindowLowerOffset * 2)) ||
+                                             (reaction.PrecursorMass - DefaultIsolationWindowLowerOffset * 2)) ||
                                             (truePrecursorMass >
-                                             (reaction.PrecursorMass + defaultIsolationWindowUpperOffset)))
+                                             (reaction.PrecursorMass + DefaultIsolationWindowUpperOffset)))
                                         {
                                             truePrecursorMass = reaction.PrecursorMass;
                                         }
