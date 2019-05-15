@@ -14,19 +14,28 @@ RawFileReader reading tool. Copyright © 2016 by Thermo Fisher Scientific, Inc. 
 ```
 mono ThermoRawFileParser.exe -i=/home/user/data_input/raw_file.raw -o=/home/user/data_input/output/ -f=0 -g -m=0
 ```
-For running on Windows, omit `mono`. The optional parameters only work in the -option=value format. The tool can output some RAW file metadata `-m=0|1` (0 for JSON, 1 for TXT) and the spectra file `-f=0|1|2|3|4` (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet, 4 for MGF with profile data excluded) or both. The 'MGF with profile data excluded format' is used to exclude MS2 profile mode data (the MGF files can get big when the MS2 spectra were acquired in profile mode). 
+For running on Windows, omit `mono`. The optional parameters only work in the -option=value format. The tool can output some RAW file metadata `-m=0|1` (0 for JSON, 1 for TXT) and the spectra file `-f=0|1|2|3` (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet) or both. Use the `-p` flag to disable the thermo native peak peacking. 
 
 ```
-ThermoRawFileParser.exe  usage is (use -option=value for the optional arguments):
+ThermoRawFileParser.exe --help
+ usage is (use -option=value for the optional arguments):
   -h, --help                 Prints out the options.
   -i, --input=VALUE          The raw file input.
-  -o, --output=VALUE         The output directory.
+  -o, --output=VALUE         The output directory. Specify this or an output
+                               file.
+  -b, --output_file=VALUE    The output file. Specify this or an output
+                               directory
   -f, --format=VALUE         The output format for the spectra (0 for MGF, 1
-                               for mzML, 2 for indexed mzML, 3 for Parquet, 4
-                               for MGF with profile data excluded)
+                               for mzMl, 2 for indexed mzML, 3 for Parquet)
   -m, --metadata=VALUE       The metadata output format (0 for JSON, 1 for TXT).
   -g, --gzip                 GZip the output file if this flag is specified (
                                without value).
+  -p, --noPeakPicking        Don't use the peak picking provided by the native
+                               thermo library (by default peak picking is
+                               enabled)
+  -v, --verbose              Enable verbose logging.
+  -e, --ignoreInstrumentErrors
+                             Ignore missing properties by the instrument.
   -u, --s3_url[=VALUE]       Optional property to write directly the data into
                                S3 Storage.
   -k, --s3_accesskeyid[=VALUE]
@@ -37,9 +46,6 @@ ThermoRawFileParser.exe  usage is (use -option=value for the optional arguments)
                                output.
   -n, --s3_bucketName[=VALUE]
                              S3 bucket name
-  -v, --verbose              Enable verbose logging.
-  -e, --ignoreInstrumentErrors
-                             Ignore missing properties by the instrument.
 ```
 
 ## Download
