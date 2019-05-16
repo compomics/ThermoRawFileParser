@@ -814,7 +814,7 @@ namespace ThermoRawFileParser.Writer
             // Trailer extra data list
             var trailerData = _rawFile.GetTrailerExtraInformation(scanNumber);
             int? charge = null;
-            double? monoisotopicMass = null;
+            double? monoisotopicMz = null;
             double? ionInjectionTime = null;
             double? isolationWidth = null;
             for (var i = 0; i < trailerData.Length; i++)
@@ -829,7 +829,7 @@ namespace ThermoRawFileParser.Writer
 
                 if (trailerData.Labels[i] == "Monoisotopic M/Z:")
                 {
-                    monoisotopicMass = double.Parse(trailerData.Values[i], NumberStyles.Any,
+                    monoisotopicMz = double.Parse(trailerData.Values[i], NumberStyles.Any,
                         CultureInfo.CurrentCulture);
                 }
 
@@ -847,7 +847,7 @@ namespace ThermoRawFileParser.Writer
             }
 
             // Construct and set the scan list element of the spectrum
-            var scanListType = ConstructScanList(scanNumber, scan, scanFilter, scanEvent, monoisotopicMass,
+            var scanListType = ConstructScanList(scanNumber, scan, scanFilter, scanEvent, monoisotopicMz,
                 ionInjectionTime);
             spectrum.scanList = scanListType;
 
@@ -892,7 +892,7 @@ namespace ThermoRawFileParser.Writer
 
                     // Construct and set the precursor list element of the spectrum                    
                     var precursorListType =
-                        ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, isolationWidth);
+                        ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz, isolationWidth);
                     spectrum.precursorList = precursorListType;
                     break;
                 case MSOrderType.Ms3:
@@ -903,7 +903,8 @@ namespace ThermoRawFileParser.Writer
                         name = "MSn spectrum",
                         value = ""
                     });
-                    precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, isolationWidth);
+                    precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz,
+                        isolationWidth);
                     spectrum.precursorList = precursorListType;
                     break;
                 default:
@@ -1191,10 +1192,11 @@ namespace ThermoRawFileParser.Writer
         /// <param name="scanEvent">the scan event</param>
         /// <param name="charge">the charge</param>
         /// <param name="msLevel">the MS level</param>
+        /// <param name="monoisotopicMz">the monoisotopic m/z value</param>
         /// <param name="isolationWidth">the isolation width</param>
         /// <returns>the precursor list</returns>
         private PrecursorListType ConstructPrecursorList(IScanEventBase scanEvent, int? charge, MSOrderType msLevel,
-            double? isolationWidth)
+            double? monoisotopicMz, double? isolationWidth)
         {
             // Construct the precursor
             var precursorList = new PrecursorListType
@@ -1240,7 +1242,7 @@ namespace ThermoRawFileParser.Writer
                 };
 
             IReaction reaction = null;
-            var precursorMass = 0.0;
+            var precursorMz = 0.0;
             try
             {
                 switch (msLevel)
@@ -1253,13 +1255,7 @@ namespace ThermoRawFileParser.Writer
                         break;
                 }
 
-                precursorMass = reaction.PrecursorMass;
-
-                // take isolation width from the reaction if no value was found in the trailer data               
-                if (isolationWidth == null || isolationWidth < ZeroDelta)
-                {
-                    isolationWidth = reaction.IsolationWidth;
-                }
+                precursorMz = reaction.PrecursorMass;
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -1267,12 +1263,13 @@ namespace ThermoRawFileParser.Writer
             }
 
             // Selected ion MZ
+            var selectedIonMz = CalculateSelectedIonMz(reaction, monoisotopicMz, isolationWidth);
             var ionCvParams = new List<CVParamType>
             {
                 new CVParamType
                 {
                     name = "selected ion m/z",
-                    value = precursorMass.ToString(CultureInfo.InvariantCulture),
+                    value = selectedIonMz.ToString(CultureInfo.InvariantCulture),
                     accession = "MS:1000744",
                     cvRef = "MS",
                     unitCvRef = "MS",
@@ -1320,7 +1317,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     accession = "MS:1000827",
                     name = "isolation window target m/z",
-                    value = precursorMass.ToString(CultureInfo.InvariantCulture),
+                    value = precursorMz.ToString(CultureInfo.InvariantCulture),
                     cvRef = "MS",
                     unitCvRef = "MS",
                     unitAccession = "MS:1000040",
@@ -1534,7 +1531,7 @@ namespace ThermoRawFileParser.Writer
             };
 
             // Monoisotopic mass
-            if (monoisotopicMass.HasValue)
+            if (monoisotopicMass.HasValue && monoisotopicMass.Value > ZeroDelta)
             {
                 scanType.userParam = new UserParamType[1];
                 scanType.userParam[0] = new UserParamType
