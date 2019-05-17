@@ -879,15 +879,12 @@ namespace ThermoRawFileParser.Writer
                     var result = Regex.Match(scanEvent.ToString(), FilterStringIsolationMzPattern);
                     if (result.Success)
                     {
-                        if (!_precursorMs2ScanNumbers.ContainsKey(result.Groups[1].Value))
+                        if (_precursorMs2ScanNumbers.ContainsKey(result.Groups[1].Value))
                         {
-                            _precursorMs2ScanNumbers.Add(result.Groups[1].Value, scanNumber);
+                            _precursorMs2ScanNumbers.Remove(result.Groups[1].Value);
                         }
-                        else
-                        {
-                            // update the existing value
-                            _precursorMs2ScanNumbers[result.Groups[1].Value] = scanNumber;
-                        }
+
+                        _precursorMs2ScanNumbers.Add(result.Groups[1].Value, scanNumber);
                     }
 
                     // Construct and set the precursor list element of the spectrum                    
