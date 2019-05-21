@@ -943,30 +943,7 @@ namespace ThermoRawFileParser.Writer
                 accession = "MS:1000285",
                 value = scan.ScanStatistics.TIC.ToString(CultureInfo.InvariantCulture),
                 cvRef = "MS"
-            });
-
-            // Scan type, centroid or profile
-            switch (scanEvent.ScanData)
-            {
-                case ScanDataType.Centroid:
-                    spectrumCvParams.Add(new CVParamType
-                    {
-                        accession = "MS:1000127",
-                        cvRef = "MS",
-                        name = "centroid spectrum",
-                        value = ""
-                    });
-                    break;
-                case ScanDataType.Profile:
-                    spectrumCvParams.Add(new CVParamType
-                    {
-                        accession = "MS:1000128",
-                        cvRef = "MS",
-                        name = "profile spectrum",
-                        value = ""
-                    });
-                    break;
-            }
+            });            
 
             double? basePeakMass = null;
             double? basePeakIntensity = null;
@@ -981,6 +958,14 @@ namespace ThermoRawFileParser.Writer
                 var centroidStream = _rawFile.GetCentroidStream(scanNumber, false);
                 if (scan.CentroidScan.Length > 0)
                 {
+                    spectrumCvParams.Add(new CVParamType
+                    {
+                        accession = "MS:1000127",
+                        cvRef = "MS",
+                        name = "centroid spectrum",
+                        value = ""
+                    });
+
                     basePeakMass = centroidStream.BasePeakMass;
                     basePeakIntensity = centroidStream.BasePeakIntensity;
                     lowestObservedMz = centroidStream.Masses[0];
@@ -1001,6 +986,28 @@ namespace ThermoRawFileParser.Writer
                 var segmentedScan = _rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
                 if (segmentedScan.Positions.Length > 0)
                 {
+                    switch (scanEvent.ScanData)
+                    {
+                        case ScanDataType.Centroid:
+                            spectrumCvParams.Add(new CVParamType
+                            {
+                                accession = "MS:1000127",
+                                cvRef = "MS",
+                                name = "centroid spectrum",
+                                value = ""
+                            });
+                            break;
+                        case ScanDataType.Profile:
+                            spectrumCvParams.Add(new CVParamType
+                            {
+                                accession = "MS:1000128",
+                                cvRef = "MS",
+                                name = "profile spectrum",
+                                value = ""
+                            });
+                            break;
+                    }
+
                     lowestObservedMz = segmentedScan.Positions[0];
                     highestObservedMz = segmentedScan.Positions[segmentedScan.Positions.Length - 1];
                     masses = segmentedScan.Positions;
