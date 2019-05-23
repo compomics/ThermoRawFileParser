@@ -62,7 +62,33 @@ If you want to build the project using nuget, put the ThermoFisher.CommonCore.Ra
 
 ## Logging
 
-The default log file is `ThermoRawFileParser.log`. The log settings can be changed in `log4net.config`.
+By default the parser only logs to console. To enable logging to file, uncomment the file appender in the `log4net.config` file.
+
+```
+<log4net>
+    <root>
+        <level value="INFO" />
+        <appender-ref ref="console" />
+        <appender-ref ref="file" />
+    </root>
+    <appender name="console" type="log4net.Appender.ConsoleAppender">
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern value="%date %level %logger - %message%newline" />
+        </layout>
+    </appender>
+    <!--<appender name="file" type="log4net.Appender.RollingFileAppender">
+        <file value="ThermoRawFileParser.log" />
+        <appendToFile value="true" />
+        <rollingStyle value="Size" />
+        <maxSizeRollBackups value="5" />
+        <maximumFileSize value="10MB" />
+        <staticLogFileName value="true" />
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern value="%date [%thread] %level %logger - %message%newline" />
+        </layout>
+    </appender>-->
+</log4net>
+```
 
 ## Docker
 
