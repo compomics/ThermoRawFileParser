@@ -1,7 +1,7 @@
 # ThermoRawFileParser
 
 Wrapper around the .net (C#) ThermoFisher ThermoRawFileReader library for running on Linux with mono (works on Windows too). It takes a thermo RAW file as input and outputs a metadata file and the spectra in 3 possible formats
-* MGF: only MS2 spectra
+* MGF: only MS2 and MS3 spectra
 * mzML and indexed mzML: both MS1 and MS2 spectra
 * Apache Parquet: under development
 
