@@ -223,7 +223,7 @@ namespace ThermoRawFileParser.Writer
                 //   software
                 _writer.WriteStartElement("software");
                 _writer.WriteAttributeString("id", "ThermoRawFileParser");
-                _writer.WriteAttributeString("version", "1.1.5");
+                _writer.WriteAttributeString("version", "1.1.7");
                 SerializeCvParam(new CVParamType
                 {
                     accession = "MS:1000799",
