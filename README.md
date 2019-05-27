@@ -69,7 +69,7 @@ By default the parser only logs to console. To enable logging to file, uncomment
     <root>
         <level value="INFO" />
         <appender-ref ref="console" />
-        <appender-ref ref="file" />
+        <!--<appender-ref ref="file" />-->
     </root>
     <appender name="console" type="log4net.Appender.ConsoleAppender">
         <layout type="log4net.Layout.PatternLayout">
