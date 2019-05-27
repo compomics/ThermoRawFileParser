@@ -12,6 +12,8 @@ namespace ThermoRawFileParser
         private static readonly log4net.ILog Log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        public static string _version = "1.1.7";
+
         public static void Main(string[] args)
         {
             string rawFilePath = null;
@@ -29,14 +31,18 @@ namespace ThermoRawFileParser
             string bucketName = null;
             var ignoreInstrumentErrors = false;
             var noPeakPicking = false;
-
             var help = false;
+            var version = false;
 
             var optionSet = new OptionSet
             {
                 {
                     "h|help", "Prints out the options.",
                     h => help = h != null
+                },
+                {
+                    "version", "Prints out the library version.",
+                    v => version = v != null
                 },
                 {
                     "i=|input=", "The raw file input.",
@@ -112,6 +118,12 @@ namespace ThermoRawFileParser
                 {
                     ShowHelp(" usage is (use -option=value for the optional arguments):", null,
                         optionSet);
+                    return;
+                }
+
+                if (version)
+                {
+                    Console.WriteLine(_version);
                     return;
                 }
 
