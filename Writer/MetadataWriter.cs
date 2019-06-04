@@ -176,7 +176,7 @@ namespace ThermoRawFileParser.Writer
                                         maxCharge = int.Parse(trailerData.Values[i]); 
                                     
                                     if (int.Parse(trailerData.Values[i]) < minCharge)
-                                        maxCharge = int.Parse(trailerData.Values[i]); 
+                                        minCharge = int.Parse(trailerData.Values[i]); 
 
                                 }
                             }
