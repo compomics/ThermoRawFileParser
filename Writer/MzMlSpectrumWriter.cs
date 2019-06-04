@@ -92,6 +92,8 @@ namespace ThermoRawFileParser.Writer
 
             try
             {
+                Log.Info("Processing " + (lastScanNumber - firstScanNumber) + " scans");
+
                 _writer.WriteStartDocument();
 
                 if (_doIndexing)
@@ -943,7 +945,7 @@ namespace ThermoRawFileParser.Writer
                 accession = "MS:1000285",
                 value = scan.ScanStatistics.TIC.ToString(CultureInfo.InvariantCulture),
                 cvRef = "MS"
-            });            
+            });
 
             double? basePeakMass = null;
             double? basePeakIntensity = null;

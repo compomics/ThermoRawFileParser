@@ -29,6 +29,8 @@ namespace ThermoRawFileParser.Writer
             ConfigureWriter(".mgf");
             using (Writer)
             {
+                Log.Info("Processing " + (lastScanNumber - firstScanNumber) + " scans");
+
                 for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
                 {
                     // Get each scan from the RAW file
