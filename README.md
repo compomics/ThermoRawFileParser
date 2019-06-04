@@ -51,7 +51,7 @@ ThermoRawFileParser.exe --help
 
 ## Download
 
-Click [here](https://github.com/compomics/ThermoRawFileParser/releases) to go to the release page.
+Click [here](https://github.com/compomics/ThermoRawFileParser/releases) to go to the release page (with [release notes](https://github.com/compomics/ThermoRawFileParser/wiki/ReleaseNotes) starting from v1.1.7).
 
 ## Galaxy integration
 
