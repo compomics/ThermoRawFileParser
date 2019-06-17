@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Reflection;
-using System.Threading;
 using log4net;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
@@ -17,9 +16,6 @@ namespace ThermoRawFileParser.Writer
 
         private const string PositivePolarity = "+";
         private const string NegativePolarity = "-";
-        private const double PrecursorMzDelta = 0.0001;
-        private const double DefaultIsolationWindowLowerOffset = 1.5;
-        private const double DefaultIsolationWindowUpperOffset = 2.5;
 
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
         private int _precursorScanNumber;
@@ -34,18 +30,23 @@ namespace ThermoRawFileParser.Writer
             ConfigureWriter(".mgf");
             using (Writer)
             {
-                using (var progress = new ProgressBar())
-                {
-                    Log.Info("Processing " + (lastScanNumber - firstScanNumber) + " scans");
-                    for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
-                    {
-                        if (scanNumber % progressStepCount == 0)
-                        {
-                            progress.Report((double) scanNumber / lastScanNumber);
-                        }
+                Log.Info("Processing " + (lastScanNumber - firstScanNumber + 1) + " scans");
 
-                        // Get each scan from the RAW file
-                        var scan = Scan.FromFile(rawFile, scanNumber);
+                var lastScanProgress = 0;
+                for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
+                {
+                    var scanProgress = (int) ((double) scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
+                    if (scanProgress % ProgressPercentageStep == 0)
+                    {
+                        if (scanProgress != lastScanProgress)
+                        {
+                            Log.Debug("Processed " + scanProgress + "% of scans");
+                            lastScanProgress = scanProgress;
+                        }
+                    }
+
+                    // Get each scan from the RAW file
+                    var scan = Scan.FromFile(rawFile, scanNumber);
 
                     // Check to see if the RAW file contains label (high-res) data and if it is present
                     // then look for any data that is out of order
@@ -98,18 +99,21 @@ namespace ThermoRawFileParser.Writer
                             // trailer extra data list
                             var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
                             int? charge = null;
-                            double? monoisotopicMass = null;
+                            double? monoisotopicMz = null;
                             double? isolationWidth = null;
                             for (var i = 0; i < trailerData.Length; i++)
                             {
                                 if (trailerData.Labels[i] == "Charge State:")
                                 {
-                                    charge = Convert.ToInt32(trailerData.Values[i]);
+                                    if (Convert.ToInt32(trailerData.Values[i]) > 0)
+                                    {
+                                        charge = Convert.ToInt32(trailerData.Values[i]);
+                                    }
                                 }
 
                                 if (trailerData.Labels[i] == "Monoisotopic M/Z:")
                                 {
-                                    monoisotopicMass = double.Parse(trailerData.Values[i], NumberStyles.Any,
+                                    monoisotopicMz = double.Parse(trailerData.Values[i], NumberStyles.Any,
                                         CultureInfo.CurrentCulture);
                                 }
 
@@ -122,45 +126,11 @@ namespace ThermoRawFileParser.Writer
 
                             if (reaction != null)
                             {
-                                var truePrecursorMass = reaction.PrecursorMass;
-
-                                // take isolation width from the reaction if no value was found in the trailer data
-                                if (isolationWidth == null || isolationWidth < ZeroDelta)
-                                {
-                                    isolationWidth = reaction.IsolationWidth;
-                                }
-
-                                isolationWidth = isolationWidth / 2;
-
-                                if (monoisotopicMass != null && monoisotopicMass > ZeroDelta
-                                                             && Math.Abs(
-                                                                 reaction.PrecursorMass - monoisotopicMass.Value) >
-                                                             PrecursorMzDelta)
-                                {
-                                    truePrecursorMass = monoisotopicMass.Value;
-
-                                    // check if the monoisotopic mass lies in the precursor mass isolation window
-                                    // otherwise take the precursor mass                                    
-                                    if (isolationWidth <= 2.0)
-                                    {
-                                        if ((truePrecursorMass <
-                                             (reaction.PrecursorMass - DefaultIsolationWindowLowerOffset * 2)) ||
-                                            (truePrecursorMass >
-                                             (reaction.PrecursorMass + DefaultIsolationWindowUpperOffset)))
-                                        {
-                                            truePrecursorMass = reaction.PrecursorMass;
-                                        }
-                                    }
-                                    else if ((truePrecursorMass < (reaction.PrecursorMass - isolationWidth)) ||
-                                             (truePrecursorMass > (reaction.PrecursorMass + isolationWidth)))
-                                    {
-                                        truePrecursorMass = reaction.PrecursorMass;
-                                    }
-                                }
+                                var selectedIonMz =
+                                    CalculateSelectedIonMz(reaction, monoisotopicMz, isolationWidth);
 
                                 Writer.WriteLine("PEPMASS=" +
-                                                 truePrecursorMass.ToString("0.0000000",
-                                                     CultureInfo.InvariantCulture));
+                                                 selectedIonMz.ToString(CultureInfo.InvariantCulture));
                             }
 
                             // charge
@@ -193,7 +163,7 @@ namespace ThermoRawFileParser.Writer
                                             centroidStream.Masses[i].ToString("0.0000000",
                                                 CultureInfo.InvariantCulture)
                                             + " "
-                                            + centroidStream.Intensities[i].ToString("0.0000000",
+                                            + centroidStream.Intensities[i].ToString("0.0000000000",
                                                 CultureInfo.InvariantCulture));
                                     }
                                 }
@@ -220,8 +190,7 @@ namespace ThermoRawFileParser.Writer
 
                             Writer.WriteLine("END IONS");
 
-                                break;
-                        }
+                            break;
                     }
                 }
             }
