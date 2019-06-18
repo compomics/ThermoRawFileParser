@@ -93,7 +93,10 @@ namespace ThermoRawFileParser.Writer
                             {
                                 if (trailerData.Labels[i] == "Charge State:")
                                 {
-                                    charge = Convert.ToInt32(trailerData.Values[i]);
+                                    if (Convert.ToInt32(trailerData.Values[i]) > 0)
+                                    {
+                                        charge = Convert.ToInt32(trailerData.Values[i]);
+                                    }
                                 }
 
                                 if (trailerData.Labels[i] == "Monoisotopic M/Z:")
