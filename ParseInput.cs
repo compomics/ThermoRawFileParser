@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Resources;
 using ThermoRawFileParser.Writer;
 
 namespace ThermoRawFileParser
@@ -58,13 +57,15 @@ namespace ThermoRawFileParser
 
         public bool NoPeakPicking { get; }
 
-        private string bucketName;
+        public bool Verbose { get; }
+
+        private readonly string bucketName;
 
         public ParseInput(string rawFilePath, string outputDirectory, string outputFile, OutputFormat outputFormat,
             bool gzip,
             MetadataFormat outputMetadata, string s3url, string s3AccessKeyId,
             string s3SecretAccessKey, string bucketName,
-            bool ignoreInstrumentErrors, bool noPeakPicking
+            bool ignoreInstrumentErrors, bool noPeakPicking, bool verbose
         )
         {
             RawFilePath = rawFilePath;
@@ -82,6 +83,7 @@ namespace ThermoRawFileParser
             this.bucketName = bucketName;
             IgnoreInstrumentErrors = ignoreInstrumentErrors;
             NoPeakPicking = noPeakPicking;
+            Verbose = verbose;
 
             if (S3url != null && S3AccessKeyId != null && S3SecretAccessKey != null && bucketName != null)
                 InitializeS3Bucket();

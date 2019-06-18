@@ -5,7 +5,6 @@ using log4net;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
-using ThermoRawFileParser.Util;
 
 namespace ThermoRawFileParser.Writer
 {
@@ -35,13 +34,16 @@ namespace ThermoRawFileParser.Writer
                 var lastScanProgress = 0;
                 for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
                 {
-                    var scanProgress = (int) ((double) scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
-                    if (scanProgress % ProgressPercentageStep == 0)
+                    if (!ParseInput.Verbose)
                     {
-                        if (scanProgress != lastScanProgress)
+                        var scanProgress = (int) ((double) scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
+                        if (scanProgress % ProgressPercentageStep == 0)
                         {
-                            Log.Debug("Processed " + scanProgress + "% of scans");
-                            lastScanProgress = scanProgress;
+                            if (scanProgress != lastScanProgress)
+                            {
+                                Console.Write("" + scanProgress + "% ");
+                                lastScanProgress = scanProgress;
+                            }
                         }
                     }
 
@@ -190,8 +192,15 @@ namespace ThermoRawFileParser.Writer
 
                             Writer.WriteLine("END IONS");
 
+                            Log.Debug("Spectrum written to file -- SCAN " + scanNumber);
+
                             break;
                     }
+                }
+
+                if (!ParseInput.Verbose)
+                {
+                    Console.WriteLine();
                 }
             }
         }

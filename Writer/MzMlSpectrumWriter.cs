@@ -62,7 +62,7 @@ namespace ThermoRawFileParser.Writer
             _mzMlNamespace = new XmlSerializerNamespaces();
             _mzMlNamespace.Add(string.Empty, "http://psi.hupo.org/ms/mzml");
             _doIndexing = ParseInput.OutputFormat == OutputFormat.IndexMzML;
-            _osOffset = System.Environment.NewLine == "\n" ? 0 : 1;
+            _osOffset = Environment.NewLine == "\n" ? 0 : 1;
         }
 
         /// <inheritdoc />
@@ -224,7 +224,7 @@ namespace ThermoRawFileParser.Writer
                 //   software
                 _writer.WriteStartElement("software");
                 _writer.WriteAttributeString("id", "ThermoRawFileParser");
-                _writer.WriteAttributeString("version", MainClass._version);
+                _writer.WriteAttributeString("version", MainClass.Version);
                 SerializeCvParam(new CVParamType
                 {
                     accession = "MS:1000799",
@@ -276,13 +276,16 @@ namespace ThermoRawFileParser.Writer
                 var lastScanProgress = 0;
                 for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
                 {
-                    var scanProgress = (int) ((double) scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
-                    if (scanProgress % ProgressPercentageStep == 0)
+                    if (!ParseInput.Verbose)
                     {
-                        if (scanProgress != lastScanProgress)
+                        var scanProgress = (int) ((double) scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
+                        if (scanProgress % ProgressPercentageStep == 0)
                         {
-                            Log.Debug("Processed " + scanProgress + "% of scans");
-                            lastScanProgress = scanProgress;
+                            if (scanProgress != lastScanProgress)
+                            {
+                                Console.Write("" + scanProgress + "% ");
+                                lastScanProgress = scanProgress;
+                            }
                         }
                     }
 
@@ -307,8 +310,15 @@ namespace ThermoRawFileParser.Writer
 
                         Serialize(serializer, spectrum);
 
+                        Log.Debug("Spectrum added to list of spectra -- ID " + spectrum.id);
+
                         index++;
                     }
+                }
+
+                if (!ParseInput.Verbose)
+                {
+                    Console.WriteLine();
                 }
 
                 _writer.WriteEndElement(); // spectrumList                                                
@@ -327,7 +337,7 @@ namespace ThermoRawFileParser.Writer
                         chromatogram.index = index.ToString();
                         if (_doIndexing)
                         {
-                            // flush the writers before getting the posistion
+                            // flush the writers before getting the position
                             _writer.Flush();
                             Writer.Flush();
                             if (chromatogramOffSets.Count != 0)
@@ -502,7 +512,7 @@ namespace ThermoRawFileParser.Writer
                         Log.Warn("The IonizationMode does not contains the following property --" + e.Message);
                         if (!ParseInput.IgnoreInstrumentErrors)
                         {
-                            throw e;
+                            throw;
                         }
                     }
 
@@ -523,7 +533,7 @@ namespace ThermoRawFileParser.Writer
                     Log.Warn("No Scan Filter found for the following scan --" + scanNumber);
                     if (!ParseInput.IgnoreInstrumentErrors)
                     {
-                        throw e;
+                        throw;
                     }
                 }
 
@@ -1236,7 +1246,7 @@ namespace ThermoRawFileParser.Writer
                     else
                     {
                         throw new InvalidOperationException("Couldn't find a MS2 precursor scan for MS3 scan " +
-                                                            scanEvent.ToString());
+                                                            scanEvent);
                     }
 
                     break;

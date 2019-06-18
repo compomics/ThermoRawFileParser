@@ -152,6 +152,9 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         /// <param name="rawFile">the RAW file object</param>
         /// <param name="precursorScanNumber">the precursor scan number</param>
+        /// <param name="precursorMass">the precursor mass</param>
+        /// <param name="retentionTime">the retention time</param>
+        /// <param name="isolationWidth">the isolation width</param>
         protected static double? GetPrecursorIntensity(IRawDataPlus rawFile, int precursorScanNumber,
             double precursorMass, double retentionTime, double? isolationWidth)
         {

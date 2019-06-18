@@ -9,10 +9,10 @@ namespace ThermoRawFileParser
 {
     public static class MainClass
     {
-        private static readonly log4net.ILog Log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log =
+            LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public static string _version = "1.1.7";
+        public const string Version = "1.1.8";
 
         public static void Main(string[] args)
         {
@@ -123,7 +123,7 @@ namespace ThermoRawFileParser
 
                 if (version)
                 {
-                    Console.WriteLine(_version);
+                    Console.WriteLine(Version);
                     return;
                 }
 
@@ -237,7 +237,8 @@ namespace ThermoRawFileParser
 
                 var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFile, outputFormat, gzip,
                     outputMetadataFormat,
-                    s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors, noPeakPicking);
+                    s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors, noPeakPicking,
+                    verbose);
                 RawFileParser.Parse(parseInput);
             }
             catch (Exception ex)
