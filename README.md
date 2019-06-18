@@ -61,10 +61,6 @@ You can find the ThermoRawFileParserGUI [here](https://github.com/compomics/Ther
 
 ThermoRawFileParser is available in the Galaxy [ToolShed](https://toolshed.g2.bx.psu.edu/view/galaxyp/thermo_raw_file_converter/a3edda696e4d) and is deployed at the [European Galaxy Server](https://usegalaxy.eu/root?tool_id=toolshed.g2.bx.psu.edu/repos/galaxyp/thermo_raw_file_converter/thermo_raw_file_converter/).
 
-## Build
-
-If you want to build the project using nuget, put the ThermoFisher.CommonCore.RawFileReader.4.0.26.nupkg package in your local nuget directory.
-
 ## Logging
 
 By default the parser only logs to console. To enable logging to file, uncomment the file appender in the `log4net.config` file.
