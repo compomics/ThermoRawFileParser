@@ -12,7 +12,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.1.8";
+        public const string Version = "1.1.9";
 
         public static void Main(string[] args)
         {
@@ -31,6 +31,7 @@ namespace ThermoRawFileParser
             string bucketName = null;
             var ignoreInstrumentErrors = false;
             var noPeakPicking = false;
+            var noZlibCompression = false;
             var help = false;
             var version = false;
 
@@ -73,6 +74,11 @@ namespace ThermoRawFileParser
                     "p|noPeakPicking",
                     "Don't use the peak picking provided by the native thermo library (by default peak picking is enabled)",
                     v => noPeakPicking = v != null
+                },
+                {
+                    "z|noZlibCompression",
+                    "Don't use zlib compression for the m/z ratios and intensities",
+                    v => noZlibCompression = v != null
                 },
                 {
                     "v|verbose", "Enable verbose logging.",
@@ -238,7 +244,7 @@ namespace ThermoRawFileParser
                 var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFile, outputFormat, gzip,
                     outputMetadataFormat,
                     s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors, noPeakPicking,
-                    verbose);
+                    noZlibCompression ,verbose);
                 RawFileParser.Parse(parseInput);
             }
             catch (Exception ex)

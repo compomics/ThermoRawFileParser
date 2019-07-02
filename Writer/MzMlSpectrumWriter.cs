@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
@@ -694,14 +695,15 @@ namespace ThermoRawFileParser.Writer
                         var timesBinaryData =
                             new BinaryDataArrayType
                             {
-                                binary = GetZLib64BitArray(trace[i].Times)
+                                binary = ParseInput.NoZlibCompression
+                                    ? Get64BitArray(trace[i].Times)
+                                    : GetZLib64BitArray(trace[i].Times)
                             };
                         timesBinaryData.encodedLength =
                             (4 * Math.Ceiling((double) timesBinaryData
                                                   .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-                        timesBinaryData.cvParam =
-                            new CVParamType[3];
-                        timesBinaryData.cvParam[0] =
+                        var timesBinaryDataCvParams = new List<CVParamType>
+                        {
                             new CVParamType
                             {
                                 accession = "MS:1000595",
@@ -711,23 +713,25 @@ namespace ThermoRawFileParser.Writer
                                 value = "",
                                 unitCvRef = "UO",
                                 unitAccession = "UO:0000031"
-                            };
-                        timesBinaryData.cvParam[1] =
+                            },
                             new CVParamType
                             {
-                                accession = "MS:1000523",
-                                name = "64-bit float",
-                                cvRef = "MS",
-                                value = ""
-                            };
-                        timesBinaryData.cvParam[2] =
-                            new CVParamType
-                            {
-                                accession = "MS:1000574",
-                                name = "zlib compression",
-                                cvRef = "MS",
-                                value = ""
-                            };
+                                accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""
+                            }
+                        };
+                        if (!ParseInput.NoZlibCompression)
+                        {
+                            timesBinaryDataCvParams.Add(
+                                new CVParamType
+                                {
+                                    accession = "MS:1000574",
+                                    name = "zlib compression",
+                                    cvRef = "MS",
+                                    value = ""
+                                });
+                        }
+
+                        timesBinaryData.cvParam = timesBinaryDataCvParams.ToArray();
 
                         binaryData.Add(timesBinaryData);
                     }
@@ -744,14 +748,15 @@ namespace ThermoRawFileParser.Writer
                         var intensitiesBinaryData =
                             new BinaryDataArrayType
                             {
-                                binary = GetZLib64BitArray(trace[i].Intensities)
+                                binary = ParseInput.NoZlibCompression
+                                    ? Get64BitArray(trace[i].Intensities)
+                                    : GetZLib64BitArray(trace[i].Intensities)
                             };
                         intensitiesBinaryData.encodedLength =
                             (4 * Math.Ceiling((double) intensitiesBinaryData
                                                   .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-                        intensitiesBinaryData.cvParam =
-                            new CVParamType[3];
-                        intensitiesBinaryData.cvParam[0] =
+                        var intensitiesBinaryDataCvParams = new List<CVParamType>
+                        {
                             new CVParamType
                             {
                                 accession = "MS:1000515",
@@ -761,23 +766,25 @@ namespace ThermoRawFileParser.Writer
                                 value = "",
                                 unitCvRef = "MS",
                                 unitAccession = "MS:1000131"
-                            };
-                        intensitiesBinaryData.cvParam[1] =
+                            },
                             new CVParamType
                             {
-                                accession = "MS:1000523",
-                                name = "64-bit float",
-                                cvRef = "MS",
-                                value = ""
-                            };
-                        intensitiesBinaryData.cvParam[2] =
-                            new CVParamType
-                            {
-                                accession = "MS:1000574",
-                                name = "zlib compression",
-                                cvRef = "MS",
-                                value = ""
-                            };
+                                accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""
+                            }
+                        };
+                        if (!ParseInput.NoZlibCompression)
+                        {
+                            intensitiesBinaryDataCvParams.Add(
+                                new CVParamType
+                                {
+                                    accession = "MS:1000574",
+                                    name = "zlib compression",
+                                    cvRef = "MS",
+                                    value = ""
+                                });
+                        }
+
+                        intensitiesBinaryData.cvParam = intensitiesBinaryDataCvParams.ToArray();
 
                         binaryData.Add(intensitiesBinaryData);
                     }
@@ -1110,14 +1117,13 @@ namespace ThermoRawFileParser.Writer
                 var massesBinaryData =
                     new BinaryDataArrayType
                     {
-                        binary = GetZLib64BitArray(masses)
+                        binary = ParseInput.NoZlibCompression ? Get64BitArray(masses) : GetZLib64BitArray(masses)
                     };
                 massesBinaryData.encodedLength =
                     (4 * Math.Ceiling((double) massesBinaryData
                                           .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-                massesBinaryData.cvParam =
-                    new CVParamType[3];
-                massesBinaryData.cvParam[0] =
+                var massesBinaryDataCvParams = new List<CVParamType>
+                {
                     new CVParamType
                     {
                         accession = "MS:1000514",
@@ -1127,23 +1133,22 @@ namespace ThermoRawFileParser.Writer
                         value = "",
                         unitCvRef = "MS",
                         unitAccession = "MS:1000040"
-                    };
-                massesBinaryData.cvParam[1] =
-                    new CVParamType
-                    {
-                        accession = "MS:1000523",
-                        name = "64-bit float",
-                        cvRef = "MS",
-                        value = ""
-                    };
-                massesBinaryData.cvParam[2] =
-                    new CVParamType
-                    {
-                        accession = "MS:1000574",
-                        name = "zlib compression",
-                        cvRef = "MS",
-                        value = ""
-                    };
+                    },
+                    new CVParamType {accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""}
+                };
+                if (!ParseInput.NoZlibCompression)
+                {
+                    massesBinaryDataCvParams.Add(
+                        new CVParamType
+                        {
+                            accession = "MS:1000574",
+                            name = "zlib compression",
+                            cvRef = "MS",
+                            value = ""
+                        });
+                }
+
+                massesBinaryData.cvParam = massesBinaryDataCvParams.ToArray();
 
                 binaryData.Add(massesBinaryData);
             }
@@ -1160,14 +1165,15 @@ namespace ThermoRawFileParser.Writer
                 var intensitiesBinaryData =
                     new BinaryDataArrayType
                     {
-                        binary = GetZLib64BitArray(intensities)
+                        binary = ParseInput.NoZlibCompression
+                            ? Get64BitArray(intensities)
+                            : GetZLib64BitArray(intensities)
                     };
                 intensitiesBinaryData.encodedLength =
                     (4 * Math.Ceiling((double) intensitiesBinaryData
                                           .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-                intensitiesBinaryData.cvParam =
-                    new CVParamType[3];
-                intensitiesBinaryData.cvParam[0] =
+                var intensitiesBinaryDataCvParams = new List<CVParamType>
+                {
                     new CVParamType
                     {
                         accession = "MS:1000515",
@@ -1177,23 +1183,22 @@ namespace ThermoRawFileParser.Writer
                         unitAccession = "MS:1000131",
                         unitName = "number of counts",
                         value = ""
-                    };
-                intensitiesBinaryData.cvParam[1] =
-                    new CVParamType
-                    {
-                        accession = "MS:1000523",
-                        name = "64-bit float",
-                        cvRef = "MS",
-                        value = ""
-                    };
-                intensitiesBinaryData.cvParam[2] =
-                    new CVParamType
-                    {
-                        accession = "MS:1000574",
-                        name = "zlib compression",
-                        cvRef = "MS",
-                        value = ""
-                    };
+                    },
+                    new CVParamType {accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""}
+                };
+                if (!ParseInput.NoZlibCompression)
+                {
+                    intensitiesBinaryDataCvParams.Add(
+                        new CVParamType
+                        {
+                            accession = "MS:1000574",
+                            name = "zlib compression",
+                            cvRef = "MS",
+                            value = ""
+                        });
+                }
+
+                intensitiesBinaryData.cvParam = intensitiesBinaryDataCvParams.ToArray();
 
                 binaryData.Add(intensitiesBinaryData);
             }
