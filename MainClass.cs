@@ -54,12 +54,12 @@ namespace ThermoRawFileParser
                     v => outputDirectory = v
                 },
                 {
-                    "b=|output_file", "The output file. Specify this or an output directory",
+                    "b=|output_file", "The output file. Specify this or an output directory.",
                     v => outputFile = v
                 },
                 {
                     "f=|format=",
-                    "The output format for the spectra (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet)",
+                    "The output format for the spectra (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet).",
                     v => outputFormatString = v
                 },
                 {
@@ -72,12 +72,12 @@ namespace ThermoRawFileParser
                 },
                 {
                     "p|noPeakPicking",
-                    "Don't use the peak picking provided by the native thermo library (by default peak picking is enabled)",
+                    "Don't use the peak picking provided by the native thermo library (by default peak picking is enabled).",
                     v => noPeakPicking = v != null
                 },
                 {
                     "z|noZlibCompression",
-                    "Don't use zlib compression for the m/z ratios and intensities",
+                    "Don't use zlib compression for the m/z ratios and intensities (by default zlib compression is enabled).",
                     v => noZlibCompression = v != null
                 },
                 {
