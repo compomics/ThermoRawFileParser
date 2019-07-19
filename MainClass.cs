@@ -3,6 +3,7 @@ using System.IO;
 using log4net;
 using log4net.Core;
 using Mono.Options;
+using NUnit.Framework.Constraints;
 using ThermoFisher.CommonCore.Data;
 
 namespace ThermoRawFileParser
@@ -12,7 +13,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.1.9";
+        public const string Version = "1.1.10";
 
         public static void Main(string[] args)
         {
@@ -24,10 +25,12 @@ namespace ThermoRawFileParser
             var gzip = false;
             string outputMetadataString = null;
             var outputMetadataFormat = MetadataFormat.NONE;
+            string metadataOutputFile = null;
             string s3url = null;
             string s3AccessKeyId = null;
             string s3SecretAccessKey = null;
-            var verbose = false;
+            string logFormatString = null;
+            var logFormat = LogFormat.DEFAULT;
             string bucketName = null;
             var ignoreInstrumentErrors = false;
             var noPeakPicking = false;
@@ -46,20 +49,23 @@ namespace ThermoRawFileParser
                     v => version = v != null
                 },
                 {
-                    "i=|input=", "The raw file input.",
+                    "i=|input=", "The raw file input. (Required)",
                     v => rawFilePath = v
                 },
                 {
-                    "o=|output=", "The output directory. Specify this or an output file.",
+                    "o=|output=", "The output directory. Specify this or an output file" +
+                                  " (specifying neither writes to the input directory).",
                     v => outputDirectory = v
                 },
                 {
-                    "b=|output_file", "The output file. Specify this or an output directory.",
+                    "b=|output_file", "The output file. Specify this or an output directory" +
+                                      " (specifying neither writes to the input directory).",
                     v => outputFile = v
                 },
                 {
                     "f=|format=",
-                    "The output format for the spectra (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet).",
+                    "The output format for the spectra (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet," +
+                    "defaults to mzML if not specified).",
                     v => outputFormatString = v
                 },
                 {
@@ -67,12 +73,17 @@ namespace ThermoRawFileParser
                     v => outputMetadataString = v
                 },
                 {
+                    "c=|metadata_output_file",
+                    "The metadata output file (by default the metadata file is written to the output directory)",
+                    v => metadataOutputFile = v
+                },
+                {
                     "g|gzip", "GZip the output file if this flag is specified (without value).",
                     v => gzip = v != null
                 },
                 {
                     "p|noPeakPicking",
-                    "Don't use the peak picking provided by the native thermo library (by default peak picking is enabled).",
+                    "Don't use the peak picking provided by the native Thermo library (by default peak picking is enabled).",
                     v => noPeakPicking = v != null
                 },
                 {
@@ -81,8 +92,8 @@ namespace ThermoRawFileParser
                     v => noZlibCompression = v != null
                 },
                 {
-                    "v|verbose", "Enable verbose logging.",
-                    v => verbose = v != null
+                    "l=|logging=", "Optional logging level (0 for silent, 1 for verbose).",
+                    v => logFormatString = v
                 },
                 {
                     "e|ignoreInstrumentErrors", "Ignore missing properties by the instrument.",
@@ -135,8 +146,7 @@ namespace ThermoRawFileParser
 
                 if (outputMetadataString == null && outputFormatString == null)
                 {
-                    throw new OptionException("The parameter -f or -m should be provided",
-                        "-f|--format , -m|--format");
+                    outputFormat = OutputFormat.MzML;
                 }
 
                 if (outputFormatString != null)
@@ -149,7 +159,7 @@ namespace ThermoRawFileParser
                     catch (FormatException e)
                     {
                         throw new OptionException(
-                            "unknown output format value (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet)",
+                            "unknown output format value (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet)",
                             "-f, --format");
                     }
 
@@ -161,7 +171,7 @@ namespace ThermoRawFileParser
                     else
                     {
                         throw new OptionException(
-                            "unknown output format value (0 for MGF, 1 for mzMl, 2 for indexed mzML, 3 for Parquet)",
+                            "unknown output format value (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet)",
                             "-f, --format");
                     }
                 }
@@ -191,10 +201,22 @@ namespace ThermoRawFileParser
                     }
                 }
 
-                if (outputFile == null && outputDirectory == null)
+                if (string.IsNullOrEmpty(rawFilePath) || !File.Exists(rawFilePath))
                 {
                     throw new OptionException(
-                        "specify an output directory or output file",
+                        "specify a valid RAW file location",
+                        "-i, --input");
+                }
+
+                if (outputFile == null && outputDirectory == null)
+                {
+                    outputDirectory = Path.GetDirectoryName(rawFilePath);
+                }
+
+                if (outputFile != null && outputDirectory != null)
+                {
+                    throw new OptionException(
+                        "specify an output directory or an output file, not both",
                         "-o, --output or -b, --output_file");
                 }
 
@@ -210,6 +232,46 @@ namespace ThermoRawFileParser
                     throw new OptionException(
                         "specify a valid output directory",
                         "-o, --output");
+                }
+
+                if (metadataOutputFile != null && Directory.Exists(metadataOutputFile))
+                {
+                    throw new OptionException(
+                        "specify a valid metadata output file, not a directory",
+                        "-c, --metadata_output_file");
+                }
+                
+                if (metadataOutputFile != null && outputMetadataFormat == MetadataFormat.NONE)
+                {
+                    throw new OptionException("specify a metadata format (0 for JSON, 1 for TXT)",
+                        "-m, --metadata");
+                }
+
+                if (logFormatString != null)
+                {
+                    int logFormatInt;
+                    try
+                    {
+                        logFormatInt = int.Parse(logFormatString);
+                    }
+                    catch (FormatException e)
+                    {
+                        throw new OptionException("unknown log format value (0 for silent, 1 for verbose)",
+                            "-l, --logging");
+                    }
+
+                    if (Enum.IsDefined(typeof(LogFormat), logFormatInt))
+                    {
+                        if ((LogFormat) logFormatInt != LogFormat.NONE)
+                        {
+                            logFormat = (LogFormat) logFormatInt;
+                        }
+                    }
+                    else
+                    {
+                        throw new OptionException("unknown log format value (0 for silent, 1 for verbose)",
+                            "-l, --logging");
+                    }
                 }
             }
             catch (OptionException optionException)
@@ -233,25 +295,41 @@ namespace ThermoRawFileParser
 
             try
             {
-                if (verbose)
+                switch (logFormat)
                 {
-                    ((log4net.Repository.Hierarchy.Hierarchy) LogManager.GetRepository()).Root.Level =
-                        Level.Debug;
-                    ((log4net.Repository.Hierarchy.Hierarchy) LogManager.GetRepository())
-                        .RaiseConfigurationChanged(EventArgs.Empty);
+                    case LogFormat.VERBOSE:
+                        ((log4net.Repository.Hierarchy.Hierarchy) LogManager.GetRepository()).Root.Level =
+                            Level.Debug;
+                        ((log4net.Repository.Hierarchy.Hierarchy) LogManager.GetRepository())
+                            .RaiseConfigurationChanged(EventArgs.Empty);
+                        break;
+                    case LogFormat.SILENT:
+                        ((log4net.Repository.Hierarchy.Hierarchy) LogManager.GetRepository()).Root.Level =
+                            Level.Off;
+                        ((log4net.Repository.Hierarchy.Hierarchy) LogManager.GetRepository())
+                            .RaiseConfigurationChanged(EventArgs.Empty);
+                        break;
                 }
 
                 var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFile, outputFormat, gzip,
-                    outputMetadataFormat,
+                    outputMetadataFormat, metadataOutputFile,
                     s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors, noPeakPicking,
-                    noZlibCompression ,verbose);
+                    noZlibCompression, logFormat);
                 RawFileParser.Parse(parseInput);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Log.Error(!ex.Message.IsNullOrEmpty()
+                    ? ex.Message
+                    : "Attempting to write to an unauthorized location.");
             }
             catch (Exception ex)
             {
                 Log.Error("An unexpected error occured:");
                 Log.Error(ex.ToString());
-
+            }
+            finally
+            {
                 Environment.Exit(1);
             }
         }

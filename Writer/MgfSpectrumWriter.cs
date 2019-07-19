@@ -34,7 +34,7 @@ namespace ThermoRawFileParser.Writer
                 var lastScanProgress = 0;
                 for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
                 {
-                    if (!ParseInput.Verbose)
+                    if (ParseInput.LogFormat == LogFormat.DEFAULT)
                     {
                         var scanProgress = (int) ((double) scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
                         if (scanProgress % ProgressPercentageStep == 0)
@@ -198,7 +198,7 @@ namespace ThermoRawFileParser.Writer
                     }
                 }
 
-                if (!ParseInput.Verbose)
+                if (ParseInput.LogFormat == LogFormat.DEFAULT)
                 {
                     Console.WriteLine();
                 }

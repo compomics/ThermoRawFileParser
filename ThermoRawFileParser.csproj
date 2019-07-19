@@ -124,6 +124,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LogFormat.cs" />
     <Compile Include="OutputFormat.cs" />
     <Compile Include="ParseInput.cs" />
     <Compile Include="MainClass.cs" />

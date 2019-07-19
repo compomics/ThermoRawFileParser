@@ -17,19 +17,6 @@ namespace ThermoRawFileParser
         /// <param name="parseInput">the parse input object</param>
         public static void Parse(ParseInput parseInput)
         {
-            // Check to see if the RAW file name was supplied as an argument to the program
-            if (string.IsNullOrEmpty(parseInput.RawFilePath))
-            {
-                Log.Debug("No raw file specified or found in path");
-                throw new Exception("No RAW file specified!");
-            }
-
-            // Check to see if the specified RAW file exists
-            if (!File.Exists(parseInput.RawFilePath))
-            {
-                throw new Exception(@"The file doesn't exist in the specified location - " + parseInput.RawFilePath);
-            }
-
             Log.Info("Started parsing " + parseInput.RawFilePath);
 
             // Create the IRawDataPlus object for accessing the RAW file
@@ -38,7 +25,7 @@ namespace ThermoRawFileParser
             {
                 if (!rawFile.IsOpen)
                 {
-                    throw new Exception("Unable to access the RAW file using the RawFileReader class!");
+                    throw new Exception("Unable to access the RAW file using the native Thermo library.");
                 }
 
                 // Check for any errors in the RAW file
@@ -63,14 +50,24 @@ namespace ThermoRawFileParser
 
                 if (parseInput.OutputMetadata != MetadataFormat.NONE)
                 {
-                    var metadataWriter = new MetadataWriter(parseInput.OutputDirectory, parseInput.RawFileNameWithoutExtension);
+                    MetadataWriter metadataWriter;
+                    if (parseInput.MetadataOutputFile != null)
+                    {
+                        metadataWriter = new MetadataWriter(null, parseInput.MetadataOutputFile);
+                    }
+                    else
+                    {
+                        metadataWriter = new MetadataWriter(parseInput.OutputDirectory,
+                            parseInput.RawFileNameWithoutExtension);
+                    }
+
                     switch (parseInput.OutputMetadata)
                     {
                         case MetadataFormat.JSON:
                             metadataWriter.WriteJsonMetada(rawFile, firstScanNumber, lastScanNumber);
                             break;
                         case MetadataFormat.TXT:
-                            metadataWriter.WriteMetada(rawFile, firstScanNumber, lastScanNumber);
+                            metadataWriter.WriteMetadata(rawFile, firstScanNumber, lastScanNumber);
                             break;
                     }
                 }
@@ -95,7 +92,7 @@ namespace ThermoRawFileParser
                             break;
                     }
                 }
-                
+
                 Log.Info("Finished parsing " + parseInput.RawFilePath);
             }
         }

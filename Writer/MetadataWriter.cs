@@ -13,19 +13,19 @@ namespace ThermoRawFileParser.Writer
     {
         private static readonly ILog Log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        
+
         private readonly string _outputDirectory;
-        private readonly string _rawFileNameWithoutExtension;
+        private readonly string _metadataFileName;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="outputDirectory"></param>
-        /// <param name="rawFileNameWithoutExtension"></param>
-        public MetadataWriter(string outputDirectory, string rawFileNameWithoutExtension)
+        /// <param name="metadataFileName"></param>
+        public MetadataWriter(string outputDirectory, string metadataFileName)
         {
             _outputDirectory = outputDirectory;
-            _rawFileNameWithoutExtension = rawFileNameWithoutExtension;
+            _metadataFileName = metadataFileName;
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace ThermoRawFileParser.Writer
         /// <param name="firstScanNumber">the first scan number</param>
         /// <param name="lastScanNumber">the last scan number</param>
         /// </summary>
-        public void WriteMetada(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
+        public void WriteMetadata(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
             // Get the start and end time from the RAW file
             var startTime = rawFile.RunHeaderEx.StartTime;
@@ -76,10 +76,26 @@ namespace ThermoRawFileParser.Writer
             };
 
             // Write the meta data to file
-            File.WriteAllLines(_outputDirectory + "/" + _rawFileNameWithoutExtension + "-metadata.txt", output.ToArray());
-           
+            string metadataOutputPath;
+            if (_outputDirectory == null)
+            {
+                metadataOutputPath = _metadataFileName;
+            }
+            else
+            {
+                metadataOutputPath = _outputDirectory + "/" + _metadataFileName + "-metadata.txt";
+            }
+
+            File.WriteAllLines(metadataOutputPath, output.ToArray());
+
+            // Write the string array to a new file named "WriteLines.txt".
+            //using (var outputFile = new StreamWriter(metadataOutputPath))
+            //{
+            //    foreach (var line in output)
+            //        outputFile.WriteLine(line);
+            //}
         }
-        
+
         /// <summary>
         /// Write the RAW file metadata to file.
         /// <param name="rawFile">the RAW file object</param>
@@ -91,28 +107,40 @@ namespace ThermoRawFileParser.Writer
             // Get the start and end time from the RAW file
             var startTime = rawFile.RunHeaderEx.StartTime;
             var endTime = rawFile.RunHeaderEx.EndTime;
-            
+
             var metadata = new Metadata();
-            
+
             /** File Properties **/
             metadata.addFileProperty(new CVTerm("NCIT:C47922", "NCIT", "Pathname", rawFile.FileName));
-            metadata.addFileProperty(new CVTerm("NCIT:C25714", "NCIT", "Version",  rawFile.FileHeader.Revision.ToString()));
-            metadata.addFileProperty(new CVTerm("NCIT:C69199", "NCIT", "Content Creation Date", rawFile.FileHeader.CreationDate.ToString()));
-            metadata.addFileProperty(new CVTerm("NCIT:C25365", "NCIT", "Description", rawFile.FileHeader.FileDescription));
-           
-            
-            metadata.addScanSetting(new CVTerm("MS:1000016", "MS", "scan start time",startTime.ToString()));
-            metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution", rawFile.RunHeaderEx.MassResolution.ToString()));
-            metadata.addScanSetting(new CVTerm("UO:0000002", "MS", "mass unit", rawFile.GetInstrumentData().Units.ToString()));
-            metadata.addScanSetting(new CVTerm("PRIDE:0000478", "PRIDE","Number of scans", rawFile.RunHeaderEx.SpectraCount.ToString()));
-            metadata.addScanSetting(new CVTerm("PRIDE:0000479", "PRIDE", "MS scan range", firstScanNumber + ":" + lastScanNumber));
-            metadata.addScanSetting(new CVTerm("PRIDE:0000484", "PRIDE", "Retention time range", startTime + ":" + endTime));
-            metadata.addScanSetting(new CVTerm("PRIDE:0000485", "PRIDE", "Mz range", rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass)); 
-            
-            metadata.addInstrumentProperty(new CVTerm("MS:1000494", "MS","Thermo Scientific instrument model", rawFile.GetInstrumentData().Model));
-            metadata.addInstrumentProperty(new CVTerm("MS:1000496", "MS","instrument attribute", rawFile.GetInstrumentData().Name));
-            metadata.addInstrumentProperty(new CVTerm("MS:1000529", "MS", "instrument serial number", rawFile.GetInstrumentData().SerialNumber));
-             
+            metadata.addFileProperty(new CVTerm("NCIT:C25714", "NCIT", "Version",
+                rawFile.FileHeader.Revision.ToString()));
+            metadata.addFileProperty(new CVTerm("NCIT:C69199", "NCIT", "Content Creation Date",
+                rawFile.FileHeader.CreationDate.ToString()));
+            metadata.addFileProperty(new CVTerm("NCIT:C25365", "NCIT", "Description",
+                rawFile.FileHeader.FileDescription));
+
+
+            metadata.addScanSetting(new CVTerm("MS:1000016", "MS", "scan start time", startTime.ToString()));
+            metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution",
+                rawFile.RunHeaderEx.MassResolution.ToString()));
+            metadata.addScanSetting(new CVTerm("UO:0000002", "MS", "mass unit",
+                rawFile.GetInstrumentData().Units.ToString()));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000478", "PRIDE", "Number of scans",
+                rawFile.RunHeaderEx.SpectraCount.ToString()));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000479", "PRIDE", "MS scan range",
+                firstScanNumber + ":" + lastScanNumber));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000484", "PRIDE", "Retention time range",
+                startTime + ":" + endTime));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000485", "PRIDE", "Mz range",
+                rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass));
+
+            metadata.addInstrumentProperty(new CVTerm("MS:1000494", "MS", "Thermo Scientific instrument model",
+                rawFile.GetInstrumentData().Model));
+            metadata.addInstrumentProperty(new CVTerm("MS:1000496", "MS", "instrument attribute",
+                rawFile.GetInstrumentData().Name));
+            metadata.addInstrumentProperty(new CVTerm("MS:1000529", "MS", "instrument serial number",
+                rawFile.GetInstrumentData().SerialNumber));
+
             var msTypes = new Dictionary<string, int>();
             double minTime = 1000000000000000;
             double maxTime = 0;
@@ -120,7 +148,7 @@ namespace ThermoRawFileParser.Writer
             double maxMz = 0;
             double minCharge = 100000000000000;
             double maxCharge = 0;
-            
+
             ICollection<CVTerm> fragmentationType = new HashSet<CVTerm>(CVTerm.CvTermComparer);
 
             for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
@@ -138,8 +166,9 @@ namespace ThermoRawFileParser.Writer
                 {
                     var value = msTypes[scanFilter.MSOrder.ToString()];
                     value = value + 1;
-                    msTypes[scanFilter.MSOrder.ToString()] = value; 
-                }else 
+                    msTypes[scanFilter.MSOrder.ToString()] = value;
+                }
+                else
                     msTypes.Add(scanFilter.MSOrder.ToString(), 1);
 
                 if (time > maxTime)
@@ -147,100 +176,109 @@ namespace ThermoRawFileParser.Writer
                 if (time < minTime)
                     minTime = time;
 
-                
+
                 if (scanFilter.MSOrder == MSOrderType.Ms2)
-                   {
-                       fragmentationType.Add(parseActivationType(scanFilter.GetActivation(0)));
+                {
+                    fragmentationType.Add(parseActivationType(scanFilter.GetActivation(0)));
 
-                       if (scanEvent.ScanData == ScanDataType.Centroid || (scanEvent.ScanData == ScanDataType.Profile)){
-                            try
-                            {
-                                var reaction = scanEvent.GetReaction(0);
-                                var precursorMass = reaction.PrecursorMass;
-                                if (precursorMass > maxMz)
-                                    maxMz = precursorMass;
-                                if (precursorMass < minMz)
-                                    minMz = precursorMass; 
-                            }
-                            catch (ArgumentOutOfRangeException exception)
-                            {
-                                Log.Warn("No reaction found for scan " + scanNumber);
-                            }
+                    if (scanEvent.ScanData == ScanDataType.Centroid || (scanEvent.ScanData == ScanDataType.Profile))
+                    {
+                        try
+                        {
+                            var reaction = scanEvent.GetReaction(0);
+                            var precursorMass = reaction.PrecursorMass;
+                            if (precursorMass > maxMz)
+                                maxMz = precursorMass;
+                            if (precursorMass < minMz)
+                                minMz = precursorMass;
+                        }
+                        catch (ArgumentOutOfRangeException exception)
+                        {
+                            Log.Warn("No reaction found for scan " + scanNumber);
+                        }
 
-                            // trailer extra data list
-                            var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
-                            for (var i = 0; i < trailerData.Length; i++)
+                        // trailer extra data list
+                        var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
+                        for (var i = 0; i < trailerData.Length; i++)
+                        {
+                            if (trailerData.Labels[i] == "Charge State:")
                             {
-                                if (trailerData.Labels[i] == "Charge State:")
-                                { if (int.Parse(trailerData.Values[i]) > maxCharge)
-                                        maxCharge = int.Parse(trailerData.Values[i]); 
-                                    
-                                    if (int.Parse(trailerData.Values[i]) < minCharge)
-                                        minCharge = int.Parse(trailerData.Values[i]); 
+                                if (int.Parse(trailerData.Values[i]) > maxCharge)
+                                    maxCharge = int.Parse(trailerData.Values[i]);
 
-                                }
+                                if (int.Parse(trailerData.Values[i]) < minCharge)
+                                    minCharge = int.Parse(trailerData.Values[i]);
                             }
-                           
-                       }
+                        }
                     }
+                }
             }
 
             if (minCharge == 100000000000000)
             {
                 minCharge = 0;
             }
-            
-            
-            foreach(KeyValuePair<string, int> entry in msTypes)
+
+            foreach (KeyValuePair<string, int> entry in msTypes)
             {
-                if(entry.Key.Equals(MSOrderType.Ms.ToString()))
-                    metadata.addMSData(new CVTerm("PRIDE:0000481", "PRIDE", "Number of MS1 spectra", entry.Value.ToString()));
-                if(entry.Key.Equals(MSOrderType.Ms2.ToString()))
-                    metadata.addMSData(new CVTerm("PRIDE:0000482", "PRIDE", "Number of MS2 spectra", entry.Value.ToString()));
-                if(entry.Key.Equals(MSOrderType.Ms3.ToString()))
-                    metadata.addMSData(new CVTerm("PRIDE:0000483", "PRIDE", "Number of MS3 spectra", entry.Value.ToString()));
-                
+                if (entry.Key.Equals(MSOrderType.Ms.ToString()))
+                    metadata.addMSData(new CVTerm("PRIDE:0000481", "PRIDE", "Number of MS1 spectra",
+                        entry.Value.ToString()));
+                if (entry.Key.Equals(MSOrderType.Ms2.ToString()))
+                    metadata.addMSData(new CVTerm("PRIDE:0000482", "PRIDE", "Number of MS2 spectra",
+                        entry.Value.ToString()));
+                if (entry.Key.Equals(MSOrderType.Ms3.ToString()))
+                    metadata.addMSData(new CVTerm("PRIDE:0000483", "PRIDE", "Number of MS3 spectra",
+                        entry.Value.ToString()));
             }
-           
+
             metadata.addScanSetting(fragmentationType);
-            
+
             metadata.addMSData(new CVTerm("PRIDE:0000472", "PRIDE", "MS min charge", minCharge.ToString()));
             metadata.addMSData(new CVTerm("PRIDE:0000473", "PRIDE", "MS max charge", maxCharge.ToString()));
-            
+
             metadata.addMSData(new CVTerm("PRIDE:0000474", "PRIDE", "MS min RT", minTime.ToString()));
             metadata.addMSData(new CVTerm("PRIDE:0000475", "PRIDE", "MS max RT", maxTime.ToString()));
-            
+
             metadata.addMSData(new CVTerm("PRIDE:0000476", "PRIDE", "MS min MZ", minMz.ToString()));
-            metadata.addMSData(new CVTerm("PRIDE:0000477", "PRIDE", "MS min MZ",  maxMz.ToString()));
-            
-            
+            metadata.addMSData(new CVTerm("PRIDE:0000477", "PRIDE", "MS min MZ", maxMz.ToString()));
+
+
             // Write the meta data to file
             var json = JsonConvert.SerializeObject(metadata);
             json.Replace("\r\n", "\n");
-            File.WriteAllText(_outputDirectory + "/" + _rawFileNameWithoutExtension + "-metadata.json", json);
 
+            string metadataOutputPath;
+            if (_outputDirectory == null)
+            {
+                metadataOutputPath = _metadataFileName;
+            }
+            else
+            {
+                metadataOutputPath = _outputDirectory + "/" + _metadataFileName + "-metadata.json";
+            }
+
+            File.WriteAllText(metadataOutputPath, json);
         }
 
         public CVTerm parseActivationType(ActivationType activation)
         {
-            string word = activation.ToString(); 
-         
-            if (word  == "CollisionInducedDissociation")
-                return new CVTerm("MS:1000133","MS","collision-induced dissociation","CID");
-            if (word == "MultiPhotonDissociation")
-                return new CVTerm("MS:1000435","MS","photodissociation","MPD");
-            if (word == "ElectronCaptureDissociation")
-                return new CVTerm("MS:1000250","MS","electron capture dissociation","ECD");
-            if (word == "ElectronTransferDissociation" || word == "NegativeElectronTransferDissociation")
-                return new CVTerm("MS:1000598","MS","electron transfer dissociation","ETD");
-            if (word == "HigherEnergyCollisionalDissociation")
-                return new CVTerm("MS:1000422","MS","beam-type collision-induced dissociation","HCD");
-            if (word == "PQD")
-                return new CVTerm("MS:1000599","MS","pulsed q dissociation","PQD");
+            string word = activation.ToString();
 
-            return new CVTerm("MS:1000044","MS","dissociation method",word);
+            if (word == "CollisionInducedDissociation")
+                return new CVTerm("MS:1000133", "MS", "collision-induced dissociation", "CID");
+            if (word == "MultiPhotonDissociation")
+                return new CVTerm("MS:1000435", "MS", "photodissociation", "MPD");
+            if (word == "ElectronCaptureDissociation")
+                return new CVTerm("MS:1000250", "MS", "electron capture dissociation", "ECD");
+            if (word == "ElectronTransferDissociation" || word == "NegativeElectronTransferDissociation")
+                return new CVTerm("MS:1000598", "MS", "electron transfer dissociation", "ETD");
+            if (word == "HigherEnergyCollisionalDissociation")
+                return new CVTerm("MS:1000422", "MS", "beam-type collision-induced dissociation", "HCD");
+            if (word == "PQD")
+                return new CVTerm("MS:1000599", "MS", "pulsed q dissociation", "PQD");
+
+            return new CVTerm("MS:1000044", "MS", "dissociation method", word);
         }
     }
-    
-   
 }

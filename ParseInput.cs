@@ -34,6 +34,11 @@ namespace ThermoRawFileParser
         /// Output the metadata.
         /// </summary>
         public MetadataFormat OutputMetadata { get; }
+        
+        /// <summary>
+        /// The metadata output file.
+        /// </summary>>
+        public string MetadataOutputFile { get; }
 
         /// <summary>
         /// The raw file name.
@@ -59,7 +64,7 @@ namespace ThermoRawFileParser
 
         public bool NoZlibCompression { get; }
 
-        public bool Verbose { get; }
+        public LogFormat LogFormat { get; }
 
         private readonly string bucketName;
 
@@ -78,7 +83,7 @@ namespace ThermoRawFileParser
             IgnoreInstrumentErrors = false;
             NoPeakPicking = false;
             NoZlibCompression = false;
-            Verbose = false;
+            LogFormat = LogFormat.DEFAULT;
 
             if (S3url != null && S3AccessKeyId != null && S3SecretAccessKey != null && bucketName != null)
                 InitializeS3Bucket();
@@ -89,9 +94,9 @@ namespace ThermoRawFileParser
 
         public ParseInput(string rawFilePath, string outputDirectory, string outputFile, OutputFormat outputFormat,
             bool gzip,
-            MetadataFormat outputMetadata, string s3url, string s3AccessKeyId,
+            MetadataFormat outputMetadata, string metadataOutputFile, string s3url, string s3AccessKeyId,
             string s3SecretAccessKey, string bucketName,
-            bool ignoreInstrumentErrors, bool noPeakPicking, bool noZlibCompression, bool verbose
+            bool ignoreInstrumentErrors, bool noPeakPicking, bool noZlibCompression, LogFormat logFormat
         )
         {
             RawFilePath = rawFilePath;
@@ -103,6 +108,7 @@ namespace ThermoRawFileParser
             OutputFormat = outputFormat;
             Gzip = gzip;
             OutputMetadata = outputMetadata;
+            MetadataOutputFile = metadataOutputFile;
             S3url = s3url;
             S3AccessKeyId = s3AccessKeyId;
             S3SecretAccessKey = s3SecretAccessKey;
@@ -110,7 +116,7 @@ namespace ThermoRawFileParser
             IgnoreInstrumentErrors = ignoreInstrumentErrors;
             NoPeakPicking = noPeakPicking;
             NoZlibCompression = noZlibCompression;
-            Verbose = verbose;
+            LogFormat = logFormat;
 
             if (S3url != null && S3AccessKeyId != null && S3SecretAccessKey != null && bucketName != null)
                 InitializeS3Bucket();

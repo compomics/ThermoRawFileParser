@@ -74,18 +74,16 @@ namespace ThermoRawFileParser.Writer
                 }
                 else
                 {
-                    var fileName = ParseInput.Gzip ? ParseInput.OutputFile + ".gzip" : ParseInput.OutputFile;
+                    var fileName = ParseInput.OutputFile;
+                    if (ParseInput.Gzip && !Path.GetExtension(fileName).Equals(".gzip"))
+                    {
+                        fileName = ParseInput.OutputFile + ".gzip";
+                    }
                     var fileStream = File.Create(fileName);
                     var compress = new GZipStream(fileStream, CompressionMode.Compress);
                     Writer = new StreamWriter(compress);
                 }
             }
-        }
-
-        protected string GetFullPath()
-        {
-            var fs = (FileStream) Writer.BaseStream;
-            return fs.Name;
         }
 
         /// <summary>
