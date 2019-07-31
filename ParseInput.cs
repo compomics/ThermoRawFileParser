@@ -6,9 +6,27 @@ namespace ThermoRawFileParser
     public class ParseInput
     {
         /// <summary>
+        /// The RAW folder path.
+        /// </summary>
+        public string RawFolderPath { get; }
+
+        /// <summary>
         /// The RAW file path.
         /// </summary>
-        public string RawFilePath { get; }
+        private string rawFilePath;
+        public string RawFilePath { 
+            get { return rawFilePath; }
+            set
+            {
+                rawFilePath = value;
+                if (value != null)
+                {
+                    rawFileNameWithoutExtension = Path.GetFileNameWithoutExtension(value);
+                    string[] splittedPath = value.Split('/');
+                    rawFileName = splittedPath[splittedPath.Length - 1];
+                }
+            }
+        }
 
         /// <summary>
         /// The output directory.
@@ -38,12 +56,23 @@ namespace ThermoRawFileParser
         /// <summary>
         /// The raw file name.
         /// </summary>
-        public string RawFileName { get; }
+        private string rawFileName;
+        public string RawFileName
+        {
+            get { return rawFileName; }
+            set
+            {
+                rawFileName = value;
+            }
+        }
 
         /// <summary>
         /// The RAW file name without extension.
         /// </summary>
-        public string RawFileNameWithoutExtension { get; }
+        private string rawFileNameWithoutExtension;
+        public string RawFileNameWithoutExtension {
+            get { return rawFileNameWithoutExtension; }
+        }
 
         private S3Loader S3Loader { get; set; }
 
@@ -63,13 +92,11 @@ namespace ThermoRawFileParser
 
         private readonly string bucketName;
 
-        public ParseInput(string rawFilePath, string outputDirectory, string outputFile, OutputFormat outputFormat
+        public ParseInput(string rawFolderPath, string rawFilePath, string outputDirectory, string outputFile, OutputFormat outputFormat
         )
         {
+            RawFolderPath = rawFolderPath;
             RawFilePath = rawFilePath;
-            var splittedPath = RawFilePath.Split('/');
-            RawFileName = splittedPath[splittedPath.Length - 1];
-            RawFileNameWithoutExtension = Path.GetFileNameWithoutExtension(RawFileName);
             OutputDirectory = outputDirectory;
             OutputFile = outputFile;
             OutputFormat = outputFormat;
@@ -87,17 +114,15 @@ namespace ThermoRawFileParser
                 OutputDirectory = Path.GetDirectoryName(OutputFile);
         }
 
-        public ParseInput(string rawFilePath, string outputDirectory, string outputFile, OutputFormat outputFormat,
+        public ParseInput(string rawFolderPath, string rawFilePath, string outputDirectory, string outputFile, OutputFormat outputFormat,
             bool gzip,
             MetadataFormat outputMetadata, string s3url, string s3AccessKeyId,
             string s3SecretAccessKey, string bucketName,
             bool ignoreInstrumentErrors, bool noPeakPicking, bool noZlibCompression, bool verbose
         )
         {
+            RawFolderPath = rawFolderPath;
             RawFilePath = rawFilePath;
-            var splittedPath = RawFilePath.Split('/');
-            RawFileName = splittedPath[splittedPath.Length - 1];
-            RawFileNameWithoutExtension = Path.GetFileNameWithoutExtension(RawFileName);
             OutputDirectory = outputDirectory;
             OutputFile = outputFile;
             OutputFormat = outputFormat;

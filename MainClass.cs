@@ -16,6 +16,7 @@ namespace ThermoRawFileParser
 
         public static void Main(string[] args)
         {
+            string rawFolderPath = null;
             string rawFilePath = null;
             string outputDirectory = null;
             string outputFile = null;
@@ -44,6 +45,10 @@ namespace ThermoRawFileParser
                 {
                     "version", "Prints out the library version.",
                     v => version = v != null
+                },
+                {
+                    "d=|directory=", "The folder containing input raw files.",
+                    v => rawFolderPath = v
                 },
                 {
                     "i=|input=", "The raw file input.",
@@ -211,6 +216,25 @@ namespace ThermoRawFileParser
                         "specify a valid output directory",
                         "-o, --output");
                 }
+                if (rawFolderPath != null && rawFilePath != null)
+                {
+                    throw new OptionException(
+                        "both input directory and input file options cannot be used simultaneously",
+                        "-d, --directory, -i, --input");
+                }
+                if (rawFolderPath != null && outputFile != null)
+                {
+                    throw new OptionException(
+                        "one output file cannot be used when using an input directory. Use output directory instead.",
+                        "-b, --output_file");
+                }
+                if (rawFolderPath != null && (!Directory.Exists(rawFolderPath) || Directory.GetFiles(rawFolderPath, "*", SearchOption.TopDirectoryOnly).Length == 0 ) )
+                {
+                    throw new OptionException(
+                        "specify a valid input directory with raw files",
+                        "-d, --directory");
+                }
+
             }
             catch (OptionException optionException)
             {
@@ -241,7 +265,7 @@ namespace ThermoRawFileParser
                         .RaiseConfigurationChanged(EventArgs.Empty);
                 }
 
-                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFile, outputFormat, gzip,
+                var parseInput = new ParseInput(rawFolderPath, rawFilePath, outputDirectory, outputFile, outputFormat, gzip,
                     outputMetadataFormat,
                     s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors, noPeakPicking,
                     noZlibCompression ,verbose);

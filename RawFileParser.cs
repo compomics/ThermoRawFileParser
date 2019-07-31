@@ -12,26 +12,59 @@ namespace ThermoRawFileParser
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
-        /// Extract the RAW file metadata and spectra in MGF format. 
+        /// Extract the RAW file or files (from directory) metadata and spectra in MGF format. 
         /// </summary>
         /// <param name="parseInput">the parse input object</param>
         public static void Parse(ParseInput parseInput)
         {
-            // Check to see if the RAW file name was supplied as an argument to the program
-            if (string.IsNullOrEmpty(parseInput.RawFilePath))
+        
+            // Input raw folder mode
+            if (parseInput.RawFolderPath != null)
             {
-                Log.Debug("No raw file specified or found in path");
-                throw new Exception("No RAW file specified!");
-            }
+                Log.Info("Started analysing folder " + parseInput.RawFolderPath);
 
-            // Check to see if the specified RAW file exists
-            if (!File.Exists(parseInput.RawFilePath))
+                System.Collections.Generic.IEnumerable<String> filesPath = Directory.EnumerateFiles(parseInput.RawFolderPath);
+                if (Directory.GetFiles(parseInput.RawFolderPath, "*", SearchOption.TopDirectoryOnly).Length == 0)
+                {   
+                    Log.Debug("No raw file found in folder");    
+                    throw new Exception("No raw file found in folder!");
+                }else
+                {
+                    foreach (String filePath in filesPath)
+                    {
+                        parseInput.RawFilePath = filePath;
+                        Log.Info("Started parsing " + parseInput.RawFilePath);
+                        ProcessFile(parseInput);
+                    }
+                }
+            }
+            // Input raw file mode
+            else
             {
-                throw new Exception(@"The file doesn't exist in the specified location - " + parseInput.RawFilePath);
+                Log.Info("Started parsing " + parseInput.RawFilePath);
+
+                // Check to see if the RAW file name was supplied as an argument to the program
+                if (string.IsNullOrEmpty(parseInput.RawFilePath))
+                {
+                    Log.Debug("No raw file specified or found in path");
+                    throw new Exception("No RAW file specified!");
+                }
+
+                // Check to see if the specified RAW file exists
+                if (!File.Exists(parseInput.RawFilePath))
+                {
+                    throw new Exception(@"The file doesn't exist in the specified location - " + parseInput.RawFilePath);
+                }
+                ProcessFile(parseInput);
             }
+        }
 
-            Log.Info("Started parsing " + parseInput.RawFilePath);
-
+        /// <summary>
+        /// Extract the RAW file metadata and spectra in MGF format. 
+        /// </summary>
+        /// <param name="parseInput">the parse input object</param>
+        private static void ProcessFile(ParseInput parseInput )
+        {
             // Create the IRawDataPlus object for accessing the RAW file
             IRawDataPlus rawFile;
             using (rawFile = RawFileReaderFactory.ReadFile(parseInput.RawFilePath))
