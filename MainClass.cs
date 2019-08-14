@@ -13,7 +13,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.1.10";
+        public const string Version = "1.1.10 ";
 
         public static void Main(string[] args)
         {
@@ -240,7 +240,7 @@ namespace ThermoRawFileParser
                         "specify a valid metadata output file, not a directory",
                         "-c, --metadata_output_file");
                 }
-                
+
                 if (metadataOutputFile != null && outputMetadataFormat == MetadataFormat.NONE)
                 {
                     throw new OptionException("specify a metadata format (0 for JSON, 1 for TXT)",
@@ -323,10 +323,23 @@ namespace ThermoRawFileParser
                     ? ex.Message
                     : "Attempting to write to an unauthorized location.");
             }
+            catch (Amazon.S3.AmazonS3Exception ex)
+            {
+                Log.Error(!ex.Message.IsNullOrEmpty()
+                    ? "An Amazon S3 exception occured: " + ex.Message
+                    : "An Amazon S3 exception occured: " + ex);
+            }
             catch (Exception ex)
             {
-                Log.Error("An unexpected error occured:");
-                Log.Error(ex.ToString());
+                if (ex is RawFileException)
+                {
+                    Log.Error(ex.Message);
+                }
+                else
+                {
+                    Log.Error("An unexpected error occured:");
+                    Log.Error(ex.ToString());
+                }
             }
             finally
             {

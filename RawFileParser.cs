@@ -25,19 +25,19 @@ namespace ThermoRawFileParser
             {
                 if (!rawFile.IsOpen)
                 {
-                    throw new Exception("Unable to access the RAW file using the native Thermo library.");
+                    throw new RawFileException("Unable to access the RAW file using the native Thermo library.");
                 }
 
                 // Check for any errors in the RAW file
                 if (rawFile.IsError)
                 {
-                    throw new Exception($"Error opening ({rawFile.FileError}) - {parseInput.RawFilePath}");
+                    throw new RawFileException($"Error opening ({rawFile.FileError}) - {parseInput.RawFilePath}");
                 }
 
                 // Check if the RAW file is being acquired
                 if (rawFile.InAcquisition)
                 {
-                    throw new Exception("RAW file still being acquired - " + parseInput.RawFilePath);
+                    throw new RawFileException("RAW file still being acquired - " + parseInput.RawFilePath);
                 }
 
                 // Get the number of instruments (controllers) present in the RAW file and set the 

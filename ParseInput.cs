@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using ThermoRawFileParser.Writer;
 
 namespace ThermoRawFileParser
@@ -34,7 +35,7 @@ namespace ThermoRawFileParser
         /// Output the metadata.
         /// </summary>
         public MetadataFormat OutputMetadata { get; }
-        
+
         /// <summary>
         /// The metadata output file.
         /// </summary>>
@@ -86,7 +87,14 @@ namespace ThermoRawFileParser
             LogFormat = LogFormat.DEFAULT;
 
             if (S3url != null && S3AccessKeyId != null && S3SecretAccessKey != null && bucketName != null)
-                InitializeS3Bucket();
+                if (Uri.IsWellFormedUriString(S3url, UriKind.Absolute))
+                {
+                    InitializeS3Bucket();
+                }
+                else
+                {
+                    throw new UriFormatException("Invalid S3 url: " + S3url);
+                }
 
             if (OutputDirectory == null && OutputFile != null)
                 OutputDirectory = Path.GetDirectoryName(OutputFile);
@@ -119,7 +127,14 @@ namespace ThermoRawFileParser
             LogFormat = logFormat;
 
             if (S3url != null && S3AccessKeyId != null && S3SecretAccessKey != null && bucketName != null)
-                InitializeS3Bucket();
+                if (Uri.IsWellFormedUriString(S3url, UriKind.Absolute))
+                {
+                    InitializeS3Bucket();
+                }
+                else
+                {
+                    throw new UriFormatException("Invalid S3 url: " + S3url);
+                }
 
             if (OutputDirectory == null && OutputFile != null)
                 OutputDirectory = Path.GetDirectoryName(OutputFile);
