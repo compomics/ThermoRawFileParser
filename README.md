@@ -25,15 +25,18 @@ ThermoRawFileParser.exe --help
   -o, --output=VALUE         The output directory. Specify this or an output
                                file.
   -b, --output_file=VALUE    The output file. Specify this or an output
-                               directory
+                               directory.
   -f, --format=VALUE         The output format for the spectra (0 for MGF, 1
-                               for mzMl, 2 for indexed mzML, 3 for Parquet)
+                               for mzMl, 2 for indexed mzML, 3 for Parquet).
   -m, --metadata=VALUE       The metadata output format (0 for JSON, 1 for TXT).
   -g, --gzip                 GZip the output file if this flag is specified (
                                without value).
   -p, --noPeakPicking        Don't use the peak picking provided by the native
                                thermo library (by default peak picking is
-                               enabled)
+                               enabled).
+  -z, --noZlibCompression    Don't use zlib compression for the m/z ratios and
+                               intensities (by default zlib compression is
+                               enabled).
   -v, --verbose              Enable verbose logging.
   -e, --ignoreInstrumentErrors
                              Ignore missing properties by the instrument.

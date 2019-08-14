@@ -3,7 +3,6 @@ using System.IO;
 using log4net;
 using log4net.Core;
 using Mono.Options;
-using NUnit.Framework.Constraints;
 using ThermoFisher.CommonCore.Data;
 
 namespace ThermoRawFileParser
@@ -18,6 +17,7 @@ namespace ThermoRawFileParser
         public static void Main(string[] args)
         {
             string rawFilePath = null;
+            string rawDirectoryPath = null;
             string outputDirectory = null;
             string outputFile = null;
             string outputFormatString = null;
@@ -49,8 +49,13 @@ namespace ThermoRawFileParser
                     v => version = v != null
                 },
                 {
-                    "i=|input=", "The raw file input. (Required)",
+                    "i=|input=", "The raw file input. Specify this or an input directory.",
                     v => rawFilePath = v
+                },
+                {
+                    "d=|input_directory=",
+                    "The directory containing input raw files. Specify this or an input raw file.",
+                    v => rawDirectoryPath = v
                 },
                 {
                     "o=|output=", "The output directory. Specify this or an output file" +
@@ -201,16 +206,37 @@ namespace ThermoRawFileParser
                     }
                 }
 
-                if (string.IsNullOrEmpty(rawFilePath) || !File.Exists(rawFilePath))
+                if (rawFilePath != null && rawDirectoryPath != null)
+                {
+                    throw new OptionException(
+                        "specify an input file or an input directory, not both",
+                        "-i, --input or -d, --input_directory");
+                }
+
+                if (rawFilePath != null && !File.Exists(rawFilePath))
                 {
                     throw new OptionException(
                         "specify a valid RAW file location",
                         "-i, --input");
                 }
 
+                if (rawDirectoryPath != null && !Directory.Exists(rawDirectoryPath))
+                {
+                    throw new OptionException(
+                        "specify a valid input directory",
+                        "-d, --input_directory");
+                }
+
                 if (outputFile == null && outputDirectory == null)
                 {
-                    outputDirectory = Path.GetDirectoryName(rawFilePath);
+                    if (rawFilePath != null)
+                    {
+                        outputDirectory = Path.GetDirectoryName(rawFilePath);
+                    }
+                    else if (rawDirectoryPath != null)
+                    {
+                        outputDirectory = rawDirectoryPath;
+                    }
                 }
 
                 if (outputFile != null && outputDirectory != null)
@@ -225,6 +251,13 @@ namespace ThermoRawFileParser
                     throw new OptionException(
                         "specify a valid output file, not a directory",
                         "-b, --output_file");
+                }
+                
+                if (outputFile != null && rawDirectoryPath != null)
+                {
+                    throw new OptionException(
+                        "when using an input directory, specify an output directory instead of an output file",
+                        "-o, --output instead of -b, --output_file");
                 }
 
                 if (outputDirectory != null && !Directory.Exists(outputDirectory))
@@ -245,6 +278,13 @@ namespace ThermoRawFileParser
                 {
                     throw new OptionException("specify a metadata format (0 for JSON, 1 for TXT)",
                         "-m, --metadata");
+                }
+                
+                if (metadataOutputFile != null && rawDirectoryPath != null)
+                {
+                    throw new OptionException(
+                        "when using an input directory, specify an output directory instead of a metadata output file",
+                        "-o, --output instead of -c, --metadata_output_file");
                 }
 
                 if (logFormatString != null)
@@ -311,38 +351,27 @@ namespace ThermoRawFileParser
                         break;
                 }
 
-                var parseInput = new ParseInput(rawFilePath, outputDirectory, outputFile, outputFormat, gzip,
+                var parseInput = new ParseInput(rawFilePath, rawDirectoryPath, outputDirectory, outputFile,
+                    outputFormat,
+                    gzip,
                     outputMetadataFormat, metadataOutputFile,
                     s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors, noPeakPicking,
                     noZlibCompression, logFormat);
                 RawFileParser.Parse(parseInput);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                Log.Error(!ex.Message.IsNullOrEmpty()
-                    ? ex.Message
-                    : "Attempting to write to an unauthorized location.");
             }
             catch (Amazon.S3.AmazonS3Exception ex)
             {
                 Log.Error(!ex.Message.IsNullOrEmpty()
                     ? "An Amazon S3 exception occured: " + ex.Message
                     : "An Amazon S3 exception occured: " + ex);
+
+                Environment.Exit(1);
             }
             catch (Exception ex)
             {
-                if (ex is RawFileException)
-                {
-                    Log.Error(ex.Message);
-                }
-                else
-                {
-                    Log.Error("An unexpected error occured:");
-                    Log.Error(ex.ToString());
-                }
-            }
-            finally
-            {
+                Log.Error("An unexpected error occured:");
+                Log.Error(ex.ToString());
+
                 Environment.Exit(1);
             }
         }
