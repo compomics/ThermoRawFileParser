@@ -47,12 +47,12 @@ namespace ThermoRawFileParser
                     v => version = v != null
                 },
                 {
-                    "d=|directory=", "The folder containing input raw files.",
-                    v => rawFolderPath = v
-                },
-                {
                     "i=|input=", "The raw file input.",
                     v => rawFilePath = v
+                },
+                {
+                    "d=|directory=", "The folder containing input raw files.",
+                    v => rawFolderPath = v
                 },
                 {
                     "o=|output=", "The output directory. Specify this or an output file.",

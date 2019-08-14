@@ -17,25 +17,24 @@ namespace ThermoRawFileParser
         /// <param name="parseInput">the parse input object</param>
         public static void Parse(ParseInput parseInput)
         {
-        
             // Input raw folder mode
             if (parseInput.RawFolderPath != null)
             {
                 Log.Info("Started analysing folder " + parseInput.RawFolderPath);
 
-                System.Collections.Generic.IEnumerable<String> filesPath = Directory.EnumerateFiles(parseInput.RawFolderPath);
+                var filesPath =
+                    Directory.EnumerateFiles(parseInput.RawFolderPath);
                 if (Directory.GetFiles(parseInput.RawFolderPath, "*", SearchOption.TopDirectoryOnly).Length == 0)
-                {   
-                    Log.Debug("No raw file found in folder");    
-                    throw new Exception("No raw file found in folder!");
-                }else
                 {
-                    foreach (String filePath in filesPath)
-                    {
-                        parseInput.RawFilePath = filePath;
-                        Log.Info("Started parsing " + parseInput.RawFilePath);
-                        ProcessFile(parseInput);
-                    }
+                    Log.Debug("No raw files found in folder");
+                    throw new Exception("No raw files found in folder!");
+                }
+
+                foreach (var filePath in filesPath)
+                {
+                    parseInput.RawFilePath = filePath;
+                    Log.Info("Started parsing " + parseInput.RawFilePath);
+                    ProcessFile(parseInput);
                 }
             }
             // Input raw file mode
@@ -53,17 +52,19 @@ namespace ThermoRawFileParser
                 // Check to see if the specified RAW file exists
                 if (!File.Exists(parseInput.RawFilePath))
                 {
-                    throw new Exception(@"The file doesn't exist in the specified location - " + parseInput.RawFilePath);
+                    throw new Exception(@"The file doesn't exist in the specified location - " +
+                                        parseInput.RawFilePath);
                 }
+
                 ProcessFile(parseInput);
             }
         }
 
         /// <summary>
-        /// Extract the RAW file metadata and spectra in MGF format. 
+        /// Process and extract the given RAW file. 
         /// </summary>
         /// <param name="parseInput">the parse input object</param>
-        private static void ProcessFile(ParseInput parseInput )
+        private static void ProcessFile(ParseInput parseInput)
         {
             // Create the IRawDataPlus object for accessing the RAW file
             IRawDataPlus rawFile;
@@ -96,7 +97,8 @@ namespace ThermoRawFileParser
 
                 if (parseInput.OutputMetadata != MetadataFormat.NONE)
                 {
-                    var metadataWriter = new MetadataWriter(parseInput.OutputDirectory, parseInput.RawFileNameWithoutExtension);
+                    var metadataWriter = new MetadataWriter(parseInput.OutputDirectory,
+                        parseInput.RawFileNameWithoutExtension);
                     switch (parseInput.OutputMetadata)
                     {
                         case MetadataFormat.JSON:
@@ -128,7 +130,7 @@ namespace ThermoRawFileParser
                             break;
                     }
                 }
-                
+
                 Log.Info("Finished parsing " + parseInput.RawFilePath);
             }
         }
