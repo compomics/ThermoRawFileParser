@@ -1265,7 +1265,7 @@ namespace ThermoRawFileParser.Writer
 
                         break;
                 }
-                
+
                 precursorMz = reaction.PrecursorMass;
             }
             catch (ArgumentOutOfRangeException exception)
@@ -1311,24 +1311,6 @@ namespace ThermoRawFileParser.Writer
                     accession = "MS:1000041",
                     cvRef = "MS"
                 });
-            }
-
-            if (ParseInput.PrecursorIntensity)
-            {
-                var precursorIntensity = CalculatePrecursorPeakIntensity(_rawFile, precursorScanNumber, precursorMz);
-                if (precursorIntensity != null)
-                {
-                    ionCvParams.Add(new CVParamType
-                    {
-                        name = "peak intensity",
-                        value = precursorIntensity.ToString(),
-                        accession = "MS:1000042",
-                        cvRef = "MS",
-                        unitCvRef = "MS",
-                        unitAccession = "MS:1000131",
-                        unitName = "number of detector counts"
-                    });
-                }
             }
 
             precursor.selectedIonList.selectedIon[0].cvParam = ionCvParams.ToArray();

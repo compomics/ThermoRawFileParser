@@ -63,8 +63,6 @@ namespace ThermoRawFileParser
 
         public bool NoPeakPicking { get; }
 
-        public bool PrecursorIntensity { get; }
-
         public bool NoZlibCompression { get; }
 
         public LogFormat LogFormat { get; }
@@ -103,7 +101,6 @@ namespace ThermoRawFileParser
             OutputMetadata = MetadataFormat.NONE;
             Gzip = false;
             NoPeakPicking = false;
-            PrecursorIntensity = false;
             NoZlibCompression = false;
             LogFormat = LogFormat.DEFAULT;
             IgnoreInstrumentErrors = false;
@@ -124,8 +121,8 @@ namespace ThermoRawFileParser
 
         public ParseInput(string rawFilePath, string rawDirectoryPath, string outputDirectory, string outputFile,
             OutputFormat outputFormat, MetadataFormat outputMetadata, string metadataOutputFile, bool gzip,
-            bool noPeakPicking, bool precursorIntensity, bool noZlibCompression, LogFormat logFormat,
-            bool ignoreInstrumentErrors, string s3url, string s3AccessKeyId, string s3SecretAccessKey, string bucketName
+            bool noPeakPicking, bool noZlibCompression, LogFormat logFormat, bool ignoreInstrumentErrors, string s3url,
+            string s3AccessKeyId, string s3SecretAccessKey, string bucketName
         )
         {
             RawFilePath = rawFilePath;
@@ -137,7 +134,6 @@ namespace ThermoRawFileParser
             MetadataOutputFile = metadataOutputFile;
             Gzip = gzip;
             NoPeakPicking = noPeakPicking;
-            PrecursorIntensity = precursorIntensity;
             NoZlibCompression = noZlibCompression;
             LogFormat = logFormat;
             IgnoreInstrumentErrors = ignoreInstrumentErrors;

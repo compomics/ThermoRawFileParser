@@ -131,29 +131,8 @@ namespace ThermoRawFileParser.Writer
                                 var selectedIonMz =
                                     CalculateSelectedIonMz(reaction, monoisotopicMz, isolationWidth);
 
-                                if (!ParseInput.PrecursorIntensity)
-                                {
-                                    Writer.WriteLine("PEPMASS=" +
-                                                     selectedIonMz.ToString(CultureInfo.InvariantCulture));
-                                }
-                                else
-                                {
-                                    var precursorPeakIntensity = CalculatePrecursorPeakIntensity(rawFile,
-                                        _precursorScanNumber, reaction.PrecursorMass);
-                                    if (precursorPeakIntensity != null)
-                                    {
-                                        Writer.WriteLine("PEPMASS=" +
-                                                         selectedIonMz.ToString(CultureInfo.InvariantCulture) +
-                                                         " " +
-                                                         precursorPeakIntensity.Value.ToString(CultureInfo
-                                                             .InvariantCulture));
-                                    }
-                                    else
-                                    {
-                                        Writer.WriteLine("PEPMASS=" +
-                                                         selectedIonMz.ToString(CultureInfo.InvariantCulture));
-                                    }
-                                }
+                                Writer.WriteLine("PEPMASS=" +
+                                                 selectedIonMz.ToString(CultureInfo.InvariantCulture));
                             }
 
                             // charge
