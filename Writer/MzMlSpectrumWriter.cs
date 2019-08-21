@@ -1235,26 +1235,42 @@ namespace ThermoRawFileParser.Writer
             };
 
             var spectrumRef = "";
-            switch (msLevel)
+            int precursorScanNumber = _precursorMs1ScanNumber;
+            IReaction reaction = null;
+            var precursorMz = 0.0;
+            try
             {
-                case MSOrderType.Ms2:
-                    spectrumRef = ConstructSpectrumTitle(_precursorMs1ScanNumber);
-                    break;
-                case MSOrderType.Ms3:
-                    var precursorMs2ScanNumber =
-                        _precursorMs2ScanNumbers.Keys.FirstOrDefault(isolationMz =>
-                            scanEvent.ToString().Contains(isolationMz));
-                    if (!precursorMs2ScanNumber.IsNullOrEmpty())
-                    {
-                        spectrumRef = ConstructSpectrumTitle(_precursorMs2ScanNumbers[precursorMs2ScanNumber]);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("Couldn't find a MS2 precursor scan for MS3 scan " +
-                                                            scanEvent);
-                    }
+                switch (msLevel)
+                {
+                    case MSOrderType.Ms2:
+                        spectrumRef = ConstructSpectrumTitle(_precursorMs1ScanNumber);
+                        reaction = scanEvent.GetReaction(0);
+                        precursorScanNumber = _precursorMs1ScanNumber;
+                        break;
+                    case MSOrderType.Ms3:
+                        var precursorMs2ScanNumber =
+                            _precursorMs2ScanNumbers.Keys.FirstOrDefault(isolationMz =>
+                                scanEvent.ToString().Contains(isolationMz));
+                        if (!precursorMs2ScanNumber.IsNullOrEmpty())
+                        {
+                            spectrumRef = ConstructSpectrumTitle(_precursorMs2ScanNumbers[precursorMs2ScanNumber]);
+                            reaction = scanEvent.GetReaction(1);
+                            precursorScanNumber = _precursorMs1ScanNumber;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Couldn't find a MS2 precursor scan for MS3 scan " +
+                                                                scanEvent);
+                        }
 
-                    break;
+                        break;
+                }
+                
+                precursorMz = reaction.PrecursorMass;
+            }
+            catch (ArgumentOutOfRangeException exception)
+            {
+                //do nothing
             }
 
             var precursor = new PrecursorType
@@ -1269,27 +1285,6 @@ namespace ThermoRawFileParser.Writer
                 {
                     cvParam = new CVParamType[3]
                 };
-
-            IReaction reaction = null;
-            var precursorMz = 0.0;
-            try
-            {
-                switch (msLevel)
-                {
-                    case MSOrderType.Ms2:
-                        reaction = scanEvent.GetReaction(0);
-                        break;
-                    case MSOrderType.Ms3:
-                        reaction = scanEvent.GetReaction(1);
-                        break;
-                }
-
-                precursorMz = reaction.PrecursorMass;
-            }
-            catch (ArgumentOutOfRangeException exception)
-            {
-                //do nothing
-            }
 
             // Selected ion MZ
             var selectedIonMz = CalculateSelectedIonMz(reaction, monoisotopicMz, isolationWidth);
@@ -1318,21 +1313,23 @@ namespace ThermoRawFileParser.Writer
                 });
             }
 
-//            var precursorIntensity = GetPrecursorIntensity(_rawFile, _precursorScanNumber, precursorMass,
-//                _rawFile.RetentionTimeFromScanNumber(scanNumber), isolationWidth);
-//            if (precursorIntensity != null)
-//            {
-//                ionCvParams.Add(new CVParamType
-//                {
-//                    name = "peak intensity",
-//                    value = precursorIntensity.ToString(),
-//                    accession = "MS:1000042",
-//                    cvRef = "MS",
-//                    unitCvRef = "MS",
-//                    unitAccession = "MS:1000131",
-//                    unitName = "number of detector counts"
-//                });
-//            }
+            if (ParseInput.PrecursorIntensity)
+            {
+                var precursorIntensity = CalculatePrecursorPeakIntensity(_rawFile, precursorScanNumber, precursorMz);
+                if (precursorIntensity != null)
+                {
+                    ionCvParams.Add(new CVParamType
+                    {
+                        name = "peak intensity",
+                        value = precursorIntensity.ToString(),
+                        accession = "MS:1000042",
+                        cvRef = "MS",
+                        unitCvRef = "MS",
+                        unitAccession = "MS:1000131",
+                        unitName = "number of detector counts"
+                    });
+                }
+            }
 
             precursor.selectedIonList.selectedIon[0].cvParam = ionCvParams.ToArray();
 

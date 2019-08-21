@@ -16,27 +16,28 @@ namespace ThermoRawFileParser
 
         public static void Main(string[] args)
         {
+            var help = false;
+            var version = false;
             string rawFilePath = null;
             string rawDirectoryPath = null;
             string outputDirectory = null;
             string outputFile = null;
             string outputFormatString = null;
             var outputFormat = OutputFormat.NONE;
-            var gzip = false;
             string outputMetadataString = null;
             var outputMetadataFormat = MetadataFormat.NONE;
             string metadataOutputFile = null;
+            var gzip = false;
+            var noPeakPicking = false;
+            var precursorIntensity = false;
+            var noZlibCompression = false;
+            var logFormat = LogFormat.DEFAULT;
+            var ignoreInstrumentErrors = false;
             string s3url = null;
             string s3AccessKeyId = null;
             string s3SecretAccessKey = null;
             string logFormatString = null;
-            var logFormat = LogFormat.DEFAULT;
             string bucketName = null;
-            var ignoreInstrumentErrors = false;
-            var noPeakPicking = false;
-            var noZlibCompression = false;
-            var help = false;
-            var version = false;
 
             var optionSet = new OptionSet
             {
@@ -90,6 +91,11 @@ namespace ThermoRawFileParser
                     "p|noPeakPicking",
                     "Don't use the peak picking provided by the native Thermo library (by default peak picking is enabled).",
                     v => noPeakPicking = v != null
+                },
+                {
+                    "j|precursorIntensity",
+                    "Report the precursor peak intensity (by default the precursor peak intensity (MS:1000042) is not reported).",
+                    v => precursorIntensity = v != null
                 },
                 {
                     "z|noZlibCompression",
@@ -252,7 +258,7 @@ namespace ThermoRawFileParser
                         "specify a valid output file, not a directory",
                         "-b, --output_file");
                 }
-                
+
                 if (outputFile != null && rawDirectoryPath != null)
                 {
                     throw new OptionException(
@@ -279,7 +285,7 @@ namespace ThermoRawFileParser
                     throw new OptionException("specify a metadata format (0 for JSON, 1 for TXT)",
                         "-m, --metadata");
                 }
-                
+
                 if (metadataOutputFile != null && rawDirectoryPath != null)
                 {
                     throw new OptionException(
@@ -352,11 +358,9 @@ namespace ThermoRawFileParser
                 }
 
                 var parseInput = new ParseInput(rawFilePath, rawDirectoryPath, outputDirectory, outputFile,
-                    outputFormat,
-                    gzip,
-                    outputMetadataFormat, metadataOutputFile,
-                    s3url, s3AccessKeyId, s3SecretAccessKey, bucketName, ignoreInstrumentErrors, noPeakPicking,
-                    noZlibCompression, logFormat);
+                    outputFormat, outputMetadataFormat, metadataOutputFile, gzip, noPeakPicking, precursorIntensity,
+                    noZlibCompression, logFormat, ignoreInstrumentErrors, s3url, s3AccessKeyId, s3SecretAccessKey,
+                    bucketName);
                 RawFileParser.Parse(parseInput);
             }
             catch (Amazon.S3.AmazonS3Exception ex)

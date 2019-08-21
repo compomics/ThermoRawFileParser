@@ -60,7 +60,7 @@ namespace ThermoRawFileParserTest
             var tempFilePath = Path.GetTempPath();
 
             var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
-            var parseInput = new ParseInput(null, testRawFile, tempFilePath, null, OutputFormat.MzML);
+            var parseInput = new ParseInput(testRawFile, null, tempFilePath, null, OutputFormat.MzML);
 
             RawFileParser.Parse(parseInput);
 

@@ -9,6 +9,7 @@ namespace ThermoRawFileParser.Writer
 {
     public abstract class SpectrumWriter : ISpectrumWriter
     {
+        private const string MsFilter = "ms";
         private const double Tolerance = 0.01;
         protected const double ZeroDelta = 0.0001;
 
@@ -79,6 +80,7 @@ namespace ThermoRawFileParser.Writer
                     {
                         fileName = ParseInput.OutputFile + ".gzip";
                     }
+
                     var fileStream = File.Create(fileName);
                     var compress = new GZipStream(fileStream, CompressionMode.Compress);
                     Writer = new StreamWriter(compress);
@@ -114,7 +116,7 @@ namespace ThermoRawFileParser.Writer
                 isolationWidth = reaction.IsolationWidth;
             }
 
-            isolationWidth = isolationWidth / 2;
+            isolationWidth /= 2;
 
             if (monoisotopicMz != null && monoisotopicMz > ZeroDelta
                                        && Math.Abs(
@@ -146,15 +148,13 @@ namespace ThermoRawFileParser.Writer
         }
 
         /// <summary>
-        /// Get the spectrum intensity.
+        /// Calculate the precursor peak intensity.
         /// </summary>
         /// <param name="rawFile">the RAW file object</param>
         /// <param name="precursorScanNumber">the precursor scan number</param>
         /// <param name="precursorMass">the precursor mass</param>
-        /// <param name="retentionTime">the retention time</param>
-        /// <param name="isolationWidth">the isolation width</param>
-        protected static double? GetPrecursorIntensity(IRawDataPlus rawFile, int precursorScanNumber,
-            double precursorMass, double retentionTime, double? isolationWidth)
+        protected static double? CalculatePrecursorPeakIntensity(IRawDataPlus rawFile, int precursorScanNumber,
+            double precursorMass)
         {
             double? precursorIntensity = null;
 
@@ -184,57 +184,28 @@ namespace ThermoRawFileParser.Writer
             {
                 rawFile.SelectInstrument(Device.MS, 1);
 
-                var component = new Component
-                {
-                    MassRange = new Limit
-                    {
-                        Low = (double) (precursorMass - isolationWidth / 2),
-                        High = (double) (precursorMass + isolationWidth / 2)
-                    },
-                    RtRange = new Limit
-                    {
-                        Low = rawFile.RetentionTimeFromScanNumber(precursorScanNumber),
-                        High = rawFile.RetentionTimeFromScanNumber(precursorScanNumber)
-                    }
-                };
-                ;
-
                 IChromatogramSettings[] allSettings =
                 {
-                    new ChromatogramTraceSettings(TraceType.MassRange)
+                    new ChromatogramTraceSettings(TraceType.BasePeak)
                     {
-                        Filter = Component.Filter,
+                        Filter = MsFilter,
                         MassRanges = new[]
                         {
-                            new Range(component.MassRange.Low, component.MassRange.High)
+                            new Range(precursorMass, precursorMass)
                         }
                     }
                 };
 
-                var rtFilteredScans = rawFile.GetFilteredScansListByTimeRange("",
-                    component.RtRange.Low,
-                    component.RtRange.High);
-                var data = rawFile.GetChromatogramData(allSettings, rtFilteredScans[0],
-                    rtFilteredScans[rtFilteredScans.Count - 1]);
-
+                var data = rawFile.GetChromatogramData(allSettings, precursorScanNumber,
+                    precursorScanNumber);
                 var chromatogramTrace = ChromatogramSignal.FromChromatogramData(data);
+                if (!chromatogramTrace.IsNullOrEmpty())
+                {
+                    precursorIntensity = chromatogramTrace[0].Intensities[0];
+                }
             }
 
             return precursorIntensity;
         }
-    }
-
-    public class Limit
-    {
-        public double Low { get; set; }
-        public double High { get; set; }
-    }
-
-    public class Component
-    {
-        public Limit RtRange { get; set; }
-        public Limit MassRange { get; set; }
-        public static string Filter { get; set; }
-        public string Name { get; set; }
     }
 }
