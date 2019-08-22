@@ -49,55 +49,54 @@ namespace ThermoRawFileParser
                     v => version = v != null
                 },
                 {
-                    "i=|input=", "The raw file input. Specify this or an input directory.",
+                    "i=|input=", "The raw file input (Required). Specify this or an input directory -d.",
                     v => rawFilePath = v
                 },
                 {
                     "d=|input_directory=",
-                    "The directory containing input raw files. Specify this or an input raw file.",
+                    "The directory containing the raw files (Required). Specify this or an input raw file -i.",
                     v => rawDirectoryPath = v
                 },
                 {
-                    "o=|output=", "The output directory. Specify this or an output file" +
-                                  " (specifying neither writes to the input directory).",
+                    "o=|output=",
+                    "The output directory. Specify this or an output file -b. Specifying neither writes to the input directory.",
                     v => outputDirectory = v
                 },
                 {
-                    "b=|output_file", "The output file. Specify this or an output directory" +
-                                      " (specifying neither writes to the input directory).",
+                    "b=|output_file",
+                    "The output file. Specify this or an output directory -o. Specifying neither writes to the input directory.",
                     v => outputFile = v
                 },
                 {
                     "f=|format=",
-                    "The output format for the spectra (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet," +
-                    "defaults to mzML if not specified).",
+                    "The spectra output format: 0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet. Defaults to mzML if no format is specified.",
                     v => outputFormatString = v
                 },
                 {
-                    "m=|metadata=", "The metadata output format (0 for JSON, 1 for TXT).",
+                    "m=|metadata=", "The metadata output format: 0 for JSON, 1 for TXT.",
                     v => outputMetadataString = v
                 },
                 {
                     "c=|metadata_output_file",
-                    "The metadata output file (by default the metadata file is written to the output directory)",
+                    "The metadata output file. By default the metadata file is written to the output directory.",
                     v => metadataOutputFile = v
                 },
                 {
-                    "g|gzip", "GZip the output file if this flag is specified (without value).",
+                    "g|gzip", "GZip the output file.",
                     v => gzip = v != null
                 },
                 {
                     "p|noPeakPicking",
-                    "Don't use the peak picking provided by the native Thermo library (by default peak picking is enabled).",
+                    "Don't use the peak picking provided by the native Thermo library. By default peak picking is enabled.",
                     v => noPeakPicking = v != null
                 },
                 {
                     "z|noZlibCompression",
-                    "Don't use zlib compression for the m/z ratios and intensities (by default zlib compression is enabled).",
+                    "Don't use zlib compression for the m/z ratios and intensities. By default zlib compression is enabled.",
                     v => noZlibCompression = v != null
                 },
                 {
-                    "l=|logging=", "Optional logging level (0 for silent, 1 for verbose).",
+                    "l=|logging=", "Optional logging level: 0 for silent, 1 for verbose.",
                     v => logFormatString = v
                 },
                 {
@@ -138,7 +137,7 @@ namespace ThermoRawFileParser
 
                 if (help)
                 {
-                    ShowHelp(" usage is (use -option=value for the optional arguments):", null,
+                    ShowHelp("usage is (use -option=value for the optional arguments):", null,
                         optionSet);
                     return;
                 }
@@ -323,7 +322,7 @@ namespace ThermoRawFileParser
             {
                 if (help)
                 {
-                    ShowHelp(" usage is (use -option=value for the optional arguments):", null,
+                    ShowHelp("usage is (use -option=value for the optional arguments):", null,
                         optionSet);
                 }
                 else
@@ -333,6 +332,7 @@ namespace ThermoRawFileParser
                 }
             }
 
+            var exitCode = 1;
             try
             {
                 switch (logFormat)
@@ -355,21 +355,36 @@ namespace ThermoRawFileParser
                     outputFormat, outputMetadataFormat, metadataOutputFile, gzip, noPeakPicking, noZlibCompression,
                     logFormat, ignoreInstrumentErrors, s3url, s3AccessKeyId, s3SecretAccessKey, bucketName);
                 RawFileParser.Parse(parseInput);
+
+                exitCode = 0;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Log.Error(!ex.Message.IsNullOrEmpty()
+                    ? ex.Message
+                    : "Attempting to write to an unauthorized location.");
             }
             catch (Amazon.S3.AmazonS3Exception ex)
             {
                 Log.Error(!ex.Message.IsNullOrEmpty()
                     ? "An Amazon S3 exception occured: " + ex.Message
                     : "An Amazon S3 exception occured: " + ex);
-
-                Environment.Exit(1);
             }
             catch (Exception ex)
             {
-                Log.Error("An unexpected error occured:");
-                Log.Error(ex.ToString());
-
-                Environment.Exit(1);
+                if (ex is RawFileParserException)
+                {
+                    Log.Error(ex.Message);
+                }
+                else
+                {
+                    Log.Error("An unexpected error occured:");
+                    Log.Error(ex.ToString());
+                }
+            }
+            finally
+            {
+                Environment.Exit(exitCode);
             }
         }
 

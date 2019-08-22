@@ -112,7 +112,7 @@ namespace ThermoRawFileParser
                 }
                 else
                 {
-                    throw new UriFormatException("Invalid S3 url: " + S3url);
+                    throw new RawFileParserException("Invalid S3 url: " + S3url);
                 }
 
             if (OutputDirectory == null && OutputFile != null)
@@ -149,7 +149,7 @@ namespace ThermoRawFileParser
                 }
                 else
                 {
-                    throw new UriFormatException("Invalid S3 url: " + S3url);
+                    throw new RawFileParserException("Invalid S3 url: " + S3url);
                 }
 
             if (OutputDirectory == null && OutputFile != null)

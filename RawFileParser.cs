@@ -28,7 +28,7 @@ namespace ThermoRawFileParser
                 if (Directory.GetFiles(parseInput.RawDirectoryPath, "*", SearchOption.TopDirectoryOnly).Length == 0)
                 {
                     Log.Debug("No raw files found in folder");
-                    throw new Exception("No raw files found in folder!");
+                    throw new RawFileParserException("No raw files found in folder!");
                 }
 
                 foreach (var filePath in rawFilesPath)
@@ -47,7 +47,7 @@ namespace ThermoRawFileParser
                     }
                     catch (Exception ex)
                     {
-                        if (ex is RawFileException)
+                        if (ex is RawFileParserException)
                         {
                             Log.Error(ex.Message);
                         }
@@ -63,20 +63,6 @@ namespace ThermoRawFileParser
             else
             {
                 Log.Info("Started parsing " + parseInput.RawFilePath);
-
-                // Check to see if the RAW file name was supplied as an argument to the program
-                if (string.IsNullOrEmpty(parseInput.RawFilePath))
-                {
-                    Log.Debug("No raw file specified or found in path");
-                    throw new Exception("No RAW file specified!");
-                }
-
-                // Check to see if the specified RAW file exists
-                if (!File.Exists(parseInput.RawFilePath))
-                {
-                    throw new Exception(@"The file doesn't exist in the specified location - " +
-                                        parseInput.RawFilePath);
-                }
 
                 ProcessFile(parseInput);
             }
@@ -94,19 +80,19 @@ namespace ThermoRawFileParser
             {
                 if (!rawFile.IsOpen)
                 {
-                    throw new RawFileException("Unable to access the RAW file using the native Thermo library.");
+                    throw new RawFileParserException("Unable to access the RAW file using the native Thermo library.");
                 }
 
                 // Check for any errors in the RAW file
                 if (rawFile.IsError)
                 {
-                    throw new RawFileException($"Error opening ({rawFile.FileError}) - {parseInput.RawFilePath}");
+                    throw new RawFileParserException($"Error opening ({rawFile.FileError}) - {parseInput.RawFilePath}");
                 }
 
                 // Check if the RAW file is being acquired
                 if (rawFile.InAcquisition)
                 {
-                    throw new RawFileException("RAW file still being acquired - " + parseInput.RawFilePath);
+                    throw new RawFileParserException("RAW file still being acquired - " + parseInput.RawFilePath);
                 }
 
                 // Get the number of instruments (controllers) present in the RAW file and set the 
