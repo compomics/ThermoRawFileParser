@@ -23,10 +23,6 @@ namespace ThermoRawFileParserTest
 
             RawFileParser.Parse(parseInput);
 
-            // Do this for the mzLib library issue
-            var tempFileName = Path.GetTempPath() + "elements.dat";
-            Loaders.LoadElements(tempFileName);
-
             var mgfData = Mgf.LoadAllStaticData(Path.Combine(tempFilePath, "small.mgf"));
             Assert.AreEqual(34, mgfData.NumSpectra);
         }
@@ -41,10 +37,6 @@ namespace ThermoRawFileParserTest
             var parseInput = new ParseInput(null, testRawFolder, tempFilePath, null, OutputFormat.MGF);
 
             RawFileParser.Parse(parseInput);
-
-            // Do this for the mzLib library issue
-            var tempFileName = Path.GetTempPath() + "elements.dat";
-            Loaders.LoadElements(tempFileName);
 
             var mgfData = Mgf.LoadAllStaticData(Path.Combine(tempFilePath, "small1.mgf"));
             Assert.AreEqual(34, mgfData.NumSpectra);

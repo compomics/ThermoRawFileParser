@@ -147,62 +147,12 @@ namespace ThermoRawFileParser
                     Console.WriteLine(Version);
                     return;
                 }
-
-                if (outputMetadataString == null && outputFormatString == null)
+                
+                if (rawFilePath == null && rawDirectoryPath == null)
                 {
-                    outputFormat = OutputFormat.MzML;
-                }
-
-                if (outputFormatString != null)
-                {
-                    int outPutFormatInt;
-                    try
-                    {
-                        outPutFormatInt = int.Parse(outputFormatString);
-                    }
-                    catch (FormatException e)
-                    {
-                        throw new OptionException(
-                            "unknown output format value (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet)",
-                            "-f, --format");
-                    }
-
-                    if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt) &&
-                        ((OutputFormat) outPutFormatInt) != OutputFormat.NONE)
-                    {
-                        outputFormat = (OutputFormat) outPutFormatInt;
-                    }
-                    else
-                    {
-                        throw new OptionException(
-                            "unknown output format value (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet)",
-                            "-f, --format");
-                    }
-                }
-
-                if (outputMetadataString != null)
-                {
-                    int metadataInt;
-                    try
-                    {
-                        metadataInt = int.Parse(outputMetadataString);
-                    }
-                    catch (FormatException e)
-                    {
-                        throw new OptionException("unknown metadata format value (0 for JSON, 1 for TXT)",
-                            "-m, --metadata");
-                    }
-
-                    if (Enum.IsDefined(typeof(MetadataFormat), metadataInt) &&
-                        ((MetadataFormat) metadataInt) != MetadataFormat.NONE)
-                    {
-                        outputMetadataFormat = (MetadataFormat) metadataInt;
-                    }
-                    else
-                    {
-                        throw new OptionException("unknown metadata format value (0 for JSON, 1 for TXT)",
-                            "-m, --metadata");
-                    }
+                    throw new OptionException(
+                        "specify an input file or an input directory",
+                        "-i, --input or -d, --input_directory");
                 }
 
                 if (rawFilePath != null && rawDirectoryPath != null)
@@ -264,6 +214,63 @@ namespace ThermoRawFileParser
                     throw new OptionException(
                         "specify a valid output directory",
                         "-o, --output");
+                }
+                
+                if (outputMetadataString == null && outputFormatString == null)
+                {
+                    outputFormat = OutputFormat.MzML;
+                }
+
+                if (outputFormatString != null)
+                {
+                    int outPutFormatInt;
+                    try
+                    {
+                        outPutFormatInt = int.Parse(outputFormatString);
+                    }
+                    catch (FormatException e)
+                    {
+                        throw new OptionException(
+                            "unknown output format value (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet)",
+                            "-f, --format");
+                    }
+
+                    if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt) &&
+                        ((OutputFormat) outPutFormatInt) != OutputFormat.NONE)
+                    {
+                        outputFormat = (OutputFormat) outPutFormatInt;
+                    }
+                    else
+                    {
+                        throw new OptionException(
+                            "unknown output format value (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet)",
+                            "-f, --format");
+                    }
+                }
+
+                if (outputMetadataString != null)
+                {
+                    int metadataInt;
+                    try
+                    {
+                        metadataInt = int.Parse(outputMetadataString);
+                    }
+                    catch (FormatException e)
+                    {
+                        throw new OptionException("unknown metadata format value (0 for JSON, 1 for TXT)",
+                            "-m, --metadata");
+                    }
+
+                    if (Enum.IsDefined(typeof(MetadataFormat), metadataInt) &&
+                        ((MetadataFormat) metadataInt) != MetadataFormat.NONE)
+                    {
+                        outputMetadataFormat = (MetadataFormat) metadataInt;
+                    }
+                    else
+                    {
+                        throw new OptionException("unknown metadata format value (0 for JSON, 1 for TXT)",
+                            "-m, --metadata");
+                    }
                 }
 
                 if (metadataOutputFile != null && Directory.Exists(metadataOutputFile))
