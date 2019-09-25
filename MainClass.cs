@@ -12,7 +12,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.1.10 ";
+        public const string Version = "1.1.11 ";
 
         public static void Main(string[] args)
         {

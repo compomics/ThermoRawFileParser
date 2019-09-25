@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoRawFileParser.Writer.MzML;
 
@@ -195,7 +197,7 @@ namespace ThermoRawFileParser.Writer
         /// <summary>
         /// Thermo instrument model string to CV mapping
         /// </summary>
-        public static readonly Dictionary<string, CVParamType> InstrumentModels =
+        private static readonly Dictionary<string, CVParamType> InstrumentModels =
             new Dictionary<string, CVParamType>
             {
                 {
@@ -208,16 +210,16 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
-                    "LTQ Orbitrap Velos", new CVParamType
+                    "LTQ FT ULTRA", new CVParamType
                     {
-                        accession = "MS:1001742",
-                        name = "LTQ Orbitrap Velos",
+                        accession = "MS:1000557",
+                        name = "LTQ FT Ultra",
                         cvRef = "MS",
                         value = ""
                     }
                 },
                 {
-                    "LTQ Orbitrap", new CVParamType
+                    "LTQ ORBITRAP", new CVParamType
                     {
                         accession = "MS:1000449",
                         name = "LTQ Orbitrap",
@@ -226,7 +228,97 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
-                    "LTQ Velos", new CVParamType
+                    "LTQ ORBITRAP DISCOVERY", new CVParamType
+                    {
+                        accession = "MS:1000555",
+                        name = "LTQ Orbitrap Discovery",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "LTQ ORBITRAP XL", new CVParamType
+                    {
+                        accession = "MS:1000556",
+                        name = "LTQ Orbitrap XL",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "LTQ ORBITRAP XL ETD", new CVParamType
+                    {
+                        accession = "MS:1000639",
+                        name = "LTQ Orbitrap XL ETD",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "MALDI LTQ ORBITRAP", new CVParamType
+                    {
+                        accession = "MS:1000643",
+                        name = "MALDI LTQ Orbitrap",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "LTQ ORBITRAP VELOS", new CVParamType
+                    {
+                        accession = "MS:1001742",
+                        name = "LTQ Orbitrap Velos",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "LTQ ORBITRAP ELITE", new CVParamType
+                    {
+                        accession = "MS:1001910",
+                        name = "LTQ Orbitrap Elite",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "LTQ", new CVParamType
+                    {
+                        accession = "MS:1000447",
+                        name = "LTQ",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "LXQ", new CVParamType
+                    {
+                        accession = "MS:1000450",
+                        name = "LXQ",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "LTQ XL ETD", new CVParamType
+                    {
+                        accession = "MS:1000638",
+                        name = "LTQ XL ETD",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "MALDI LTQ XL", new CVParamType
+                    {
+                        accession = "MS:1000642",
+                        name = "MALDI LTQ XL",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "LTQ VELOS", new CVParamType
                     {
                         accession = "MS:1000855",
                         name = "LTQ Velos",
@@ -235,7 +327,7 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
-                    "Orbitrap Fusion", new CVParamType
+                    "ORBITRAP FUSION", new CVParamType
                     {
                         accession = "MS:1002416",
                         name = "Orbitrap Fusion",
@@ -244,7 +336,34 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
-                    "Q Exactive", new CVParamType
+                    "ORBITRAP FUSION ETD", new CVParamType
+                    {
+                        accession = "MS:1002417",
+                        name = "Orbitrap Fusion ETD",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "ORBITRAP FUSION LUMOS", new CVParamType
+                    {
+                        accession = "MS:1002732",
+                        name = "Orbitrap Fusion Lumos",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "EXACTIVE", new CVParamType
+                    {
+                        accession = "MS:1000649",
+                        name = "Exactive",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "Q EXACTIVE", new CVParamType
                     {
                         accession = "MS:1001911",
                         name = "Q Exactive",
@@ -253,7 +372,7 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
-                    "Q Exactive Orbitrap", new CVParamType
+                    "Q EXACTIVE ORBITRAP", new CVParamType
                     {
                         accession = "MS:1001911",
                         name = "Q Exactive",
@@ -262,7 +381,7 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
-                    "Q Exactive Plus Orbitrap", new CVParamType
+                    "Q EXACTIVE PLUS ORBITRAP", new CVParamType
                     {
                         accession = "MS:1001911",
                         name = "Q Exactive",
@@ -273,123 +392,142 @@ namespace ThermoRawFileParser.Writer
             };
 
         /// <summary>
-        /// Thermo instrument CV accession string to CV mapping
+        /// Get the instrument model CV param for the given instrument name
         /// </summary>
-        public static readonly Dictionary<string, List<CVParamType>> InstrumentToDetectors =
-            new Dictionary<string, List<CVParamType>>
+        /// <param name="instrumentName">the instrument name</param>
+        /// <returns>the instrument CV param</returns>
+        public static CVParamType getInstrumentModel(string instrumentName)
+        {
+            CVParamType instrumentModel;
+            if (OntologyMapping.InstrumentModels.ContainsKey(instrumentName))
             {
+                instrumentModel = OntologyMapping.InstrumentModels[instrumentName.ToUpper()];
+            }
+            else
+            {
+                var longestMatch = InstrumentModels.Where(pair => instrumentName.ToUpper().Contains(pair.Key))
+                    .Select(pair => pair.Key)
+                    .Aggregate("", (max, current) => max.Length > current.Length ? max : current);
+                if (!longestMatch.IsNullOrEmpty())
                 {
-                    "MS:1000448", new List<CVParamType>
-                    {
-                        new CVParamType
-                        {
-                            accession = "MS:1000624",
-                            name = "inductive detector",
-                            cvRef = "MS",
-                            value = ""
-                        },
-                        new CVParamType
-                        {
-                            accession = "MS:1000253",
-                            name = "electron multiplier",
-                            cvRef = "MS",
-                            value = ""
-                        }
-                    }
-                },
-                {
-                    "MS:1001742", new List<CVParamType>
-                    {
-                        new CVParamType
-                        {
-                            accession = "MS:1000624",
-                            name = "inductive detector",
-                            cvRef = "MS",
-                            value = ""
-                        },
-                        new CVParamType
-                        {
-                            accession = "MS:1000253",
-                            name = "electron multiplier",
-                            cvRef = "MS",
-                            value = ""
-                        }
-                    }
-                },
-                {
-                    "MS:1000449", new List<CVParamType>
-                    {
-                        new CVParamType
-                        {
-                            accession = "MS:1000624",
-                            name = "inductive detector",
-                            cvRef = "MS",
-                            value = ""
-                        },
-                        new CVParamType
-                        {
-                            accession = "MS:1000253",
-                            name = "electron multiplier",
-                            cvRef = "MS",
-                            value = ""
-                        }
-                    }
-                },
-                {
-                    "MS:1000855", new List<CVParamType>
-                    {
-                        new CVParamType
-                        {
-                            accession = "MS:1000253",
-                            name = "electron multiplier",
-                            cvRef = "MS",
-                            value = ""
-                        }
-                    }
-                },
-                {
-                    "MS:1002416", new List<CVParamType>
-                    {
-                        new CVParamType
-                        {
-                            accession = "MS:1000624",
-                            name = "inductive detector",
-                            cvRef = "MS",
-                            value = ""
-                        },
-                        new CVParamType
-                        {
-                            accession = "MS:1000253",
-                            name = "electron multiplier",
-                            cvRef = "MS",
-                            value = ""
-                        }
-                    }
-                },
-                {
-                    "MS:1001911", new List<CVParamType>
-                    {
-                        new CVParamType
-                        {
-                            accession = "MS:1000624",
-                            name = "inductive detector",
-                            cvRef = "MS",
-                            value = ""
-                        }
-                    }
-                },
-                {
-                    "MS:1000483", new List<CVParamType>
-                    {
-                        new CVParamType
-                        {
-                            accession = "MS:1000026",
-                            name = "inductive detector",
-                            cvRef = "MS",
-                            value = ""
-                        }
-                    }
+                    instrumentModel = OntologyMapping.InstrumentModels[longestMatch];
                 }
-            };
+                else
+                {
+                    instrumentModel = new CVParamType
+                    {
+                        accession = "MS:1000483",
+                        name = "Thermo Fisher Scientific instrument model",
+                        cvRef = "MS",
+                        value = ""
+                    };
+                }
+            }
+
+            return instrumentModel;
+        }
+
+        /// <summary>
+        /// Get a list of detectors for the given instrument
+        /// </summary>
+        /// <param name="instrumentAccession">the instrument accession</param>
+        /// <returns>a list of detectors</returns>
+        public static List<CVParamType> GetDetectors(string instrumentAccession)
+        {
+            List<CVParamType> detectors;
+            switch (instrumentAccession)
+            {
+                // LTQ FT
+                case "MS:1000448":
+                // LTQ FT ULTRA    
+                case "MS:1000557":
+                // LTQ ORBITRAP    
+                case "MS:1000449":
+                // LTQ ORBITRAP DISCOVERY   
+                case "MS:1000555":
+                // LTQ ORBITRAP XL   
+                case "MS:1000556":
+                // LTQ ORBITRAP XL ETD   
+                case "MS:1000639":
+                // MALDI LTQ ORBITRAP   
+                case "MS:1000643":
+                // LTQ ORBITRAP VELOS    
+                case "MS:1001742":
+                // LTQ ORBITRAP ELITE    
+                case "MS:1001910":
+                // ORBITRAP FUSION
+                case "MS:1002416":
+                // ORBITRAP FUSION ETD    
+                case "MS:1002417":
+                // ORBITRAP FUSION LUMOS
+                case "MS:1002732":
+                    detectors = new List<CVParamType>
+                    {
+                        new CVParamType
+                        {
+                            accession = "MS:1000624",
+                            name = "inductive detector",
+                            cvRef = "MS",
+                            value = ""
+                        },
+                        new CVParamType
+                        {
+                            accession = "MS:1000253",
+                            name = "electron multiplier",
+                            cvRef = "MS",
+                            value = ""
+                        }
+                    };
+                    break;
+                // EXACTIVE
+                case "MS:1000649":
+                // Q EXACTIVE
+                case "MS:1001911":
+                    detectors = new List<CVParamType>
+                    {
+                        new CVParamType
+                        {
+                            accession = "MS:1000624",
+                            name = "inductive detector",
+                            cvRef = "MS",
+                            value = ""
+                        }
+                    };
+                    break;
+                // LTQ
+                case "MS:1000447":
+                // LXQ    
+                case "MS:1000450":
+                // LTQ XL ETD    
+                case "MS:1000638":
+                // MALDI LTQ XL    
+                case "MS:1000642":
+                    detectors = new List<CVParamType>
+                    {
+                        new CVParamType
+                        {
+                            accession = "MS:1000253",
+                            name = "electron multiplier",
+                            cvRef = "MS",
+                            value = ""
+                        }
+                    };
+                    break;
+                default:
+                    detectors = new List<CVParamType>
+                    {
+                        new CVParamType
+                        {
+                            accession = "MS:1000624",
+                            name = "inductive detector",
+                            cvRef = "MS",
+                            value = ""
+                        }
+                    };
+                    break;
+            }
+
+            return detectors;
+        }
     }
 }

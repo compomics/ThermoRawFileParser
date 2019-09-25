@@ -197,18 +197,10 @@ namespace ThermoRawFileParser.Writer
                 //   referenceableParamGroup
                 _writer.WriteStartElement("referenceableParamGroup");
                 _writer.WriteAttributeString("id", "commonInstrumentParams");
-                if (!OntologyMapping.InstrumentModels.TryGetValue(instrumentData.Name, out var instrumentModel))
-                {
-                    instrumentModel = new CVParamType
-                    {
-                        accession = "MS:1000483",
-                        name = "Thermo Fisher Scientific instrument model",
-                        cvRef = "MS",
-                        value = ""
-                    };
-                }
 
+                var instrumentModel = OntologyMapping.getInstrumentModel(instrumentData.Name);
                 SerializeCvParam(instrumentModel);
+
                 SerializeCvParam(new CVParamType
                 {
                     cvRef = "MS",
@@ -597,7 +589,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteAttributeString("order", (index + 1).ToString());
 
                 // Try to map the instrument to the detector
-                var detectorCvParams = OntologyMapping.InstrumentToDetectors[instrumentModel.accession];
+                var detectorCvParams = OntologyMapping.GetDetectors(instrumentModel.accession);
                 CVParamType detectorCvParam;
                 if (massAnalyzerIndex < detectorCvParams.Count)
                 {
@@ -605,7 +597,7 @@ namespace ThermoRawFileParser.Writer
                 }
                 else
                 {
-                    detectorCvParam = OntologyMapping.InstrumentToDetectors["MS:1000483"][0];
+                    detectorCvParam = OntologyMapping.GetDetectors("default")[0];
                 }
 
                 SerializeCvParam(detectorCvParam);
