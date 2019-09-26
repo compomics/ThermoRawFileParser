@@ -354,6 +354,15 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
+                    "ORBITRAP EXPLORIS 480", new CVParamType
+                    {
+                        accession = "MS:1003028",
+                        name = "Orbitrap Exploris 480",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
                     "EXACTIVE", new CVParamType
                     {
                         accession = "MS:1000649",
@@ -385,6 +394,33 @@ namespace ThermoRawFileParser.Writer
                     {
                         accession = "MS:1001911",
                         name = "Q Exactive",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "Q EXACTIVE HF", new CVParamType
+                    {
+                        accession = "MS:1002523",
+                        name = "Q Exactive HF",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "Q EXACTIVE HF-X", new CVParamType
+                    {
+                        accession = "MS:1002877",
+                        name = "Q Exactive HF-X",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "Q EXACTIVE PLUS", new CVParamType
+                    {
+                        accession = "MS:1002634",
+                        name = "Q Exactive Plus",
                         cvRef = "MS",
                         value = ""
                     }
@@ -461,6 +497,8 @@ namespace ThermoRawFileParser.Writer
                 case "MS:1002417":
                 // ORBITRAP FUSION LUMOS
                 case "MS:1002732":
+                // ORBITRAP EXPLORIS 480    
+                case "MS:1003028":
                     detectors = new List<CVParamType>
                     {
                         new CVParamType
@@ -483,6 +521,12 @@ namespace ThermoRawFileParser.Writer
                 case "MS:1000649":
                 // Q EXACTIVE
                 case "MS:1001911":
+                // Q EXACTIVE HF    
+                case "MS:1002523":
+                // Q EXACTIVE HF-X    
+                case "MS:1002877":
+                // Q EXACTIVE PLUS    
+                case "MS:1002634":
                     detectors = new List<CVParamType>
                     {
                         new CVParamType
