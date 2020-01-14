@@ -4,6 +4,7 @@ using log4net;
 using log4net.Core;
 using Mono.Options;
 using ThermoFisher.CommonCore.Data;
+using System.Linq;
 
 namespace ThermoRawFileParser
 {
@@ -15,6 +16,125 @@ namespace ThermoRawFileParser
         public const string Version = "1.1.11 ";
 
         public static void Main(string[] args)
+        {
+            
+            // introduce subcommand for xics
+            if (args.Length > 0)
+            {    
+                switch(args[0]){
+                    case "xic":
+                        XicParsing(args.Skip(1).ToArray()); // skip first command
+                        break;
+                        
+                    // if we want more subcommands, we can introduce here different cases
+                    default:
+                        RegularParsing(args);
+                        break;
+                }
+            }
+            else {
+                RegularParsing(args);
+            }
+        }
+            
+            
+            
+            
+        public static void XicParsing(string[] args)
+        {
+            var help = false;
+            string rawFilePath = null;
+            
+            var optionSet = new OptionSet
+            {
+                {
+                    "h|help", "Prints out the options.",
+                    h => help = h != null
+                },
+                {
+                    "i=|input=", "The raw file input (Required).",
+                    v => rawFilePath = v
+                }
+            };
+                
+            try
+            {
+                // parse the command line
+                var extra = optionSet.Parse(args);
+
+                if (!extra.IsNullOrEmpty())
+                {
+                    throw new OptionException("unexpected extra arguments", null);
+                }
+
+                if (help)
+                {
+                    ShowHelp("usage is (use -option=value for the optional arguments):", null,
+                        optionSet);
+                    return;
+                }
+                
+                if (rawFilePath == null)
+                {
+                    throw new OptionException(
+                        "specify an input file or an input directory",
+                        "-i, --input or -d, --input_directory");
+                }
+
+                if (rawFilePath != null && !File.Exists(rawFilePath))
+                {
+                    throw new OptionException(
+                        "specify a valid RAW file location",
+                        "-i, --input");
+                }
+            }    
+            catch (OptionException optionException)
+            {
+                ShowHelp("Error - usage is (use -option=value for the optional arguments):", optionException,
+                    optionSet);
+            }
+            catch (ArgumentNullException argumentNullException)
+            {
+                if (help)
+                {
+                    ShowHelp("usage is (use -option=value for the optional arguments):", null,
+                        optionSet);
+                }
+                else
+                {
+                    ShowHelp("Error - usage is (use -option=value for the optional arguments):", null,
+                        optionSet);
+                }
+            }
+            
+            var exitCode = 1;
+            try
+            {
+                
+                // execute the xic commands
+                Console.WriteLine("Our awesome xic command was executed successfully :-)");
+
+                exitCode = 0;
+            }
+            catch (Exception ex)
+            {
+                if (ex is RawFileParserException)
+                {
+                    Log.Error(ex.Message);
+                }
+                else
+                {
+                    Log.Error("An unexpected error occured:");
+                    Log.Error(ex.ToString());
+                }
+            }
+            finally
+            {
+                Environment.Exit(exitCode);
+            }
+        }
+
+        public static void RegularParsing(string[] args)
         {
             var help = false;
             var version = false;
@@ -37,7 +157,8 @@ namespace ThermoRawFileParser
             string s3SecretAccessKey = null;
             string logFormatString = null;
             string bucketName = null;
-
+            
+            
             var optionSet = new OptionSet
             {
                 {
