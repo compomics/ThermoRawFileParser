@@ -21,7 +21,7 @@ namespace ThermoRawFileParser.XIC
 
             foreach (JSONInputUnit xic in jsonIn)
             {
-                data.content.Add(new XicUnit(xic.MzStart, xic.MzEnd, xic.RtStart, xic.RtEnd));
+                if (xic.MzStart != 0 && xic.MzEnd != 0) data.content.Add(new XicUnit(xic.MzStart, xic.MzEnd, xic.RtStart, xic.RtEnd));
             }
 
             return data;
