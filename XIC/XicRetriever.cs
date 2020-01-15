@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
@@ -70,11 +71,43 @@ namespace ThermoRawFileParser.XIC
 
                     if (chromatogramTrace[0].Scans.Count != 0)
                     {
-                        xicUnit.X = chromatogramTrace[0].Times;
-                        xicUnit.Y = chromatogramTrace[0].Intensities;
+                        if (!base64)
+                        {
+                            xicUnit.X = chromatogramTrace[0].Times;
+                            xicUnit.Y = chromatogramTrace[0].Intensities;
+                        }
+                        else
+                        {
+                            xicUnit.X = GetBase64String(chromatogramTrace[0].Times);
+                            xicUnit.Y = GetBase64String(chromatogramTrace[0].Intensities);
+                        }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Convert the double array into a base64 string
+        /// </summary>
+        /// <param name="array">the double collection</param>
+        /// <returns>the base64 string</returns>
+        private static string GetBase64String(IEnumerable<double> array)
+        {
+            byte[] bytes;
+
+            using (var memoryStream = new MemoryStream())
+            {
+                foreach (var doubleValue in array)
+                {
+                    var doubleValueByteArray = BitConverter.GetBytes(doubleValue);
+                    memoryStream.Write(doubleValueByteArray, 0, doubleValueByteArray.Length);
+                }
+
+                memoryStream.Position = 0;
+                bytes = memoryStream.ToArray();
+            }
+
+            return BitConverter.ToString(bytes);
         }
     }
 }
