@@ -12,6 +12,10 @@ namespace ThermoRawFileParser.XIC
         public XicExecutor(XicParameters parameters){
             this._parameters = parameters;
         }
+
+        public int run(){
+        
+        }
         
         public void RetrieveXicData(){
             
