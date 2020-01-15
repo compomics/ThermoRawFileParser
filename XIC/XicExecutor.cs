@@ -1,4 +1,5 @@
 using System;
+using ThermoRawFileParser.XIC;
 
 namespace ThermoRawFileParser
 {

@@ -7,13 +7,13 @@ using ThermoFisher.CommonCore.Data.Interfaces;
 
 namespace ThermoRawFileParser.XIC
 {
-    public class XICRetriever
+    public class XicRetriever
     {
         private IRawDataPlus rawFile;
 
-        public void RetrieveXIC(ParseInput parseInput)
+        public void RetrieveXic(XicParameters xicParameters, XicData xicData)
         {
-            using (rawFile = RawFileReaderFactory.ReadFile(parseInput.RawFilePath))
+            using (rawFile = RawFileReaderFactory.ReadFile(xicParameters.rawFilePath))
             {
                 if (!rawFile.IsOpen)
                 {
@@ -23,13 +23,13 @@ namespace ThermoRawFileParser.XIC
                 // Check for any errors in the RAW file
                 if (rawFile.IsError)
                 {
-                    throw new RawFileParserException($"Error opening ({rawFile.FileError}) - {parseInput.RawFilePath}");
+                    throw new RawFileParserException($"Error opening ({rawFile.FileError}) - {xicParameters.rawFilePath}");
                 }
 
                 // Check if the RAW file is being acquired
                 if (rawFile.InAcquisition)
                 {
-                    throw new RawFileParserException("RAW file still being acquired - " + parseInput.RawFilePath);
+                    throw new RawFileParserException("RAW file still being acquired - " + xicParameters.rawFilePath);
                 }
 
                 // Get the number of instruments (controllers) present in the RAW file and set the 

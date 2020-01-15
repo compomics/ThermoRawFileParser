@@ -1,6 +1,4 @@
-using System;
-
-namespace ThermoRawFileParser
+namespace ThermoRawFileParser.XIC
 {
     public class XicParameters
     {
