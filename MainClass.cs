@@ -23,63 +23,62 @@ namespace ThermoRawFileParser
             {    
                 switch(args[0]){
                     case "xic":
-                        XicParsing(args.Skip(1).ToArray()); // skip first command
+                        XicParametersParsing(args.Skip(1).ToArray()); // skip first command
                         break;
                         
                     // if we want more subcommands, we can introduce here different cases
                     default:
-                        RegularParsing(args);
+                        RegularParametersParsing(args);
                         break;
                 }
             }
             else {
-                RegularParsing(args);
+                RegularParametersParsing(args);
             }
         }
             
             
             
             
-        public static void XicParsing(string[] args)
+        public static void XicParametersParsing(string[] args)
         {
             XicParameters xicParameters = new XicParameters();
-            var help = false;
-            string rawFilePath = null;
-            string rawDirectoryPath = null;
-            string outputFile = null;
-            string outputDirectory = null;
-            boolean base64 = false;
             
             
             var optionSet = new OptionSet
             {
                 {
                     "h|help", "Prints out the options.",
-                    h => help = h != null
+                    h => xicParameters.help = h != null
                 },
                 {
                     "i=|input=", "The raw file input (Required).",
-                    v => rawFilePath = v
+                    v => xicParameters.rawFilePath = v
                 },
                 {
                     "d=|input_directory=",
                     "The directory containing the raw files (Required). Specify this or an input raw file -i.",
-                    v => rawDirectoryPath = v
+                    v => xicParameters.rawDirectoryPath = v
                 },
                 {
                     "j=|json=",
                     "The json input file (Required).",
-                    v => outputDirectory = v
+                    v => xicParameters.printJsonExample = v
+                },
+                {
+                    "p=|print_example=",
+                    "Printing an examplarily json input file.",
+                    v => xicParameters.printJsonExample = v
                 },
                 {
                     "o=|output=",
                     "The output directory. Specify this or an output file -b. Specifying neither writes to the input directory.",
-                    v => outputDirectory = v
+                    v => xicParameters.outputDirectory = v
                 },
                 {
                     "s|base64",
                     "Encodes the content of the xic vectors as base 64 encoded string.",
-                    v => base64 = v != null
+                    v => xicParameters.base64 = v != null
                 }
             };
                 
@@ -93,26 +92,44 @@ namespace ThermoRawFileParser
                     throw new OptionException("unexpected extra arguments", null);
                 }
 
-                if (help)
+                if (xicParameters.help)
                 {
                     ShowHelp("usage is (use -option=value for the optional arguments):", null,
                         optionSet);
                     return;
                 }
                 
-                if (rawFilePath == null)
+                if (xicParameters.rawFilePath == null)
                 {
                     throw new OptionException(
                         "specify an input file or an input directory",
                         "-i, --input or -d, --input_directory");
                 }
 
-                if (rawFilePath != null && !File.Exists(rawFilePath))
+                if (xicParameters.rawFilePath != null && !File.Exists(xicParameters.rawFilePath))
                 {
                     throw new OptionException(
                         "specify a valid RAW file location",
                         "-i, --input");
                 }
+                
+                if (xicParameters.rawFilePath == null)
+                {
+                    throw new OptionException(
+                        "specify an input file or an input directory",
+                        "-i, --input or -d, --input_directory");
+                }
+
+                if (xicParameters.rawFilePath != null && !File.Exists(xicParameters.rawFilePath))
+                {
+                    throw new OptionException(
+                        "specify a valid RAW file location",
+                        "-i, --input");
+                }
+                
+                
+                
+                
             }    
             catch (OptionException optionException)
             {
@@ -160,7 +177,7 @@ namespace ThermoRawFileParser
             }
         }
 
-        public static void RegularParsing(string[] args)
+        public static void RegularParametersParsing(string[] args)
         {
             var help = false;
             var version = false;
