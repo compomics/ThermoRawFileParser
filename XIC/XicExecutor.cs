@@ -35,6 +35,7 @@ namespace ThermoRawFileParser.XIC
                 string outputFileName = directory + Path.GetFileNameWithoutExtension(file) + ".JSON";
                 
                 OutputXicData(dataInstance, outputFileName);
+
             }
             return 0;
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,36 +12,42 @@ namespace ThermoRawFileParser.XIC
         public XicMeta Meta { get; set; }
         public object X { get; set; }
         public object Y { get; set; }
-    }
     
-    public XicUnit(XicUnit copy)
-    {
-        Meta = new XicMeta(copy.Meta);
-        if (copy.X is string)
+    
+        public XicUnit()
         {
-            X = (string)copy.X;
+            
         }
-        else
+        
+        public XicUnit(XicUnit copy)
         {
-            ArrayList x = new ArrayList();
-            for (double d in copy.X)
+            Meta = new XicMeta(copy.Meta);
+            if (copy.X is string)
             {
-                x.Add(d);
+                X = (string)copy.X;
             }
-            X = x;
-        }
-        if (copy.Y is string)
-        {
-            Y = (string)copy.Y;
-        }
-        else
-        {
-            ArrayList x = new ArrayList();
-            for (double d in copy.X)
+            else
             {
-                y.Add(d);
+                ArrayList x = new ArrayList();
+                foreach (double d in (ArrayList)copy.X)
+                {
+                    x.Add(d);
+                }
+                X = x;
             }
-            Y = y;
+            if (copy.Y is string)
+            {
+                Y = (string)copy.Y;
+            }
+            else
+            {
+                ArrayList y = new ArrayList();
+                foreach (double d in (ArrayList)copy.Y)
+                {
+                    y.Add(d);
+                }
+                Y = y;
+            }
         }
     }
 }
