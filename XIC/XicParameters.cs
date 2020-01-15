@@ -4,9 +4,6 @@ namespace ThermoRawFileParser.XIC
 {
     public class XicParameters
     {
-        public double Low { get; set; }
-        public double High { get; set; }
-        
         public bool help { get; set; }
         public string rawFilePath { get; set; }
         public string jsonFilePath { get; set; }
@@ -37,6 +34,7 @@ namespace ThermoRawFileParser.XIC
             rawDirectoryPath = copy.rawDirectoryPath;
             outputDirectory = copy.outputDirectory;
             printJsonExample = copy.printJsonExample;
+            outputFileName = copy.outputFileName;
             base64 = copy.base64;
         }
         
