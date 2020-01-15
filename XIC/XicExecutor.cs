@@ -12,8 +12,13 @@ namespace ThermoRawFileParser
             
         }
         
-        public void OutputXicData(){
+        public void OutputXicData(XicData data, XicParameters parameters){
+            // Get file name from parameters
+            // Serialize data
             
+            // open file handle
+            // write data to file handle
+            // close file handle 
         }
     }
 }
