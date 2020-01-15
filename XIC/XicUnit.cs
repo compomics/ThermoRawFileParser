@@ -16,6 +16,9 @@ namespace ThermoRawFileParser.XIC
     
         public XicUnit()
         {
+            Meta = new XicMeta();
+            X = null;
+            Y = null;
             
         }
         
@@ -31,31 +34,47 @@ namespace ThermoRawFileParser.XIC
         public XicUnit(XicUnit copy)
         {
             Meta = new XicMeta(copy.Meta);
-            if (copy.X is string)
+            
+            if (copy.X != null)
             {
-                X = (string)copy.X;
+                if (copy.X is string)
+                {
+                    X = (string)copy.X;
+                }
+                else
+                {
+                    ArrayList x = new ArrayList();
+                    foreach (double d in (ArrayList)copy.X)
+                    {
+                        x.Add(d);
+                    }
+                    X = x;
+                }
             }
             else
             {
-                ArrayList x = new ArrayList();
-                foreach (double d in (ArrayList)copy.X)
-                {
-                    x.Add(d);
-                }
-                X = x;
+                X = null;
             }
-            if (copy.Y is string)
+            
+            if (copy.Y != null)
             {
-                Y = (string)copy.Y;
-            }
-            else
-            {
-                ArrayList y = new ArrayList();
-                foreach (double d in (ArrayList)copy.Y)
+                if (copy.Y is string)
                 {
-                    y.Add(d);
+                    Y = (string)copy.Y;
                 }
-                Y = y;
+                else
+                {
+                    ArrayList y = new ArrayList();
+                    foreach (double d in (ArrayList)copy.Y)
+                    {
+                        y.Add(d);
+                    }
+                    Y = y;
+                }
+            }
+            else 
+            {
+                Y = null;
             }
         }
     }
