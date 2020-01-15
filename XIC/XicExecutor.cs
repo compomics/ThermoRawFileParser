@@ -18,7 +18,7 @@ namespace ThermoRawFileParser.XIC
             foreach (var file in parameters.rawFileList)
             {
                 //do stuff
-                XicRetriever.RetrieveXic()
+                XicRetriever.RetrieveXic();
             }
             return 0;
         }

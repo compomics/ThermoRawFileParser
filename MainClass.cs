@@ -163,11 +163,19 @@ namespace ThermoRawFileParser
                 
                 if (singleFile != null)
                 {
-                    parameters.rawFileList.Add(singleFile);
+                    Console.WriteLine(Path.GetFullPath(singleFile));
+                    //parameters.rawFileList.Add(singleFile);
                 }
                 else 
                 {
-                    
+                    /*
+                    DirectoryInfo d = new DirectoryInfo(@"D:\Test");//Assuming Test is your Folder
+                    FileInfo[] Files = d.GetFiles("*.txt"); //Getting Text files
+                    string str = "";
+                    foreach(FileInfo file in Files)
+                    {
+                        parameters.rawFileList.Add(file.Name);
+                    }*/
                 }
             }    
             catch (OptionException optionException)
@@ -194,8 +202,8 @@ namespace ThermoRawFileParser
             {
                 
                 // execute the xic commands
-                XicExecutor executor = new XicExecutor(parameters);
-                exitCode = executor.run();
+                //XicExecutor executor = new XicExecutor(parameters);
+                //exitCode = executor.run();
 
             }
             catch (Exception ex)
