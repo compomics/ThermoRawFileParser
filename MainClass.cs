@@ -42,11 +42,14 @@ namespace ThermoRawFileParser
             
         public static void XicParsing(string[] args)
         {
+            XicParameters xicParameters = new XicParameters();
             var help = false;
             string rawFilePath = null;
+            string rawDirectoryPath = null;
             string outputFile = null;
             string outputDirectory = null;
             boolean base64 = false;
+            
             
             var optionSet = new OptionSet
             {
@@ -59,18 +62,23 @@ namespace ThermoRawFileParser
                     v => rawFilePath = v
                 },
                 {
+                    "d=|input_directory=",
+                    "The directory containing the raw files (Required). Specify this or an input raw file -i.",
+                    v => rawDirectoryPath = v
+                },
+                {
+                    "j=|json=",
+                    "The json input file (Required).",
+                    v => outputDirectory = v
+                },
+                {
                     "o=|output=",
                     "The output directory. Specify this or an output file -b. Specifying neither writes to the input directory.",
                     v => outputDirectory = v
                 },
                 {
-                    "b=|output_file",
-                    "The output file. Specify this or an output directory -o. Specifying neither writes to the input directory.",
-                    v => outputFile = v
-                },
-                {
                     "s|base64",
-                    "Encodes the .",
+                    "Encodes the content of the xic vectors as base 64 encoded string.",
                     v => base64 = v != null
                 }
             };

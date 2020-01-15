@@ -153,6 +153,16 @@ namespace ThermoRawFileParser.XIC
     {
         public double Low { get; set; }
         public double High { get; set; }
+        
+        public bool help = false;
+        public string rawFilePath = null;
+        public string rawDirectoryPath = null;
+        public string outputFile = null;
+        public string outputDirectory = null;
+        public bool base64 = false;
+        
+        
+        
     }
 
     internal class Component
