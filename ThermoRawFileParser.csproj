@@ -139,6 +139,7 @@
     <Compile Include="Util\LimitedSizeDictionary.cs" />
     <Compile Include="XIC\JSONInputUnit.cs" />
     <Compile Include="XIC\JSONParser.cs" />
+    <Compile Include="XIC\ThermoExampleCode.cs" />
     <Compile Include="XIC\XicData.cs" />
     <Compile Include="XIC\XicExecutor.cs" />
     <Compile Include="XIC\XicParameters.cs" />
