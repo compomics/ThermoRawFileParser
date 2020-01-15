@@ -9,10 +9,11 @@ namespace ThermoRawFileParser.XIC
 {
     public class XicRetriever
     {
-        private IRawDataPlus rawFile;
+        private const string MsFilter = "ms";
 
-        public void RetrieveXic(XicParameters xicParameters, XicData xicData)
+        public static void RetrieveXic(XicParameters xicParameters, XicData xicData)
         {
+            IRawDataPlus rawFile;
             using (rawFile = RawFileReaderFactory.ReadFile(xicParameters.rawFilePath))
             {
                 if (!rawFile.IsOpen)
@@ -23,7 +24,8 @@ namespace ThermoRawFileParser.XIC
                 // Check for any errors in the RAW file
                 if (rawFile.IsError)
                 {
-                    throw new RawFileParserException($"Error opening ({rawFile.FileError}) - {xicParameters.rawFilePath}");
+                    throw new RawFileParserException(
+                        $"Error opening ({rawFile.FileError}) - {xicParameters.rawFilePath}");
                 }
 
                 // Check if the RAW file is being acquired
@@ -37,107 +39,42 @@ namespace ThermoRawFileParser.XIC
                 rawFile.SelectInstrument(Device.MS, 1);
 
                 // Get the first and last scan from the RAW file
-                var firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
-                var lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
-                
-                var components = new List<Component>();
-                // foreach (var searchSetting in mList)
-                // {
-                //     components.Add(new Component
-                //     {
-                //         MassRange = new Limit
-                //         {
-                //             Low = searchSetting.mz - (searchSetting.mz * (searchSetting.tol / 1000000)),
-                //             High = searchSetting.mz + (searchSetting.mz * (searchSetting.tol / 1000000))
-                //         },
-                //         RetentionTimeRange = new Limit {Low = searchSetting.ts, High = searchSetting.te},
-                //         Tolerance = new MassOptions {Tolerance = searchSetting.tol, ToleranceUnits = ToleranceUnits.ppm}
-                //     });
-                // }
-            }
-        }
+                //var firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
+                //var lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
 
-        private void CreateMassChromatograms(List<Component> components)
-        {
-            var generator = new ChromatogramBatchGenerator();
-            ParallelChromatogramFactory.FromRawData(generator, rawFile);
+                var generator = new ChromatogramBatchGenerator();
+                ParallelChromatogramFactory.FromRawData(generator, rawFile);
 
-            try
-            {
-                // create the array of chromatogram settings
-                for (var componentCount = 0; componentCount < components.Count; componentCount++)
+                foreach (var xicUnit in xicData.content)
                 {
-                    IChromatogramSettings[] allSettings =
+                    IChromatogramSettings[] settings =
                     {
                         new ChromatogramTraceSettings(TraceType.MassRange)
                         {
-                            Filter = Component.Filter,
+                            Filter = MsFilter,
                             MassRanges = new[]
                             {
-                                new Range(components[componentCount].MassRange.Low,
-                                    components[componentCount].MassRange.High)
+                                new Range(xicUnit.Meta.MzStart,
+                                    xicUnit.Meta.MzEnd)
                             }
                         }
                     };
 
-                    var rtFilteredScans = rawFile.GetFilteredScansListByTimeRange("",
-                        components[componentCount].RetentionTimeRange.Low,
-                        components[componentCount].RetentionTimeRange.High);
+                    var rtFilteredScans = rawFile.GetFilteredScansListByTimeRange(string.Empty,
+                        xicUnit.Meta.RtStart, xicUnit.Meta.RtEnd);
 
-                    var data = rawFile.GetChromatogramData(allSettings, rtFilteredScans[0],
+                    var data = rawFile.GetChromatogramData(settings, rtFilteredScans[0],
                         rtFilteredScans[rtFilteredScans.Count - 1]);
 
                     var chromatogramTrace = ChromatogramSignal.FromChromatogramData(data);
 
-                    var returnJson = "{\"request\":" + componentCount + ",\"results\":{";
-                    var empty = true;
-                    var times = "\"times\":[";
-                    var intensities = "\"intensities\":[";
-
-                    for (var i = 0; i < chromatogramTrace[0].Scans.Count; i++)
+                    if (chromatogramTrace[0].Scans.Count != 0)
                     {
-                        if (chromatogramTrace[0].Intensities[i] > 0)
-                        {
-                            empty = false;
-                            times = times + chromatogramTrace[0].Times[i].ToString("0.0000000000",
-                                        CultureInfo.InvariantCulture) + ",";
-                            intensities = intensities + chromatogramTrace[0].Intensities[i].ToString("0.00000",
-                                              CultureInfo.InvariantCulture) + ",";
-                        }
+                        xicUnit.X = chromatogramTrace[0].Times;
+                        xicUnit.Y = chromatogramTrace[0].Intensities;
                     }
-
-                    if (!empty)
-                    {
-                        times = times.Remove(times.Length - 1) + "],";
-                        intensities = intensities.Remove(intensities.Length - 1) + "]}";
-                        returnJson = returnJson + times + intensities;
-                    }
-                    else
-                    {
-                        returnJson = returnJson + times + "]," + intensities + "]}";
-                    }
-
-                    returnJson = returnJson + "}";
-                    Console.WriteLine(returnJson);
                 }
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.StackTrace);
-                Console.WriteLine(e.InnerException);
-            }
         }
-    }
-
-    internal class TempComponent
-    {
-        // Retention time range
-        public Limit RetentionTimeRange { get; set; }
-
-        // Mass range
-        public Limit MassRange { get; set; }
-        public const string Filter = "ms";
-        public string Name { get; set; }
-        public MassOptions Tolerance { get; set; }
     }
 }

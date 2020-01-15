@@ -151,6 +151,7 @@
     <Compile Include="UtilTests.cs" />
     <Compile Include="WriterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="XicRetrieverTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
