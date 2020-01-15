@@ -11,10 +11,10 @@ namespace ThermoRawFileParser.XIC
     {
         private const string MsFilter = "ms";
 
-        public static void RetrieveXic(XicParameters xicParameters, XicData xicData)
+        public static void RetrieveXic(string rawFilePath, bool base64, XicData xicData)
         {
             IRawDataPlus rawFile;
-            using (rawFile = RawFileReaderFactory.ReadFile(xicParameters.rawFilePath))
+            using (rawFile = RawFileReaderFactory.ReadFile(rawFilePath))
             {
                 if (!rawFile.IsOpen)
                 {
@@ -25,13 +25,13 @@ namespace ThermoRawFileParser.XIC
                 if (rawFile.IsError)
                 {
                     throw new RawFileParserException(
-                        $"Error opening ({rawFile.FileError}) - {xicParameters.rawFilePath}");
+                        $"Error opening ({rawFile.FileError}) - {rawFilePath}");
                 }
 
                 // Check if the RAW file is being acquired
                 if (rawFile.InAcquisition)
                 {
-                    throw new RawFileParserException("RAW file still being acquired - " + xicParameters.rawFilePath);
+                    throw new RawFileParserException("RAW file still being acquired - " + rawFilePath);
                 }
 
                 // Get the number of instruments (controllers) present in the RAW file and set the 

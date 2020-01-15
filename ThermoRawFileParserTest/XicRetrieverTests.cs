@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using ThermoRawFileParser.XIC;
 
 namespace ThermoRawFileParserTest
 {
@@ -9,6 +10,7 @@ namespace ThermoRawFileParserTest
         public void testXicRetrieve()
         {
             
+            //XicRetriever.RetrieveXic();
         }
         
         
