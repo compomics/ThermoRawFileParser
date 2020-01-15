@@ -44,6 +44,9 @@ namespace ThermoRawFileParser
         {
             var help = false;
             string rawFilePath = null;
+            string outputFile = null;
+            string outputDirectory = null;
+            boolean base64 = false;
             
             var optionSet = new OptionSet
             {
@@ -54,6 +57,21 @@ namespace ThermoRawFileParser
                 {
                     "i=|input=", "The raw file input (Required).",
                     v => rawFilePath = v
+                },
+                {
+                    "o=|output=",
+                    "The output directory. Specify this or an output file -b. Specifying neither writes to the input directory.",
+                    v => outputDirectory = v
+                },
+                {
+                    "b=|output_file",
+                    "The output file. Specify this or an output directory -o. Specifying neither writes to the input directory.",
+                    v => outputFile = v
+                },
+                {
+                    "s|base64",
+                    "Encodes the .",
+                    v => base64 = v != null
                 }
             };
                 
