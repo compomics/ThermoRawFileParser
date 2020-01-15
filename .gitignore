@@ -3,4 +3,5 @@ bin/
 obj/
 *.log
 ThermoRawFileParser.sln.DotSettings.user
+.vs/
 

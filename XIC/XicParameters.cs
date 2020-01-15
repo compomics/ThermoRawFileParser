@@ -37,5 +37,6 @@ namespace ThermoRawFileParser.XIC
             printJsonExample = copy.printJsonExample;
             base64 = copy.base64;
         }
+        
     }
 }
