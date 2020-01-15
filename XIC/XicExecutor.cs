@@ -20,7 +20,6 @@ namespace ThermoRawFileParser.XIC
                 //do stuff
                 XicData dataInstance = new XicData(data);
                 XicRetriever.RetrieveXic(file, parameters.base64, dataInstance);
-                // edit filename
                 string directory;
                 // if outputDirectory has been defined, put output there.
                 if (parameters.outputDirectory!=null)
@@ -32,7 +31,7 @@ namespace ThermoRawFileParser.XIC
                 {
                     directory = Path.GetDirectoryName(file);
                 }
-                string outputFileName = directory + Path.GetFileNameWithoutExtension(file) + ".JSON";
+                string outputFileName = Path.Combine(directory, Path.GetFileNameWithoutExtension(file))+".JSON";
                 
                 OutputXicData(dataInstance, outputFileName);
 

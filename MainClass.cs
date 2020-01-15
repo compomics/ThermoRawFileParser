@@ -114,20 +114,19 @@ namespace ThermoRawFileParser
                     return;
                 }
                 
-                
-                if (singleFile == null)
-                {
-                    throw new OptionException(
-                        "specify an input file or an input directory",
-                        "-i, --input or -d, --input_directory");
-                }
-                
 
                 if (singleFile != null && !File.Exists(singleFile))
                 {
                     throw new OptionException(
                         "specify a valid RAW file location",
                         "-i, --input");
+                }
+
+                if (fileDirectory != null && !Directory.Exists(fileDirectory))
+                {
+                    throw new OptionException(
+                        "specify a valid input directory",
+                        "-d, --input_directory");
                 }
                 
                 
@@ -147,7 +146,7 @@ namespace ThermoRawFileParser
                 }
                 
                 
-                if (fileDirectory != null && !File.Exists(fileDirectory))
+                if (parameters.outputDirectory != null && !File.Exists(parameters.outputDirectory))
                 {
                     throw new OptionException(
                         "specify a valid output location",
@@ -163,19 +162,17 @@ namespace ThermoRawFileParser
                 
                 if (singleFile != null)
                 {
-                    Console.WriteLine(Path.GetFullPath(singleFile));
-                    //parameters.rawFileList.Add(singleFile);
+                    parameters.rawFileList.Add(Path.GetFullPath(singleFile));
                 }
                 else 
                 {
-                    /*
-                    DirectoryInfo d = new DirectoryInfo(@"D:\Test");//Assuming Test is your Folder
-                    FileInfo[] Files = d.GetFiles("*.txt"); //Getting Text files
-                    string str = "";
+                    
+                    DirectoryInfo d = new DirectoryInfo(Path.GetFullPath(fileDirectory));
+                    FileInfo[] Files = d.GetFiles("*", SearchOption.TopDirectoryOnly).Where(f=>f.Extension.ToLower() == ".raw").ToArray<FileInfo>();
                     foreach(FileInfo file in Files)
                     {
-                        parameters.rawFileList.Add(file.Name);
-                    }*/
+                        parameters.rawFileList.Add(Path.GetFullPath(file.Name));
+                    }
                 }
             }    
             catch (OptionException optionException)
@@ -202,8 +199,8 @@ namespace ThermoRawFileParser
             {
                 
                 // execute the xic commands
-                //XicExecutor executor = new XicExecutor(parameters);
-                //exitCode = executor.run();
+                XicExecutor executor = new XicExecutor(parameters);
+                exitCode = executor.run();
 
             }
             catch (Exception ex)

@@ -12,16 +12,16 @@ namespace ThermoRawFileParser.XIC
     {
         public static XicData ParseJSON(string jsonPath)
         {
-            JSONInput jsonIn;
+            List<JSONInputUnit> jsonIn;
             XicData data = new XicData();
             using (StreamReader sr = new StreamReader(jsonPath))
             {
-                jsonIn = JsonConvert.DeserializeObject<JSONInput>(sr.ReadToEnd());
+                jsonIn = JsonConvert.DeserializeObject<List<JSONInputUnit>>(sr.ReadToEnd());
             }
 
-            foreach (JSONInputUnit xic in jsonIn.queries)
+            foreach (JSONInputUnit xic in jsonIn)
             {
-                data.content.Add(new XicUnit(xic.MzStart, xic.MzEnd, xic.RtStart, xic.RtEnd));
+                if (xic.MzStart != 0 && xic.MzEnd != 0) data.content.Add(new XicUnit(xic.MzStart, xic.MzEnd, xic.RtStart, xic.RtEnd));
             }
 
             return data;
