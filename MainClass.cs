@@ -46,6 +46,8 @@ namespace ThermoRawFileParser
         public static void XicParametersParsing(string[] args)
         {
             XicParameters parameters = new XicParameters();
+            string singleFile = null;
+            string fileDirectory = null;
             
             
             var optionSet = new OptionSet
@@ -56,12 +58,12 @@ namespace ThermoRawFileParser
                 },
                 {
                     "i=|input=", "The raw file input (Required).",
-                    v => parameters.rawFilePath = v
+                    v => singleFile = v
                 },
                 {
                     "d=|input_directory=",
                     "The directory containing the raw files (Required). Specify this or an input raw file -i.",
-                    v => parameters.rawDirectoryPath = v
+                    v => fileDirectory = v
                 },
                 {
                     "j=|json=",
@@ -113,7 +115,7 @@ namespace ThermoRawFileParser
                 }
                 
                 
-                if (parameters.rawFilePath == null)
+                if (singleFile == null)
                 {
                     throw new OptionException(
                         "specify an input file or an input directory",
@@ -121,18 +123,11 @@ namespace ThermoRawFileParser
                 }
                 
 
-                if (parameters.rawFilePath != null && !File.Exists(parameters.rawFilePath))
+                if (singleFile != null && !File.Exists(singleFile))
                 {
                     throw new OptionException(
                         "specify a valid RAW file location",
                         "-i, --input");
-                }
-                
-                if ((parameters.rawFilePath == null && parameters.rawDirectoryPath == null) || (parameters.rawFilePath != null && parameters.rawDirectoryPath != null))
-                {
-                    throw new OptionException(
-                        "specify either an input file or an input directory",
-                        "-i, --input xor -d, --input_directory");
                 }
                 
                 
@@ -152,11 +147,18 @@ namespace ThermoRawFileParser
                 }
                 
                 
-                if (parameters.rawDirectoryPath != null && !File.Exists(parameters.rawDirectoryPath))
+                if (fileDirectory != null && !File.Exists(fileDirectory))
                 {
                     throw new OptionException(
                         "specify a valid output location",
                         "-o, --output");
+                }
+                
+                if ((singleFile == null && fileDirectory == null) || (singleFile != null && fileDirectory != null))
+                {
+                    throw new OptionException(
+                        "specify either an input file or an input directory",
+                        "-i, --input xor -d, --input_directory");
                 }
                 
                 
