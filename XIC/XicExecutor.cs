@@ -15,10 +15,26 @@ namespace ThermoRawFileParser.XIC
         }
 
         public int run(){
-            foreach (var file in parameters.rawFileList)
+            foreach (string file in parameters.rawFileList)
             {
                 //do stuff
-                XicRetriever.RetrieveXic()
+                XicData dataInstance = new XicData(data);
+                XicRetriever.RetrieveXic(file, parameters.base64, dataInstance);
+                // edit filename
+                string directory;
+                // if outputDirectory has been defined, put output there.
+                if (parameters.outputDirectory!=null)
+                {
+                    directory = parameters.outputDirectory;
+                }
+                // otherwise put output files into the same directory as the raw file input
+                else
+                {
+                    directory = Path.GetDirectoryName(file);
+                }
+                string outputFileName = directory + Path.GetFileNameWithoutExtension(file) + ".JSON";
+                
+                OutputXicData(dataInstance, outputFileName);
             }
             return 0;
         }
@@ -27,11 +43,9 @@ namespace ThermoRawFileParser.XIC
             
         }
         
-        public void OutputXicData(){
-            string OutputFileName = parameters.outputFileName;
-            string outputString = JsonConvert.SerializeObject(data);
-
-            File.WriteAllText(OutputFileName, outputString);
+        public void OutputXicData(XicData outputData, string outputFileName){
+            string outputString = JsonConvert.SerializeObject(outputData);
+            File.WriteAllText(outputFileName, outputString);
         }
 
         public double PepseqToMass(String pep_seq){
