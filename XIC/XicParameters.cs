@@ -6,8 +6,7 @@ namespace ThermoRawFileParser.XIC
     {
         public bool help { get; set; }
         public string rawFilePath { get; set; }
-        public string jsonFilePath { get; set; }
-        public string rawDirectoryPath { get; set; }
+        public ArrayList jsonFileList { get; set; }
         public string outputDirectory { get; set; }
         public bool printJsonExample { get; set; }
         public string outputFileName { get; set; }
@@ -17,9 +16,8 @@ namespace ThermoRawFileParser.XIC
         public XicParameters()
         {
             help = false;
-            rawFilePath = null;
+            rawFileList = new ArrayList();
             jsonFilePath = null;
-            rawDirectoryPath = null;
             outputDirectory = null;
             printJsonExample = false;
             outputFileName = null;
@@ -30,9 +28,12 @@ namespace ThermoRawFileParser.XIC
         public XicParameters(XicParameters copy)
         {
             help = copy.help;
-            rawFilePath = copy.rawFilePath;
+            rawFileList = new ArrayList();
+            foreach (string fileName : copy.rawFileList)
+            {
+                rawFileList.Add(fileName);
+            }
             jsonFilePath = copy.jsonFilePath;
-            rawDirectoryPath = copy.rawDirectoryPath;
             outputDirectory = copy.outputDirectory;
             printJsonExample = copy.printJsonExample;
             outputFileName = copy.outputFileName;
