@@ -16,6 +16,17 @@ namespace ThermoRawFileParser.XIC
 
         public XicMeta()
         {
+            MzStart = -1;
+            MzEnd = -1;
+            RtStart = -1;
+            RtEnd = -1;
+        }
+        
+        public XicMeta(XicMeta copy){
+            MzStart = copy.MzStart;
+            MzEnd = copy.MzEnd;
+            RtStart = copy.RtStart;
+            RtEnd = copy.RtEnd;
         }
     }
 }

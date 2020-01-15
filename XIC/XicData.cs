@@ -14,5 +14,16 @@ namespace ThermoRawFileParser.XIC
 
             content = new List<XicUnit>();
         }
+        
+        public XicData(XicData copy){
+            
+            outputmeta = new XicOutputMeta(copy.outputmeta);
+
+            content = new List<XicUnit>();
+            foreach (XicUnit unit in copy.content)
+            {
+                content.Add(new XicUnit(unit));
+            }
+        }
     }
 }

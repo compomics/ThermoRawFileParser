@@ -17,5 +17,11 @@ namespace ThermoRawFileParser.XIC
             base64 = false;
             timeunit = String.Empty;
         }
+        
+        public XicOutputMeta(XicOutputMeta copy)
+        {
+            base64 = copy.base64;
+            timeunit = copy.timeunit;
+        }
     }
 }
