@@ -1,12 +1,13 @@
 using System;
+using System.Collections;
 
 namespace ThermoRawFileParser.XIC
 {
     public class XicParameters
     {
         public bool help { get; set; }
-        public string rawFilePath { get; set; }
-        public ArrayList jsonFileList { get; set; }
+        public ArrayList rawFileList { get; set; }
+        public string jsonFilePath { get; set; }
         public string outputDirectory { get; set; }
         public bool printJsonExample { get; set; }
         public string outputFileName { get; set; }
@@ -29,7 +30,7 @@ namespace ThermoRawFileParser.XIC
         {
             help = copy.help;
             rawFileList = new ArrayList();
-            foreach (string fileName : copy.rawFileList)
+            foreach (string fileName in copy.rawFileList)
             {
                 rawFileList.Add(fileName);
             }

@@ -58,7 +58,7 @@ namespace ThermoRawFileParser
                 },
                 {
                     "i=|input=", "The raw file input (Required).",
-                    v => parameters.rawFilePath = v
+                    v => singleFile = v
                 },
                 {
                     "d=|input_directory=",
@@ -68,7 +68,7 @@ namespace ThermoRawFileParser
                 {
                     "j=|json=",
                     "The json input file (Required).",
-                    v => parameters.singleFile = v
+                    v => parameters.jsonFilePath = v
                 },
                 {
                     "p|print_example",
