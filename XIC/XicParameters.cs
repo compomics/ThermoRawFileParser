@@ -1,10 +1,12 @@
+using System;
+
 namespace ThermoRawFileParser.XIC
 {
     public class XicParameters
     {
         public double Low { get; set; }
         public double High { get; set; }
-        
+
         public bool help { get; set; }
         public string rawFilePath { get; set; }
         public string jsonFilePath { get; set; }
@@ -13,10 +15,10 @@ namespace ThermoRawFileParser.XIC
         public bool printJsonExample { get; set; }
         public string outputFileName { get; set; }
         public bool base64 { get; set; }
-        
-        
-        
-        public XicParameters(){
+
+
+        public XicParameters()
+        {
             help = false;
             rawFilePath = null;
             jsonFilePath = null;
@@ -26,9 +28,10 @@ namespace ThermoRawFileParser.XIC
             outputFileName = null;
             base64 = false;
         }
-        
-        
-        public XicParameters(XicParameters copy){
+
+
+        public XicParameters(XicParameters copy)
+        {
             help = copy.help;
             rawFilePath = copy.rawFilePath;
             jsonFilePath = copy.jsonFilePath;
@@ -37,6 +40,5 @@ namespace ThermoRawFileParser.XIC
             printJsonExample = copy.printJsonExample;
             base64 = copy.base64;
         }
-        
     }
 }

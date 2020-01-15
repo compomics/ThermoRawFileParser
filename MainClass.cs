@@ -28,6 +28,8 @@ namespace ThermoRawFileParser
                         break;
                         
                     // if we want more subcommands, we can introduce here different cases
+                    // case "subdomain whatever": break;
+                        
                     default:
                         RegularParametersParsing(args);
                         break;

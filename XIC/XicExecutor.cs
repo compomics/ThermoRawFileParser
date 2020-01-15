@@ -2,22 +2,28 @@ using System;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace ThermoRawFileParser
+namespace ThermoRawFileParser.XIC
 {
     public class XicExecutor
     {
-        
-        
-        
-        
-        public void RetrieveXicData(){
-            
+        public XicParameters parameters;
+        public XicData data;
+
+
+        public void RetrieveXicData()
+        {
         }
-        
-        public void OutputXicData(XicData data, XicParameters parameters){
+
+        public void OutputXicData()
+        {
             string OutputFileName = parameters.outputFileName;
             string outputString = JsonConvert.SerializeObject(data);
             File.WriteAllText(OutputFileName, outputString);
+        }
+
+        public double PepseqToMass(String pep_seq)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -140,7 +140,10 @@
     <Compile Include="XIC\XicData.cs" />
     <Compile Include="XIC\XicExecutor.cs" />
     <Compile Include="XIC\XicParameters.cs" />
+    <Compile Include="XIC\XicMeta.cs" />
     <Compile Include="XIC\XicRetriever.cs" />
+    <Compile Include="XIC\XicUnit.cs" />
+    <Compile Include="XIC\XicOutputMeta.cs" />
     <Compile Include="Writer\ISpectrumWriter.cs" />
     <Compile Include="Writer\Metadata.cs" />
     <Compile Include="Writer\MetadataWriter.cs" />
