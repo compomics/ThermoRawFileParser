@@ -18,6 +18,11 @@ namespace ThermoRawFileParser
             string OutputFileName = parameters.outputFileName;
             string outputString = JsonConvert.SerializeObject(data);
             File.WriteAllText(OutputFileName, outputString);
+        
+        }
+
+        public double PepseqToMass(String pep_seq){
+            throw new NotImplementedException();
         }
     }
 }
