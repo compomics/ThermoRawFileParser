@@ -137,6 +137,9 @@
     <Compile Include="RawFileParserException.cs" />
     <Compile Include="RawFileParser.cs" />
     <Compile Include="Util\LimitedSizeDictionary.cs" />
+    <Compile Include="XIC\XicData.cs" />
+    <Compile Include="XIC\XicExecutor.cs" />
+    <Compile Include="XIC\XicParameters.cs" />
     <Compile Include="Writer\ISpectrumWriter.cs" />
     <Compile Include="Writer\Metadata.cs" />
     <Compile Include="Writer\MetadataWriter.cs" />

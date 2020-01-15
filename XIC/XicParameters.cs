@@ -12,7 +12,8 @@ namespace ThermoRawFileParser
         public string jsonFilePath { get; set; }
         public string rawDirectoryPath { get; set; }
         public string outputDirectory { get; set; }
-        public string printJsonExample { get; set; }
+        public bool printJsonExample { get; set; }
+        public string outputFileName { get; set; }
         public bool base64 { get; set; }
         
         
@@ -24,6 +25,7 @@ namespace ThermoRawFileParser
             rawDirectoryPath = null;
             outputDirectory = null;
             printJsonExample = false;
+            outputFileName = null;
             base64 = false;
         }
         
