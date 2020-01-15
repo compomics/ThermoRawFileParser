@@ -103,6 +103,15 @@ namespace ThermoRawFileParser
                     return;
                 }
                 
+                if (parameters.printJsonExample)
+                {
+                    
+                    string example_json = "[\n  {\n    \"mz\":673.363,\n    \"tolerance\":10,\n    \"tolerance_unit\": \"ppm\",\n  },\n  {\n    \"mz\":867.345,\n    \"tolerance\": 0.02,\n    \"tolerance_unit\": \"da\",\n    \"rt_start\":87.56,\n    \"rt_end\":99.56\n  }\n]";
+                    
+                    Console.WriteLine(example_json);
+                    return;
+                }
+                
                 
                 if (parameters.rawFilePath == null)
                 {
@@ -176,10 +185,9 @@ namespace ThermoRawFileParser
             {
                 
                 // execute the xic commands
-                new XicExecutor(parameters);
-                Console.WriteLine("Our awesome xic command was executed successfully :-)");
+                XicExecutor executor = new XicExecutor(parameters);
+                exitCode = executor.run();
 
-                exitCode = 0;
             }
             catch (Exception ex)
             {
