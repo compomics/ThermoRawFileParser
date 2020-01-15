@@ -8,7 +8,7 @@ namespace ThermoRawFileParser.XIC
 {
     public class XicUnit
     {
-        public XicMeta Meta {get; set;}
+        public XicMeta Meta { get; set; }
         public object X { get; set; }
         public object Y { get; set; }
     }

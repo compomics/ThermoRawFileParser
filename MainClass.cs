@@ -5,6 +5,7 @@ using log4net.Core;
 using Mono.Options;
 using ThermoFisher.CommonCore.Data;
 using System.Linq;
+using ThermoRawFileParser.XIC;
 
 namespace ThermoRawFileParser
 {
