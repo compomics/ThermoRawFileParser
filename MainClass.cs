@@ -185,10 +185,9 @@ namespace ThermoRawFileParser
             {
                 
                 // execute the xic commands
-                new XicExecutor(parameters);
-                Console.WriteLine("Our awesome xic command was executed successfully :-)");
+                XicExecutor executor = new XicExecutor(parameters);
+                exitCode = executor.run();
 
-                exitCode = 0;
             }
             catch (Exception ex)
             {
