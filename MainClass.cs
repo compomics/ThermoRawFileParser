@@ -92,6 +92,7 @@ namespace ThermoRawFileParser
                     throw new OptionException("unexpected extra arguments", null);
                 }
 
+                
                 if (xicParameters.help)
                 {
                     ShowHelp("usage is (use -option=value for the optional arguments):", null,
@@ -99,12 +100,14 @@ namespace ThermoRawFileParser
                     return;
                 }
                 
+                
                 if (xicParameters.rawFilePath == null)
                 {
                     throw new OptionException(
                         "specify an input file or an input directory",
                         "-i, --input or -d, --input_directory");
                 }
+                
 
                 if (xicParameters.rawFilePath != null && !File.Exists(xicParameters.rawFilePath))
                 {
@@ -113,21 +116,36 @@ namespace ThermoRawFileParser
                         "-i, --input");
                 }
                 
-                if (xicParameters.rawFilePath == null)
+                if ((xicParameters.rawFilePath == null && xicParameters.rawDirectoryPath == null) || (xicParameters.rawFilePath != null && xicParameters.rawDirectoryPath != null))
                 {
                     throw new OptionException(
-                        "specify an input file or an input directory",
-                        "-i, --input or -d, --input_directory");
+                        "specify either an input file or an input directory",
+                        "-i, --input xor -d, --input_directory");
                 }
+                
+                
+                if (xicParameters.jsonFilePath == null)
+                {
+                    throw new OptionException(
+                        "specify an json input file. If you are not sure about the structure of the json file, use -p for printing an examplarily json input file",
+                        "-j, --json");
+                }
+                
 
-                if (xicParameters.rawFilePath != null && !File.Exists(xicParameters.rawFilePath))
+                if (xicParameters.jsonFilePath != null && !File.Exists(xicParameters.jsonFilePath))
                 {
                     throw new OptionException(
-                        "specify a valid RAW file location",
-                        "-i, --input");
+                        "specify a valid json file location",
+                        "-j, --json");
                 }
                 
                 
+                if (xicParameters.rawDirectoryPath != null && !File.Exists(xicParameters.rawDirectoryPath))
+                {
+                    throw new OptionException(
+                        "specify a valid output location",
+                        "-o, --output");
+                }
                 
                 
             }    
