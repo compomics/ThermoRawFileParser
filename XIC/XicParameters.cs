@@ -39,5 +39,6 @@ namespace ThermoRawFileParser
             printJsonExample = copy.printJsonExample;
             base64 = copy.base64;
         }
+        
     }
 }
