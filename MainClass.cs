@@ -161,7 +161,14 @@ namespace ThermoRawFileParser
                         "-i, --input xor -d, --input_directory");
                 }
                 
-                
+                if (singleFile != null)
+                {
+                    parameters.rawFileList.Add(singleFile);
+                }
+                else 
+                {
+                    
+                }
             }    
             catch (OptionException optionException)
             {
