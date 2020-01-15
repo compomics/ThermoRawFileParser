@@ -147,6 +147,7 @@
     <Compile Include="Writer\ParquetSpectrumWriter.cs" />
     <Compile Include="Writer\S3Loader.cs" />
     <Compile Include="Writer\SpectrumWriter.cs" />
+    <Compile Include="XIC\ExampleCode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
