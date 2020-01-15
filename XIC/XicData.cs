@@ -8,7 +8,8 @@ namespace ThermoRawFileParser.XIC
         public XicOutputMeta outputmeta { get; set; }
         public List<XicUnit> content { get; set; }
 
-        public XicData(){
+        public XicData()
+        {
             outputmeta = new XicOutputMeta();
 
             content = new List<XicUnit>();

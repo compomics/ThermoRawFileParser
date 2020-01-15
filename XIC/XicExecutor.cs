@@ -20,12 +20,12 @@ namespace ThermoRawFileParser.XIC
         public void OutputXicData(){
             string OutputFileName = _parameters.outputFileName;
             string outputString = JsonConvert.SerializeObject(_data);
+
             File.WriteAllText(OutputFileName, outputString);
-        
         }
 
-
         public double PepseqToMass(String pep_seq){
+
             throw new NotImplementedException();
         }
     }

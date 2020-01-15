@@ -5,6 +5,7 @@ using log4net.Core;
 using Mono.Options;
 using ThermoFisher.CommonCore.Data;
 using System.Linq;
+using ThermoRawFileParser.XIC;
 
 namespace ThermoRawFileParser
 {
@@ -27,6 +28,8 @@ namespace ThermoRawFileParser
                         break;
                         
                     // if we want more subcommands, we can introduce here different cases
+                    // case "subdomain whatever": break;
+                        
                     default:
                         RegularParametersParsing(args);
                         break;

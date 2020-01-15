@@ -15,6 +15,7 @@ namespace ThermoRawFileParser.XIC
 
 
         public XicMeta()
-        { }
+        {
+        }
     }
 }
