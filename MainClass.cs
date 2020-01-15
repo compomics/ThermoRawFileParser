@@ -63,12 +63,12 @@ namespace ThermoRawFileParser
                 {
                     "j=|json=",
                     "The json input file (Required).",
-                    v => xicParameters.printJsonExample = v
+                    v => xicParameters.jsonFilePath = v
                 },
                 {
-                    "p=|print_example=",
+                    "p|print_example",
                     "Printing an examplarily json input file.",
-                    v => xicParameters.printJsonExample = v
+                    v => xicParameters.printJsonExample = v != null
                 },
                 {
                     "o=|output=",
@@ -138,7 +138,7 @@ namespace ThermoRawFileParser
             }
             catch (ArgumentNullException argumentNullException)
             {
-                if (help)
+                if (xicParameters.help)
                 {
                     ShowHelp("usage is (use -option=value for the optional arguments):", null,
                         optionSet);
