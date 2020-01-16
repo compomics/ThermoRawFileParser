@@ -88,6 +88,11 @@ namespace ThermoRawFileParser
                     "b|base64",
                     "Encodes the content of the xic vectors as base 64 encoded string.",
                     v => parameters.base64 = v != null
+                },
+                {
+                    "s|stdout",
+                    "Pipes the output into standard output. Logging is being turned off",
+                    v => parameters.stdout = v != null
                 }
             };
 

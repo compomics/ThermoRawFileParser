@@ -20,31 +20,40 @@ namespace ThermoRawFileParser.XIC
                 //do stuff
                 XicData dataInstance = new XicData(data);
                 XicRetriever.RetrieveXic(file, parameters.base64, dataInstance);
-                string directory;
-                // if outputDirectory has been defined, put output there.
-                if (parameters.outputDirectory!=null)
+                
+                if (parameters.stdout)
                 {
-                    directory = parameters.outputDirectory;
+                    StdOutputXicData(dataInstance);
                 }
-                // otherwise put output files into the same directory as the raw file input
                 else
                 {
-                    directory = Path.GetDirectoryName(file);
+                    string directory;
+                    // if outputDirectory has been defined, put output there.
+                    if (parameters.outputDirectory!=null)
+                    {
+                        directory = parameters.outputDirectory;
+                    }
+                    // otherwise put output files into the same directory as the raw file input
+                    else
+                    {
+                        directory = Path.GetDirectoryName(file);
+                    }
+                    string outputFileName = Path.Combine(directory, Path.GetFileNameWithoutExtension(file) + ".JSON");
+                    OutputXicData(dataInstance, outputFileName);
                 }
-                string outputFileName = Path.Combine(directory, Path.GetFileNameWithoutExtension(file))+".JSON";
-                
-                OutputXicData(dataInstance, outputFileName);
 
             }
             return 0;
         }
         
-        public void RetrieveXicData(){
-            
+        public void StdOutputXicData(XicData outputData){
+            string outputString = JsonConvert.SerializeObject(outputData);
+            Console.WriteLine(outputString);
         }
         
+        
+        
         public void OutputXicData(XicData outputData, string outputFileName){
-            Console.WriteLine(outputFileName);
             string outputString = JsonConvert.SerializeObject(outputData);
             File.WriteAllText(outputFileName, outputString);
         }
