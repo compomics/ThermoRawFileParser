@@ -53,7 +53,7 @@ namespace ThermoRawFileParser.XIC
                 }
                 else
                 {
-                    throw new Exception(String.Format("Unparsable JSON element:\n{0}", JsonConvert.SerializeObject(xic)));
+                    throw new Exception(String.Format("Unparsable JSON element:\n{0}", JsonConvert.SerializeObject(xic, Formatting.Indented)));
                 }
             }
 
