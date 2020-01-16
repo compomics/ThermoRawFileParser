@@ -18,9 +18,9 @@ namespace ThermoRawFileParser.Query
         public QueryParameters()
         {
             help = false;
-            rawFilePath = "";
+            rawFilePath = null;
             scans = "";
-            outputFile = "";
+            outputFile = null;
             noPeakPicking = false;
             scanNumbers = new HashSet<int>();
             stdout = false;
