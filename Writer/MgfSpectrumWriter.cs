@@ -82,7 +82,7 @@ namespace ThermoRawFileParser.Writer
                             {
                                 reaction = scanEvent.GetReaction(1);
                             }
-                            catch (ArgumentOutOfRangeException exception)
+                            catch (ArgumentOutOfRangeException)
                             {
                                 Log.Warn("No reaction found for scan " + scanNumber);
                             }
