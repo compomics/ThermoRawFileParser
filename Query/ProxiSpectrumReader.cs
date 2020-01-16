@@ -1,26 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using log4net;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
-using ThermoRawFileParser.Query;
+using ThermoRawFileParser.Writer;
 
-namespace ThermoRawFileParser.Writer
+namespace ThermoRawFileParser.Query
 {
     public class ProxiSpectrumReader
     {
         private static readonly ILog Log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private const string PositivePolarity = "+";
-        private const string NegativePolarity = "-";
-
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
-        private int _precursorScanNumber;
         private QueryParameters queryParameters;
 
         public ProxiSpectrumReader(QueryParameters _queryParameters)
@@ -28,7 +23,6 @@ namespace ThermoRawFileParser.Writer
             this.queryParameters = _queryParameters;
         }
 
-        /// <inheritdoc />       
         public List<PROXISpectrum> Retrieve()
         {
             List<PROXISpectrum> resultList = new List<PROXISpectrum>();
@@ -58,7 +52,6 @@ namespace ThermoRawFileParser.Writer
                 // selected instrument to the MS instrument, first instance of it
                 rawFile.SelectInstrument(Device.MS, 1);
 
-                var lastScanProgress = 0;
                 foreach (int scanNumber in queryParameters.scanNumbers)
                 {
                     Log.Info("Processing scan " + scanNumber);
@@ -82,14 +75,13 @@ namespace ThermoRawFileParser.Writer
                     {
                         case MSOrderType.Ms:
                             // Keep track of scan number for precursor reference
-                            _precursorScanNumber = scanNumber;
                             break;
                         case MSOrderType.Ms2:
                             try
                             {
                                 reaction = scanEvent.GetReaction(0);
                             }
-                            catch (ArgumentOutOfRangeException exception)
+                            catch (ArgumentOutOfRangeException)
                             {
                                 Log.Warn("No reaction found for scan " + scanNumber);
                             }
@@ -101,7 +93,7 @@ namespace ThermoRawFileParser.Writer
                             {
                                 reaction = scanEvent.GetReaction(1);
                             }
-                            catch (ArgumentOutOfRangeException exception)
+                            catch (ArgumentOutOfRangeException)
                             {
                                 Log.Warn("No reaction found for scan " + scanNumber);
                             }
@@ -151,18 +143,15 @@ namespace ThermoRawFileParser.Writer
                             }
 
                             // charge
-                            if (charge != null)
+                        {
+                            // Scan polarity            
+                            if (scanFilter.Polarity == PolarityType.Negative)
                             {
-                                // Scan polarity            
-                                var polarity = PositivePolarity;
-                                if (scanFilter.Polarity == PolarityType.Negative)
-                                {
-                                    polarity = NegativePolarity;
-                                }
-
-                                proxiSpectrum.AddAttribute(accession: "MS:10000041", name: "charge state",
-                                    value: charge.ToString(CultureInfo.InvariantCulture));
                             }
+
+                            proxiSpectrum.AddAttribute(accession: "MS:10000041", name: "charge state",
+                                value: charge.ToString(CultureInfo.InvariantCulture));
+                        }
 
                             // write the filter string
                             proxiSpectrum.AddAttribute(accession: "MS:10000512", name: "filter string",

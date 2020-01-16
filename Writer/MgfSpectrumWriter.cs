@@ -17,7 +17,6 @@ namespace ThermoRawFileParser.Writer
         private const string NegativePolarity = "-";
 
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
-        private int _precursorScanNumber;
 
         public MgfSpectrumWriter(ParseInput parseInput) : base(parseInput)
         {
@@ -65,14 +64,13 @@ namespace ThermoRawFileParser.Writer
                     {
                         case MSOrderType.Ms:
                             // Keep track of scan number for precursor reference
-                            _precursorScanNumber = scanNumber;
                             break;
                         case MSOrderType.Ms2:
                             try
                             {
                                 reaction = scanEvent.GetReaction(0);
                             }
-                            catch (ArgumentOutOfRangeException exception)
+                            catch (ArgumentOutOfRangeException)
                             {
                                 Log.Warn("No reaction found for scan " + scanNumber);
                             }

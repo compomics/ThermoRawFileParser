@@ -1,20 +1,15 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using Mono.Options;
 using Newtonsoft.Json;
-using ThermoFisher.CommonCore.Data.Business;
 using ThermoRawFileParser.Writer;
 
 namespace ThermoRawFileParser.Query
 {
     public class QueryExecutor
     {
-        public QueryExecutor()
-        {
-        }
-
         public static int Run(QueryParameters parameters)
         {
             // parse the scans string
@@ -42,7 +37,7 @@ namespace ThermoRawFileParser.Query
                     outputFileName = Path.GetFullPath(parameters.rawFilePath);
                 }
                 string directory = Path.GetDirectoryName(outputFileName);
-                outputFileName = Path.Combine(directory, Path.GetFileNameWithoutExtension(outputFileName) + ".JSON");
+                outputFileName = Path.Combine(directory ?? throw new NoNullAllowedException(), Path.GetFileNameWithoutExtension(outputFileName) + ".JSON");
                 OutputQueryData(results, outputFileName);
             }
             return 0;
@@ -70,29 +65,29 @@ namespace ThermoRawFileParser.Query
             if (text.Length == 0) throw new OptionException("Scan ID string invalid, nothing specified", null);
             foreach (char c in text)
             {
-                int ic = (int) c;
-                if (!((ic == (int) ',') || (ic == (int) '-') || (ic == (int) ' ') || ('0' <= ic && ic <= '9')))
+                int ic = c;
+                if (!((ic == ',') || (ic == '-') || (ic == ' ') || ('0' <= ic && ic <= '9')))
                 {
                     throw new OptionException("Scan ID string contains invalid character", null);
                 }
             }
 
-            string[] tokens = text.Split(new char[] {','}, StringSplitOptions.None);
+            string[] tokens = text.Split(new[] {','}, StringSplitOptions.None);
 
             HashSet<int> container = new HashSet<int>();
 
             for (int i = 0; i < tokens.Length; ++i)
             {
                 if (tokens[i].Length == 0) throw new OptionException("Scan ID string has invalid format", null);
-                string[] rangeBoundaries = tokens[i].Split(new char[] {'-'}, StringSplitOptions.None);
+                string[] rangeBoundaries = tokens[i].Split(new[] {'-'}, StringSplitOptions.None);
                 if (rangeBoundaries.Length == 1)
                 {
-                    int rangeStart = 0;
+                    int rangeStart;
                     try
                     {
                         rangeStart = Convert.ToInt32(rangeBoundaries[0]);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         throw new OptionException("Scan ID string has invalid format", null);
                     }
@@ -101,14 +96,14 @@ namespace ThermoRawFileParser.Query
                 }
                 else if (rangeBoundaries.Length == 2)
                 {
-                    int rangeStart = 0;
-                    int rangeEnd = 0;
+                    int rangeStart;
+                    int rangeEnd;
                     try
                     {
                         rangeStart = Convert.ToInt32(rangeBoundaries[0]);
                         rangeEnd = Convert.ToInt32(rangeBoundaries[1]);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         throw new OptionException("Scan ID string has invalid format", null);
                     }
