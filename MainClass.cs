@@ -248,6 +248,7 @@ namespace ThermoRawFileParser
                     v => parameters.noPeakPicking = v != null
                 },
             };
+            QueryExecutor.Run(parameters); // add code to handle returns
         }
 
         private static void RegularParametersParsing(string[] args)

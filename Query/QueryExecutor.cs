@@ -13,8 +13,13 @@ namespace ThermoRawFileParser.Query
         {
             
         }
+        
+        public static int Run(QueryParameters parameters){
+            //do stuff
+            return 0;
+        }
 
-        public void OutputQueryData(string outputFileName, PROXISpectrum outputData)
+        public void OutputQueryData(string outputFileName, ArrayList outputData)
         {
             Console.WriteLine(outputFileName);
             string outputString = JsonConvert.SerializeObject(outputData);
