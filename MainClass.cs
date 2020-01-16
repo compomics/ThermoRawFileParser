@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.IO;
 using log4net;
 using log4net.Core;
@@ -479,7 +480,10 @@ namespace ThermoRawFileParser
 
                 if (help)
                 {
-                    ShowHelp("usage is (use -option=value for the optional arguments):", null,
+                    string helpmessage = String.Format("usage is {0} [subcommand] [options]\nsubcommand is xic|query\n",
+                        Assembly.GetExecutingAssembly().GetName().Name);
+                    ShowHelp(helpmessage +
+                        "(use -option=value for the optional arguments):", null,
                         optionSet);
                     return;
                 }
