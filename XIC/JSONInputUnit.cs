@@ -23,19 +23,41 @@ namespace ThermoRawFileParser.XIC
         [DefaultValue("")]
         public string Sequence { get; set; }
         [JsonProperty("tolerance", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(-1)] 
+        [DefaultValue(-1)]
         public double Tolerance { get; set; }
         [JsonProperty("tolerance_unit", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(-1)] 
+        [DefaultValue("")]
         public string ToleranceUnit { get; set; }
         [JsonProperty("charge", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue("")] 
+        [DefaultValue(-1)]
         public int Charge { get; set; }
         [JsonProperty("rt_start", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(-1)] 
+        [DefaultValue(-1)]
         public double RtStart { get; set; }
         [JsonProperty("rt_end", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(-1)] 
+        [DefaultValue(-1)]
         public double RtEnd { get; set; }
+
+        public bool HasMzRange()
+        {
+            return MzStart != -1 && MzEnd != -1;
+        }
+
+        public bool HasMzTol()
+        {
+            return Mz != -1 && Tolerance != -1 && ToleranceUnit != "";
+        }
+
+        public bool HasSequence()
+        {
+            return Sequence != "" && Charge != -1;
+        }
+
+        public bool IsAmbigous()
+        {
+            return (this.HasMzTol() && this.HasMzRange()) || 
+                (this.HasMzTol() && this.HasSequence()) || 
+                (this.HasMzRange() && this.HasSequence());
+        }
     }
 }
