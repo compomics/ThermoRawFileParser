@@ -29,7 +29,7 @@ namespace ThermoRawFileParser.XIC
         [DefaultValue(-1)] 
         public string ToleranceUnit { get; set; }
         [JsonProperty("charge", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(-1)] 
+        [DefaultValue("")] 
         public int Charge { get; set; }
         [JsonProperty("rt_start", DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(-1)] 

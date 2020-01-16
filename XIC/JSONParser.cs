@@ -30,6 +30,7 @@ namespace ThermoRawFileParser.XIC
                         case "amu": delta = xic.Tolerance; break;
                         case "mmu": delta = xic.Tolerance * 1e-3; break;
                         case "da": delta = xic.Tolerance; break;
+                        case "": delta = xic.Mz * xic.Tolerance * 1e-6; break;
                         default:
                             throw new Exception(String.Format("Cannot parse tolerance unit: {0}", xic.ToleranceUnit));
                     }
