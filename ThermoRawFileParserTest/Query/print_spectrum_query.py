@@ -29,8 +29,14 @@ for content in loaded_json:
         masses = content["mzs"]
         intens = content["intensities"]
 
-    plt.plot(masses, intens)
+    label = []
+    for attribute in content["attributes"]:
+        if attribute["accession"] == "MS:10003057": label.append("scan #%s" % attribute["value"])
+        elif attribute["accession"] == "MS:1000511": label.append("MS Level %s" % attribute["value"])
+    
+    plt.plot(masses, intens, label = ", ".join(label))
 
 fig.tight_layout()
+plt.legend(loc='upper right')
 plt.grid(True)
 plt.show()
