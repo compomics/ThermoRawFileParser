@@ -54,6 +54,10 @@ namespace ThermoRawFileParser.XIC
                 //var generator = new ChromatogramBatchGenerator();
                 //ParallelChromatogramFactory.FromRawData(generator, rawFile);
 
+                //update global metadata
+                xicData.outputmeta.base64 = base64;
+                xicData.outputmeta.timeunit = "minutes";
+
                 foreach (var xicUnit in xicData.content)
                 {
                     IChromatogramSettings settings;
