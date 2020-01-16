@@ -12,6 +12,7 @@ namespace ThermoRawFileParser.XIC
         public bool printJsonExample { get; set; }
         public string outputFileName { get; set; }
         public bool base64 { get; set; }
+        public bool stdout { get; set; }
 
 
         public XicParameters()
@@ -23,6 +24,7 @@ namespace ThermoRawFileParser.XIC
             printJsonExample = false;
             outputFileName = null;
             base64 = false;
+            stdout = false;
         }
 
 
@@ -39,6 +41,7 @@ namespace ThermoRawFileParser.XIC
             printJsonExample = copy.printJsonExample;
             outputFileName = copy.outputFileName;
             base64 = copy.base64;
+            stdout = copy.stdout;
         }
     }
 }
