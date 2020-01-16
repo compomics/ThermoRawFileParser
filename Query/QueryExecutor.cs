@@ -34,14 +34,15 @@ namespace ThermoRawFileParser.Query
                 // if outputFile has been defined, put output there.
                 if (parameters.outputFile != null)
                 {
-                    outputFileName = parameters.outputFile;
+                    outputFileName = Path.GetFullPath(parameters.outputFile);
                 }
                 // otherwise put output files into the same directory as the raw file input
                 else
                 {
-                    outputFileName = Path.GetDirectoryName(parameters.rawFilePath);
+                    outputFileName = Path.GetFullPath(parameters.rawFilePath);
                 }
-                outputFileName = Path.GetFileNameWithoutExtension(outputFileName) + ".JSON";
+                string directory = Path.GetDirectoryName(outputFileName);
+                outputFileName = Path.Combine(directory, Path.GetFileNameWithoutExtension(outputFileName) + ".JSON");
                 OutputQueryData(results, outputFileName);
             }
             return 0;
