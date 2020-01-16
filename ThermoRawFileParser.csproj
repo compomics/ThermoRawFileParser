@@ -134,6 +134,7 @@
     <Compile Include="ParseInput.cs" />
     <Compile Include="MainClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Query\PROXISpectrum.cs" />
     <Compile Include="Query\QueryParameters.cs" />
     <Compile Include="Query\QueryExecutor.cs" />
     <Compile Include="RawFileParserException.cs" />

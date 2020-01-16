@@ -19,5 +19,10 @@ namespace ThermoRawFileParser.Query
             intensities = new List<double>();
             attributes = new List<CVTerm>();
         }
+
+        public void AddAtribute(string accession, string cvLabel, string name, string value)
+        {
+            attributes.Add(new CVTerm(accession, cvLabel, name, value));
+        }
     }
 }
