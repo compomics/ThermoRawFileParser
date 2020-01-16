@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using Mono.Options;
+using Newtonsoft.Json;
 
 namespace ThermoRawFileParser.Query
 {
@@ -10,6 +12,13 @@ namespace ThermoRawFileParser.Query
         public QueryExecutor()
         {
             
+        }
+
+        public void OutputQueryData(string outputFileName, PROXISpectrum outputData)
+        {
+            Console.WriteLine(outputFileName);
+            string outputString = JsonConvert.SerializeObject(outputData);
+            File.WriteAllText(outputFileName, outputString);
         }
         
         
