@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace ThermoRawFileParser.Query
 {
@@ -25,7 +26,7 @@ namespace ThermoRawFileParser.Query
             
             string[] tokens = text.Split(new char[]{','}, StringSplitOptions.None);
             
-            HashSet<int> carbonCounts = new HashSet<int>();
+            HashSet<int> container = new HashSet<int>();
             
             for (int i = 0; i < tokens.Length; ++i)
             {
@@ -42,7 +43,7 @@ namespace ThermoRawFileParser.Query
                     {
                         return null;
                     }
-                    if (oddEven == 0 || (oddEven == 1 && (rangeStart % 2 == 1)) || (oddEven == 2 && (rangeStart % 2 == carbonCounts.Add(rangeStart);
+                    container.Add(rangeStart);
                 }
                 else if (rangeBoundaries.Length == 2)
                 {
@@ -59,12 +60,12 @@ namespace ThermoRawFileParser.Query
                     }
                     for (int l = rangeStart; l <= rangeEnd; ++l)
                     {
-                        carbonCounts.Add(l);
+                        container.Add(l);
                     }
                 }
                 else return null;
             }
-            return carbonCounts;
+            return container;
         }
     }
 }
