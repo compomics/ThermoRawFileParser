@@ -105,7 +105,7 @@ namespace ThermoRawFileParser.Writer
         /// <param name="reaction">the scan event reaction</param>
         /// <param name="monoisotopicMz">the monoisotopic m/z value</param>
         /// <param name="isolationWidth">the scan event reaction</param>
-        protected static double CalculateSelectedIonMz(IReaction reaction, double? monoisotopicMz,
+        public static double CalculateSelectedIonMz(IReaction reaction, double? monoisotopicMz,
             double? isolationWidth)
         {
             var selectedIonMz = reaction.PrecursorMass;
