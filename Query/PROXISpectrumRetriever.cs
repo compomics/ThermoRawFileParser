@@ -85,7 +85,7 @@ namespace ThermoRawFileParser.Writer
                        }
                        default:
                            proxiSpectrum.AddAttribute(accession:"MS:10003057",name:"scan number",value:scanNumber.ToString(CultureInfo.InvariantCulture));
-                           proxiSpectrum.AddAttribute(accession:"MS:10008015",name:"retention time",value:(time * 60).ToString(CultureInfo.InvariantCulture));
+                           proxiSpectrum.AddAttribute(accession:"MS:10000894",name:"retention time",value:(time * 60).ToString(CultureInfo.InvariantCulture));
 
                            // trailer extra data list
                            var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
@@ -119,7 +119,7 @@ namespace ThermoRawFileParser.Writer
                            {
                                var selectedIonMz =
                                    SpectrumWriter.CalculateSelectedIonMz(reaction, monoisotopicMz, isolationWidth);
-                               proxiSpectrum.AddAttribute(accession:"MS:10008014",name:"selected ion m/z",value:selectedIonMz.ToString(CultureInfo.InvariantCulture));
+                               proxiSpectrum.AddAttribute(accession:"MS:10000744",name:"selected ion m/z",value:selectedIonMz.ToString(CultureInfo.InvariantCulture));
                            }
 
                            // charge
@@ -136,7 +136,7 @@ namespace ThermoRawFileParser.Writer
                            }
 
                            // write the filter string
-                           proxiSpectrum.AddAttribute(accession:"MS:10008000",name:"filter string",value:scanEvent.ToString());
+                           proxiSpectrum.AddAttribute(accession:"MS:10000512",name:"filter string",value:scanEvent.ToString());
 
                            // Check if the scan has a centroid stream
                            if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||
