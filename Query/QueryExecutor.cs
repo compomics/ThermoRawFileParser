@@ -11,10 +11,14 @@ namespace ThermoRawFileParser.Query
     {
         public QueryExecutor()
         {
-            
         }
-        
-        public static int Run(QueryParameters parameters){
+
+        public static int Run(QueryParameters parameters)
+        {
+            // parse the scans string
+            HashSet<int> scanIds = ParseScanIds(parameters.scans);
+            parameters.scanNumbers = scanIds;
+
             //do stuff
             return 0;
         }
@@ -24,32 +28,31 @@ namespace ThermoRawFileParser.Query
             string outputString = JsonConvert.SerializeObject(outputData);
             Console.Write(outputString);
         }
-        
-        
-        public static HashSet<int> ParseScanIds(String text)
+
+        private static HashSet<int> ParseScanIds(string text)
         {
             if (text.Length == 0) throw new OptionException("Scan ID string invalid, nothing specified", null);
             foreach (char c in text)
             {
-                int ic = (int)c;
-                if (!((ic == (int)',') || (ic == (int)'-') || (ic == (int)' ') || ('0' <= ic && ic <= '9')))
+                int ic = (int) c;
+                if (!((ic == (int) ',') || (ic == (int) '-') || (ic == (int) ' ') || ('0' <= ic && ic <= '9')))
                 {
                     throw new OptionException("Scan ID string contains invalid character", null);
                 }
             }
-            
-            string[] tokens = text.Split(new char[]{','}, StringSplitOptions.None);
-            
+
+            string[] tokens = text.Split(new char[] {','}, StringSplitOptions.None);
+
             HashSet<int> container = new HashSet<int>();
-            
+
             for (int i = 0; i < tokens.Length; ++i)
             {
                 if (tokens[i].Length == 0) throw new OptionException("Scan ID string has invalid format", null);
-                string[] rangeBoundaries = tokens[i].Split(new char[]{'-'}, StringSplitOptions.None);
+                string[] rangeBoundaries = tokens[i].Split(new char[] {'-'}, StringSplitOptions.None);
                 if (rangeBoundaries.Length == 1)
                 {
                     int rangeStart = 0;
-                    try 
+                    try
                     {
                         rangeStart = Convert.ToInt32(rangeBoundaries[0]);
                     }
@@ -57,13 +60,14 @@ namespace ThermoRawFileParser.Query
                     {
                         throw new OptionException("Scan ID string has invalid format", null);
                     }
+
                     container.Add(rangeStart);
                 }
                 else if (rangeBoundaries.Length == 2)
                 {
                     int rangeStart = 0;
                     int rangeEnd = 0;
-                    try 
+                    try
                     {
                         rangeStart = Convert.ToInt32(rangeBoundaries[0]);
                         rangeEnd = Convert.ToInt32(rangeBoundaries[1]);
@@ -72,6 +76,7 @@ namespace ThermoRawFileParser.Query
                     {
                         throw new OptionException("Scan ID string has invalid format", null);
                     }
+
                     for (int l = rangeStart; l <= rangeEnd; ++l)
                     {
                         container.Add(l);
@@ -79,6 +84,7 @@ namespace ThermoRawFileParser.Query
                 }
                 else throw new OptionException("Scan ID string has invalid format", null);
             }
+
             return container;
         }
     }
