@@ -54,6 +54,9 @@ namespace ThermoRawFileParser.Query
                 // selected instrument to the MS instrument, first instance of it
                 rawFile.SelectInstrument(Device.MS, 1);
 
+                // Set a cvGroup number counter
+                int cvGroup = 1;
+
                 foreach (int scanNumber in queryParameters.scanNumbers)
                 {
                     var proxiSpectrum = new PROXISpectrum();
@@ -102,7 +105,7 @@ namespace ThermoRawFileParser.Query
                             default:
                                 proxiSpectrum.AddAttribute(accession: "MS:10003057", name: "scan number",
                                     value: scanNumber.ToString(CultureInfo.InvariantCulture));
-                                proxiSpectrum.AddAttribute(accession: "MS:10000894", name: "retention time",
+                                proxiSpectrum.AddAttribute(accession: "MS:10000016", name: "scan start time",
                                     value: (time * 60).ToString(CultureInfo.InvariantCulture));
                                 proxiSpectrum.AddAttribute(accession: "MS:1000511", name: "ms level",
                                     value: ((int) scanFilter.MSOrder).ToString(CultureInfo.InvariantCulture));
@@ -114,6 +117,15 @@ namespace ThermoRawFileParser.Query
                                 double? isolationWidth = null;
                                 for (var i = 0; i < trailerData.Length; i++)
                                 {
+                                    if (trailerData.Labels[i] == "Ion Injection Time (ms):")
+                                    {
+                                        proxiSpectrum.AddAttribute(accession: "MS:10000927", name: "ion injection time",
+                                            value: trailerData.Values[i], cvGroup: cvGroup.ToString());
+                                        proxiSpectrum.AddAttribute(accession: "UO:0000028", name: "millisecond",
+                                            cvGroup: cvGroup.ToString());
+                                        cvGroup++;
+                                    }
+
                                     if (trailerData.Labels[i] == "Charge State:")
                                     {
                                         charge = Convert.ToInt32(trailerData.Values[i]);
