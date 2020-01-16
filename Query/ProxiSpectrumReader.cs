@@ -206,11 +206,13 @@ namespace ThermoRawFileParser.Query
 
                                 if (isCentroid)
                                 {
-                                    proxiSpectrum.AddAttribute(accession: "MS:1000127", name: "centroid spectrum");
+                                    proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
+                                        value: "centroid spectrum", valueAccession: "MS:1000127");
                                 }
                                 else
                                 {
-                                    proxiSpectrum.AddAttribute(accession: "MS:1000128", name: "profile spectrum");
+                                    proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
+                                        value: "profile spectrum", valueAccession: "MS:1000128");
                                 }
 
                                 resultList.Add(proxiSpectrum);
