@@ -35,8 +35,8 @@ namespace ThermoRawFileParser
                     case "query":
                         SpectrumQueryParametersParsing(args.Skip(1).ToArray());
                         break;
-                        
-                        
+
+
                     default:
                         RegularParametersParsing(args);
                         break;
@@ -47,13 +47,13 @@ namespace ThermoRawFileParser
                 RegularParametersParsing(args);
             }
         }
-        
+
         private static void XicParametersParsing(string[] args)
         {
             XicParameters parameters = new XicParameters();
             string singleFile = null;
             string fileDirectory = null;
-            
+
             var optionSet = new OptionSet
             {
                 {
@@ -61,12 +61,12 @@ namespace ThermoRawFileParser
                     h => parameters.help = h != null
                 },
                 {
-                    "i=|input=", "The raw file input (Required).",
+                    "i=|input=", "The raw file input (Required). Specify this or an input directory -d",
                     v => singleFile = v
                 },
                 {
                     "d=|input_directory=",
-                    "The directory containing the raw files (Required). Specify this or an input raw file -i.",
+                    "The directory containing the raw files (Required). Specify this or an input file -i.",
                     v => fileDirectory = v
                 },
                 {
@@ -81,7 +81,7 @@ namespace ThermoRawFileParser
                 },
                 {
                     "o=|output=",
-                    "The output directory. Specify this or an output file -b. Specifying neither writes to the input directory.",
+                    "The output directory. If not specified, the output is written to the input directory",
                     v => parameters.outputDirectory = v
                 },
                 {
@@ -225,7 +225,6 @@ namespace ThermoRawFileParser
 
         private static void SpectrumQueryParametersParsing(string[] args)
         {
-            
             QueryParameters parameters = new QueryParameters();
             var optionSet = new OptionSet
             {
@@ -235,19 +234,117 @@ namespace ThermoRawFileParser
                 },
                 {
                     "i=|input=", "The raw file input (Required).",
-                    v => parameters.rawFile = v
+                    v => parameters.rawFilePath = v
                 },
                 {
                     "s=|scans=",
-                    "The scan ",
+                    "The scan numbers. e.g. '1-5,20,25-30'",
                     v => parameters.scans = v
+                },
+                {
+                    "b=|output_file",
+                    "The output file. Specifying none writes the output file to the input file parent directory.",
+                    v => parameters.outputFile = v
                 },
                 {
                     "p|noPeakPicking",
                     "Don't use the peak picking provided by the native Thermo library. By default peak picking is enabled.",
                     v => parameters.noPeakPicking = v != null
-                },
+                }
             };
+
+            try
+            {
+                // parse the command line
+                var extra = optionSet.Parse(args);
+
+                if (!extra.IsNullOrEmpty())
+                {
+                    throw new OptionException("unexpected extra arguments", null);
+                }
+
+                if (parameters.help)
+                {
+                    ShowHelp("usage is (use -option=value for the optional arguments):", null,
+                        optionSet);
+                    return;
+                }
+
+                if (parameters.rawFilePath == null)
+                {
+                    throw new OptionException(
+                        "specify an input file",
+                        "-i, --input ");
+                }
+
+                if (parameters.rawFilePath != null && !File.Exists(parameters.rawFilePath))
+                {
+                    throw new OptionException(
+                        "specify a valid RAW file location",
+                        "-i, --input");
+                }
+
+                if (parameters.scans.IsNullOrEmpty())
+                {
+                    throw new OptionException(
+                        "specify a valid scan range",
+                        "-s, --scans");
+                }
+                
+            }
+            catch (OptionException optionException)
+            {
+                ShowHelp("Error - usage is (use -option=value for the optional arguments):", optionException,
+                    optionSet);
+            }
+            catch (ArgumentNullException argumentNullException)
+            {
+                if (parameters.help)
+                {
+                    ShowHelp("usage is (use -option=value for the optional arguments):", null,
+                        optionSet);
+                }
+                else
+                {
+                    ShowHelp("Error - usage is (use -option=value for the optional arguments):", null,
+                        optionSet);
+                }
+            }
+            var queryExecutor = new QueryExecutor(parameters);
+            queryExecutor.run();
+            var exitCode = 1;
+            try
+            {
+                exitCode = 0;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Log.Error(!ex.Message.IsNullOrEmpty()
+                    ? ex.Message
+                    : "Attempting to write to an unauthorized location.");
+            }
+            catch (Amazon.S3.AmazonS3Exception ex)
+            {
+                Log.Error(!ex.Message.IsNullOrEmpty()
+                    ? "An Amazon S3 exception occured: " + ex.Message
+                    : "An Amazon S3 exception occured: " + ex);
+            }
+            catch (Exception ex)
+            {
+                if (ex is RawFileParserException)
+                {
+                    Log.Error(ex.Message);
+                }
+                else
+                {
+                    Log.Error("An unexpected error occured:");
+                    Log.Error(ex.ToString());
+                }
+            }
+            finally
+            {
+                Environment.Exit(exitCode);
+            }
         }
 
         private static void RegularParametersParsing(string[] args)
