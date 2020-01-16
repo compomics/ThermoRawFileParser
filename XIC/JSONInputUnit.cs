@@ -29,7 +29,7 @@ namespace ThermoRawFileParser.XIC
         [DefaultValue("")]
         public string ToleranceUnit { get; set; }
         [JsonProperty("charge", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(-1)]
+        [DefaultValue(1)]
         public int Charge { get; set; }
         [JsonProperty("rt_start", DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(-1)]
@@ -50,7 +50,7 @@ namespace ThermoRawFileParser.XIC
 
         public bool HasSequence()
         {
-            return Sequence != "" && Charge != -1;
+            return Sequence != "";
         }
 
         public bool IsAmbigous()

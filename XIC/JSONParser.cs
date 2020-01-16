@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using ThermoRawFileParser.Util;
 
 namespace ThermoRawFileParser.XIC
 {
@@ -23,6 +24,12 @@ namespace ThermoRawFileParser.XIC
             {
                 if (xic.IsAmbigous())
                     throw new Exception("The defenition of XIC is ambugous");
+
+                if (xic.HasSequence())
+                {
+                    Peptide p = new Peptide(xic.Sequence);
+                    xic.Mz = p.GetMz(xic.Charge);
+                }
 
                 if (xic.HasMzTol())
                 {
