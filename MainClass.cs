@@ -5,6 +5,7 @@ using log4net.Core;
 using Mono.Options;
 using ThermoFisher.CommonCore.Data;
 using System.Linq;
+using ThermoRawFileParser.Query;
 using ThermoRawFileParser.XIC;
 
 namespace ThermoRawFileParser
@@ -18,37 +19,36 @@ namespace ThermoRawFileParser
 
         public static void Main(string[] args)
         {
-            
-            // introduce subcommand for xics
+            // introduce subcommand for xics and spectra query
             if (args.Length > 0)
-            {    
-                switch(args[0]){
+            {
+                switch (args[0])
+                {
                     case "xic":
                         XicParametersParsing(args.Skip(1).ToArray()); // skip first command
                         break;
-                        
+
                     // if we want more subcommands, we can introduce here different cases
                     // case "subdomain whatever": break;
+
+                    case "query":
                         
                     default:
                         RegularParametersParsing(args);
                         break;
                 }
             }
-            else {
+            else
+            {
                 RegularParametersParsing(args);
             }
         }
-            
-            
-            
-            
-        public static void XicParametersParsing(string[] args)
+        
+        private static void XicParametersParsing(string[] args)
         {
             XicParameters parameters = new XicParameters();
             string singleFile = null;
             string fileDirectory = null;
-            
             
             var optionSet = new OptionSet
             {
@@ -86,7 +86,7 @@ namespace ThermoRawFileParser
                     v => parameters.base64 = v != null
                 }
             };
-                
+
             try
             {
                 // parse the command line
@@ -97,23 +97,23 @@ namespace ThermoRawFileParser
                     throw new OptionException("unexpected extra arguments", null);
                 }
 
-                
+
                 if (parameters.help)
                 {
                     ShowHelp("usage is (use -option=value for the optional arguments):", null,
                         optionSet);
                     return;
                 }
-                
+
                 if (parameters.printJsonExample)
                 {
-                    
-                    string example_json = "[\n  {\n    \"mz\":673.363,\n    \"tolerance\":10,\n    \"tolerance_unit\": \"ppm\",\n  },\n  {\n    \"mz\":867.345,\n    \"tolerance\": 0.02,\n    \"tolerance_unit\": \"da\",\n    \"rt_start\":87.56,\n    \"rt_end\":99.56\n  }\n]";
-                    
+                    string example_json =
+                        "[\n  {\n    \"mz\":673.363,\n    \"tolerance\":10,\n    \"tolerance_unit\": \"ppm\",\n  },\n  {\n    \"mz\":867.345,\n    \"tolerance\": 0.02,\n    \"tolerance_unit\": \"da\",\n    \"rt_start\":87.56,\n    \"rt_end\":99.56\n  }\n]";
+
                     Console.WriteLine(example_json);
                     return;
                 }
-                
+
 
                 if (singleFile != null && !File.Exists(singleFile))
                 {
@@ -128,15 +128,15 @@ namespace ThermoRawFileParser
                         "specify a valid input directory",
                         "-d, --input_directory");
                 }
-                
-                
+
+
                 if (parameters.jsonFilePath == null)
                 {
                     throw new OptionException(
                         "specify an json input file. If you are not sure about the structure of the json file, use -p for printing an examplarily json input file",
                         "-j, --json");
                 }
-                
+
 
                 if (parameters.jsonFilePath != null && !File.Exists(parameters.jsonFilePath))
                 {
@@ -144,37 +144,37 @@ namespace ThermoRawFileParser
                         "specify a valid json file location",
                         "-j, --json");
                 }
-                
-                
+
+
                 if (parameters.outputDirectory != null && !Directory.Exists(parameters.outputDirectory))
                 {
                     throw new OptionException(
                         "specify a valid output location",
                         "-o, --output");
                 }
-                
+
                 if ((singleFile == null && fileDirectory == null) || (singleFile != null && fileDirectory != null))
                 {
                     throw new OptionException(
                         "specify either an input file or an input directory",
                         "-i, --input xor -d, --input_directory");
                 }
-                
+
                 if (singleFile != null)
                 {
                     parameters.rawFileList.Add(Path.GetFullPath(singleFile));
                 }
-                else 
+                else
                 {
-                    
                     DirectoryInfo d = new DirectoryInfo(Path.GetFullPath(fileDirectory));
-                    FileInfo[] Files = d.GetFiles("*", SearchOption.TopDirectoryOnly).Where(f=>f.Extension.ToLower() == ".raw").ToArray<FileInfo>();
-                    foreach(FileInfo file in Files)
+                    FileInfo[] Files = d.GetFiles("*", SearchOption.TopDirectoryOnly)
+                        .Where(f => f.Extension.ToLower() == ".raw").ToArray<FileInfo>();
+                    foreach (FileInfo file in Files)
                     {
                         parameters.rawFileList.Add(Path.GetFullPath(file.Name));
                     }
                 }
-            }    
+            }
             catch (OptionException optionException)
             {
                 ShowHelp("Error - usage is (use -option=value for the optional arguments):", optionException,
@@ -193,15 +193,13 @@ namespace ThermoRawFileParser
                         optionSet);
                 }
             }
-            
+
             var exitCode = 1;
             try
             {
-                
                 // execute the xic commands
                 XicExecutor executor = new XicExecutor(parameters);
                 exitCode = executor.run();
-
             }
             catch (Exception ex)
             {
@@ -221,7 +219,48 @@ namespace ThermoRawFileParser
             }
         }
 
-        public static void RegularParametersParsing(string[] args)
+        private static void SpectrumQueryParametersParsing(string[] args)
+        {
+            QueryParameters parameters ;
+            var optionSet = new OptionSet
+            {
+                // {
+                //     "h|help", "Prints out the options.",
+                //     h => parameters.help = h != null
+                // },
+                // {
+                //     "i=|input=", "The raw file input (Required).",
+                //     v => singleFile = v
+                // },
+                // {
+                //     "d=|input_directory=",
+                //     "The directory containing the raw files (Required). Specify this or an input raw file -i.",
+                //     v => fileDirectory = v
+                // },
+                // {
+                //     "j=|json=",
+                //     "The json input file (Required).",
+                //     v => parameters.jsonFilePath = v
+                // },
+                // {
+                //     "p|print_example",
+                //     "Printing an examplarily json input file.",
+                //     v => parameters.printJsonExample = v != null
+                // },
+                // {
+                //     "o=|output=",
+                //     "The output directory. Specify this or an output file -b. Specifying neither writes to the input directory.",
+                //     v => parameters.outputDirectory = v
+                // },
+                // {
+                //     "b|base64",
+                //     "Encodes the content of the xic vectors as base 64 encoded string.",
+                //     v => parameters.base64 = v != null
+                // }
+            };
+        }
+
+        private static void RegularParametersParsing(string[] args)
         {
             var help = false;
             var version = false;
@@ -244,8 +283,8 @@ namespace ThermoRawFileParser
             string s3SecretAccessKey = null;
             string logFormatString = null;
             string bucketName = null;
-            
-            
+
+
             var optionSet = new OptionSet
             {
                 {
@@ -355,7 +394,7 @@ namespace ThermoRawFileParser
                     Console.WriteLine(Version);
                     return;
                 }
-                
+
                 if (rawFilePath == null && rawDirectoryPath == null)
                 {
                     throw new OptionException(
@@ -423,7 +462,7 @@ namespace ThermoRawFileParser
                         "specify a valid output directory",
                         "-o, --output");
                 }
-                
+
                 if (outputMetadataString == null && outputFormatString == null)
                 {
                     outputFormat = OutputFormat.MzML;

@@ -51,8 +51,8 @@ namespace ThermoRawFileParser.XIC
                 var minMass = rawFile.RunHeaderEx.LowMass;
                 var maxMass = rawFile.RunHeaderEx.HighMass;
 
-                var generator = new ChromatogramBatchGenerator();
-                ParallelChromatogramFactory.FromRawData(generator, rawFile);
+                //var generator = new ChromatogramBatchGenerator();
+                //ParallelChromatogramFactory.FromRawData(generator, rawFile);
 
                 foreach (var xicUnit in xicData.content)
                 {
@@ -136,7 +136,6 @@ namespace ThermoRawFileParser.XIC
                         data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, firstScanNumber,
                             lastScanNumber);
                     }
-
 
                     var chromatogramTrace = ChromatogramSignal.FromChromatogramData(data);
                     if (chromatogramTrace[0].Scans.Count != 0)
