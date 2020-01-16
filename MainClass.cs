@@ -81,7 +81,7 @@ namespace ThermoRawFileParser
                     v => parameters.outputDirectory = v
                 },
                 {
-                    "s|base64",
+                    "b|base64",
                     "Encodes the content of the xic vectors as base 64 encoded string.",
                     v => parameters.base64 = v != null
                 }
