@@ -118,10 +118,7 @@ namespace ThermoRawFileParser.Query
                                 {
                                     if (trailerData.Labels[i] == "Charge State:")
                                     {
-                                        if (Convert.ToInt32(trailerData.Values[i]) > 0)
-                                        {
-                                            charge = Convert.ToInt32(trailerData.Values[i]);
-                                        }
+                                        charge = Convert.ToInt32(trailerData.Values[i]);
                                     }
 
                                     if (trailerData.Labels[i] == "Monoisotopic M/Z:")
@@ -145,21 +142,25 @@ namespace ThermoRawFileParser.Query
                                         value: selectedIonMz.ToString(CultureInfo.InvariantCulture));
                                 }
 
-                                // charge
-                                // Scan polarity not yet implemented           
-                                /*var polarity = PositivePolarity;
-                                    if (scanFilter.Polarity == PolarityType.Negative)
-                                    {
-                                        polarity = NegativePolarity;
-                                    }
-                                    */
+                                // scan polarity
+                                 if (scanFilter.Polarity == PolarityType.Positive)
+                                {
+                                    proxiSpectrum.AddAttribute(accession: "MS:10000465", name: "scan polarity",
+                                        value: "positive scan", valueAccession: "MS:1000130");
+                                }
+                                else
+                                {
+                                    proxiSpectrum.AddAttribute(accession: "MS:10000465", name: "scan polarity",
+                                        value: "negative scan", valueAccession: "MS:1000129");
+                                }
+ 
+                                // charge state
                                 proxiSpectrum.AddAttribute(accession: "MS:10000041", name: "charge state",
                                     value: charge.ToString(CultureInfo.InvariantCulture));
 
                                 // write the filter string
                                 proxiSpectrum.AddAttribute(accession: "MS:10000512", name: "filter string",
                                     value: scanEvent.ToString());
-
 
                                 // Check if the scan has a centroid stream
                                 if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||
