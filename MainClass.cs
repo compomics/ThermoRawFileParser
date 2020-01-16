@@ -221,42 +221,27 @@ namespace ThermoRawFileParser
 
         private static void SpectrumQueryParametersParsing(string[] args)
         {
-            QueryParameters parameters ;
+            QueryParameters parameters = new QueryParameters();
             var optionSet = new OptionSet
             {
-                // {
-                //     "h|help", "Prints out the options.",
-                //     h => parameters.help = h != null
-                // },
-                // {
-                //     "i=|input=", "The raw file input (Required).",
-                //     v => singleFile = v
-                // },
-                // {
-                //     "d=|input_directory=",
-                //     "The directory containing the raw files (Required). Specify this or an input raw file -i.",
-                //     v => fileDirectory = v
-                // },
-                // {
-                //     "j=|json=",
-                //     "The json input file (Required).",
-                //     v => parameters.jsonFilePath = v
-                // },
-                // {
-                //     "p|print_example",
-                //     "Printing an examplarily json input file.",
-                //     v => parameters.printJsonExample = v != null
-                // },
-                // {
-                //     "o=|output=",
-                //     "The output directory. Specify this or an output file -b. Specifying neither writes to the input directory.",
-                //     v => parameters.outputDirectory = v
-                // },
-                // {
-                //     "b|base64",
-                //     "Encodes the content of the xic vectors as base 64 encoded string.",
-                //     v => parameters.base64 = v != null
-                // }
+                {
+                    "h|help", "Prints out the options.",
+                    h => parameters.help = h != null
+                },
+                {
+                    "i=|input=", "The raw file input (Required).",
+                    v => parameters.rawFile = v
+                },
+                {
+                    "s=|scans=",
+                    "The scan ",
+                    v => parameters.scans = v
+                },
+                {
+                    "p|noPeakPicking",
+                    "Don't use the peak picking provided by the native Thermo library. By default peak picking is enabled.",
+                    v => parameters.noPeakPicking = v != null
+                },
             };
         }
 
