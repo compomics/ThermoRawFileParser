@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,23 +10,54 @@ namespace ThermoRawFileParser.XIC
 {
     public class JSONInputUnit
     {
-        [JsonProperty("mz_start", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("mz_start", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(-1)]
         public double MzStart { get; set; }
-        [JsonProperty("mz_end", NullValueHandling = NullValueHandling.Ignore)] 
+        [JsonProperty("mz_end", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(-1)]
         public double MzEnd { get; set; }
-        [JsonProperty("mz", NullValueHandling = NullValueHandling.Ignore)] 
+        [JsonProperty("mz", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(-1)]
         public double Mz { get; set; }
-        [JsonProperty("sequence", NullValueHandling = NullValueHandling.Ignore)] 
+        [JsonProperty("sequence", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue("")]
         public string Sequence { get; set; }
-        [JsonProperty("tolerance", NullValueHandling = NullValueHandling.Ignore)] 
+        [JsonProperty("tolerance", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(-1)]
         public double Tolerance { get; set; }
-        [JsonProperty("tolerance_unit", NullValueHandling = NullValueHandling.Ignore)] 
+        [JsonProperty("tolerance_unit", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue("")]
         public string ToleranceUnit { get; set; }
-        [JsonProperty("charge", NullValueHandling = NullValueHandling.Ignore)] 
+        [JsonProperty("charge", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(-1)]
         public int Charge { get; set; }
-        [JsonProperty("rt_start", NullValueHandling = NullValueHandling.Ignore)] 
+        [JsonProperty("rt_start", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(-1)]
         public double RtStart { get; set; }
-        [JsonProperty("rt_end", NullValueHandling = NullValueHandling.Ignore)] 
+        [JsonProperty("rt_end", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(-1)]
         public double RtEnd { get; set; }
+
+        public bool HasMzRange()
+        {
+            return MzStart != -1 && MzEnd != -1;
+        }
+
+        public bool HasMzTol()
+        {
+            return Mz != -1 && Tolerance != -1 && ToleranceUnit != "";
+        }
+
+        public bool HasSequence()
+        {
+            return Sequence != "" && Charge != -1;
+        }
+
+        public bool IsAmbigous()
+        {
+            return (this.HasMzTol() && this.HasMzRange()) || 
+                (this.HasMzTol() && this.HasSequence()) || 
+                (this.HasMzRange() && this.HasSequence());
+        }
     }
 }

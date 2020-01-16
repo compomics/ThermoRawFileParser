@@ -10,9 +10,9 @@
     "tolerance_unit":"ppm"
   },
   {
-    "mz_start":-1,
-    "mz_end":-1,
-    "rt_start":-1,
-    "rt_end":-1
+    "mz_start":749.7860,
+    "mz_end":749.8093,
+    "rt_start":630,
+    "rt_end":690
   }
 ]
