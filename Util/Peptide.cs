@@ -6,12 +6,9 @@ using System.Threading.Tasks;
 
 namespace ThermoRawFileParser.Util
 {
-    
-    public class Peptide
+    public static class PeptideData
     {
-        public string Sequence { get; }
-
-        private readonly Dictionary<char, double> AAMasses = new Dictionary<char, double>
+        public static readonly Dictionary<char, double> AAMasses = new Dictionary<char, double>
     {
     { 'G', 57.02146 },
     { 'A', 71.03711 },
@@ -37,10 +34,16 @@ namespace ThermoRawFileParser.Util
     { 'O', 237.14773 }
     };
 
-        private readonly double proton = 1.00727646677;
-        private readonly double h2o = 18.0105646837;
+        public static readonly double Proton = 1.00727646677;
+        public static readonly double H2O = 18.0105646837;
 
-        private Regex invalidAA;
+        public static readonly Regex invalidAA = new Regex(String.Format("[^{0}]", new String(PeptideData.AAMasses.Keys.ToArray())));
+    }
+    public class Peptide
+    {
+        public string Sequence { get; }
+
+        
         public Peptide()
         {
 
@@ -48,21 +51,21 @@ namespace ThermoRawFileParser.Util
 
         public Peptide(string sequence)
         {
-            invalidAA = new Regex(String.Format("[^{0}]", new String(AAMasses.Keys.ToArray())));
             if (IsValidSequence(sequence)) Sequence = sequence;
             else throw new Exception("Sequence have unknow amino acids");
         }
 
         public double GetMz(int z)
         {
-            double mass = Sequence.ToCharArray().Select(c => AAMasses[c]).Sum() + h2o;
-            return (mass + z * proton) / Math.Abs(z);
+            if (z == 0) throw new Exception("Charge cannot be zero!");
+
+            double mass = Sequence.ToCharArray().Select(c => PeptideData.AAMasses[c]).Sum() + PeptideData.H2O;
+            return (mass + z * PeptideData.Proton) / Math.Abs(z);
         }
 
         private bool IsValidSequence(string sequence)
         {
-            var s = invalidAA.Matches(sequence);
-            return !invalidAA.IsMatch(sequence);
+            return !PeptideData.invalidAA.IsMatch(sequence);
         }
     }
 }
