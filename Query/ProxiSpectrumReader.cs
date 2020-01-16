@@ -72,6 +72,8 @@ namespace ThermoRawFileParser.Query
                         // Get the scan event for this scan number
                         var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
 
+                        var isCentroid = true;
+
                         IReaction reaction = null;
                         switch (scanFilter.MSOrder)
                         {
@@ -84,7 +86,7 @@ namespace ThermoRawFileParser.Query
                                 {
                                     Log.Warn("No reaction found for scan " + scanNumber);
                                 }
-                                
+
                                 goto default;
                             case MSOrderType.Ms3:
                             {
@@ -182,6 +184,20 @@ namespace ThermoRawFileParser.Query
                                         rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
                                     proxiSpectrum.AddMz(segmentedScan.Positions);
                                     proxiSpectrum.AddIntensities(segmentedScan.Intensities);
+
+                                    if (scanEvent.ScanData.Equals(ScanDataType.Profile))
+                                    {
+                                        isCentroid = false;
+                                    }
+                                }
+
+                                if (isCentroid)
+                                {
+                                    proxiSpectrum.AddAttribute(accession: "MS:1000127", name: "centroid spectrum");
+                                }
+                                else
+                                {
+                                    proxiSpectrum.AddAttribute(accession: "MS:1000128", name: "profile spectrum");
                                 }
 
                                 resultList.Add(proxiSpectrum);
