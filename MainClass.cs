@@ -242,7 +242,7 @@ namespace ThermoRawFileParser
                     v => parameters.rawFilePath = v
                 },
                 {
-                    "s=|scans=",
+                    "n=|scans=",
                     "The scan numbers. e.g. \"1-5, 20, 25-30\"",
                     v => parameters.scans = v
                 },
@@ -320,10 +320,10 @@ namespace ThermoRawFileParser
                 }
             }
 
-            QueryExecutor.Run(parameters);
             var exitCode = 1;
             try
             {
+                QueryExecutor.Run(parameters);
                 exitCode = 0;
             }
             catch (UnauthorizedAccessException ex)
