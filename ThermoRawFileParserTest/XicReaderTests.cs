@@ -7,13 +7,15 @@ using ThermoRawFileParser.XIC;
 namespace ThermoRawFileParserTest
 {
     [TestFixture]
-    public class XicRetrieverTests
+    public class XicReaderTests
     {
         [Test]
         public void testXicRetrieve()
         {
+            var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
             XicData xicData = new XicData
             {
+                // test the full range
                 content = new List<XicUnit>
                 {
                     new XicUnit()
@@ -31,9 +33,9 @@ namespace ThermoRawFileParserTest
                     }
                 }
             };
-            var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
-            XicRetriever.RetrieveXic(testRawFile, true, xicData);
-            Console.WriteLine("");
+            
+            XicReader.ReadXic(testRawFile, true, xicData);
+            Assert.AreEqual(xicData.content, "dijfijf");
         }
         
         
