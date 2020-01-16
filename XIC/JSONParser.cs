@@ -21,8 +21,6 @@ namespace ThermoRawFileParser.XIC
 
             foreach (JSONInputUnit xic in jsonIn)
             {
-                if (xic.RtStart == 0) xic.RtStart = -1;
-                if (xic.RtEnd == 0) xic.RtEnd = -1;
                 if (xic.Tolerance != 0 && xic.ToleranceUnit != null && xic.Mz != 0)
                 {
                     double delta;
