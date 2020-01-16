@@ -80,7 +80,7 @@ namespace ThermoRawFileParser.Query
                                 {
                                     reaction = scanEvent.GetReaction(0);
                                 }
-                                catch (ArgumentOutOfRangeException exception)
+                                catch (ArgumentOutOfRangeException)
                                 {
                                     Log.Warn("No reaction found for scan " + scanNumber);
                                 }
@@ -92,7 +92,7 @@ namespace ThermoRawFileParser.Query
                                 {
                                     reaction = scanEvent.GetReaction(1);
                                 }
-                                catch (ArgumentOutOfRangeException exception)
+                                catch (ArgumentOutOfRangeException)
                                 {
                                     Log.Warn("No reaction found for scan " + scanNumber);
                                 }
@@ -144,18 +144,15 @@ namespace ThermoRawFileParser.Query
                                 }
 
                                 // charge
-                                if (charge != null)
-                                {
-                                    // Scan polarity            
-                                    var polarity = PositivePolarity;
+                                // Scan polarity not yet implemented           
+                                /*var polarity = PositivePolarity;
                                     if (scanFilter.Polarity == PolarityType.Negative)
                                     {
                                         polarity = NegativePolarity;
                                     }
-
-                                    proxiSpectrum.AddAttribute(accession: "MS:10000041", name: "charge state",
-                                        value: charge.ToString(CultureInfo.InvariantCulture));
-                                }
+                                    */
+                                proxiSpectrum.AddAttribute(accession: "MS:10000041", name: "charge state",
+                                    value: charge.ToString(CultureInfo.InvariantCulture));
 
                                 // write the filter string
                                 proxiSpectrum.AddAttribute(accession: "MS:10000512", name: "filter string",
