@@ -20,7 +20,7 @@ namespace ThermoRawFileParser.Query
             attributes = new List<PROXICVTerm>();
         }
 
-        public void AddAtribute(string accession=null, string cvGroup=null, string name=null, string value=null, string valueAccession=null)
+        public void AddAttribute(string accession=null, string cvGroup=null, string name=null, string value=null, string valueAccession=null)
         {
             attributes.Add(new PROXICVTerm(accession, cvGroup, name, value, valueAccession));
         }
@@ -34,5 +34,6 @@ namespace ThermoRawFileParser.Query
         {
             intensities = intList.ToList<double>();
         }
+        
     }
 }
