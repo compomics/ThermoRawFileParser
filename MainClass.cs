@@ -243,7 +243,7 @@ namespace ThermoRawFileParser
                 },
                 {
                     "s=|scans=",
-                    "The scan numbers. e.g. '1-5,20,25-30'",
+                    "The scan numbers. e.g. \"1-5, 20, 25-30\"",
                     v => parameters.scans = v
                 },
                 {
@@ -255,6 +255,11 @@ namespace ThermoRawFileParser
                     "p|noPeakPicking",
                     "Don't use the peak picking provided by the native Thermo library. By default peak picking is enabled.",
                     v => parameters.noPeakPicking = v != null
+                },
+                {
+                    "s|stdout",
+                    "Pipes the output into standard output. Logging is being turned off",
+                    v => parameters.stdout = v != null
                 }
             };
 
