@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using Mono.Options;
 using Newtonsoft.Json;
+using ThermoFisher.CommonCore.Data.Business;
+using ThermoRawFileParser.Writer;
 
 namespace ThermoRawFileParser.Query
 {
@@ -18,12 +20,16 @@ namespace ThermoRawFileParser.Query
             // parse the scans string
             HashSet<int> scanIds = ParseScanIds(parameters.scans);
             parameters.scanNumbers = scanIds;
+            
+            ProxiSpectrumRetriever retriever = new ProxiSpectrumRetriever(parameters);
+            List<PROXISpectrum> results = retriever.Retrieve(RawFileReaderFactory.ReadFile(parameters.rawFilePath), scanIds);
 
+            OutputQueryData(results);
             //do stuff
             return 0;
         }
 
-        public void OutputQueryData(ArrayList outputData)
+        public static void OutputQueryData(List<PROXISpectrum> outputData)
         {
             string outputString = JsonConvert.SerializeObject(outputData);
             Console.Write(outputString);
