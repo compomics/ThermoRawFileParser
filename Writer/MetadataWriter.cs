@@ -192,7 +192,7 @@ namespace ThermoRawFileParser.Writer
                             if (precursorMass < minMz)
                                 minMz = precursorMass;
                         }
-                        catch (ArgumentOutOfRangeException exception)
+                        catch (ArgumentOutOfRangeException)
                         {
                             Log.Warn("No reaction found for scan " + scanNumber);
                         }

@@ -2,7 +2,6 @@
 using System.IO;
 using log4net;
 using log4net.Core;
-using System.Collections.Generic;
 using Mono.Options;
 using ThermoFisher.CommonCore.Data;
 using System.Linq;
@@ -176,9 +175,9 @@ namespace ThermoRawFileParser
                 else
                 {
                     DirectoryInfo d = new DirectoryInfo(Path.GetFullPath(fileDirectory));
-                    FileInfo[] Files = d.GetFiles("*", SearchOption.TopDirectoryOnly)
+                    FileInfo[] files = d.GetFiles("*", SearchOption.TopDirectoryOnly)
                         .Where(f => f.Extension.ToLower() == ".raw").ToArray<FileInfo>();
-                    foreach (FileInfo file in Files)
+                    foreach (FileInfo file in files)
                     {
                         parameters.rawFileList.Add(Path.GetFullPath(file.Name));
                     }
@@ -189,7 +188,7 @@ namespace ThermoRawFileParser
                 ShowHelp("Error - usage is (use -option=value for the optional arguments):", optionException,
                     optionSet);
             }
-            catch (ArgumentNullException argumentNullException)
+            catch (ArgumentNullException)
             {
                 if (parameters.help)
                 {
@@ -306,7 +305,7 @@ namespace ThermoRawFileParser
                 ShowHelp("Error - usage is (use -option=value for the optional arguments):", optionException,
                     optionSet);
             }
-            catch (ArgumentNullException argumentNullException)
+            catch (ArgumentNullException)
             {
                 if (parameters.help)
                 {
@@ -571,7 +570,7 @@ namespace ThermoRawFileParser
                     {
                         outPutFormatInt = int.Parse(outputFormatString);
                     }
-                    catch (FormatException e)
+                    catch (FormatException)
                     {
                         throw new OptionException(
                             "unknown output format value (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet)",
@@ -598,7 +597,7 @@ namespace ThermoRawFileParser
                     {
                         metadataInt = int.Parse(outputMetadataString);
                     }
-                    catch (FormatException e)
+                    catch (FormatException)
                     {
                         throw new OptionException("unknown metadata format value (0 for JSON, 1 for TXT)",
                             "-m, --metadata");
@@ -643,7 +642,7 @@ namespace ThermoRawFileParser
                     {
                         logFormatInt = int.Parse(logFormatString);
                     }
-                    catch (FormatException e)
+                    catch (FormatException)
                     {
                         throw new OptionException("unknown log format value (0 for silent, 1 for verbose)",
                             "-l, --logging");
@@ -668,7 +667,7 @@ namespace ThermoRawFileParser
                 ShowHelp("Error - usage is (use -option=value for the optional arguments):", optionException,
                     optionSet);
             }
-            catch (ArgumentNullException argumentNullException)
+            catch (ArgumentNullException)
             {
                 if (help)
                 {

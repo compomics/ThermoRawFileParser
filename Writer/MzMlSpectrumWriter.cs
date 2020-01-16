@@ -521,7 +521,7 @@ namespace ThermoRawFileParser.Writer
                         encounteredMs2 = true;
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Log.Warn("No Scan Filter found for the following scan --" + scanNumber);
                     if (!ParseInput.IgnoreInstrumentErrors)
@@ -1260,7 +1260,7 @@ namespace ThermoRawFileParser.Writer
 
                 precursorMz = reaction.PrecursorMass;
             }
-            catch (ArgumentOutOfRangeException exception)
+            catch (ArgumentOutOfRangeException)
             {
                 //do nothing
             }
