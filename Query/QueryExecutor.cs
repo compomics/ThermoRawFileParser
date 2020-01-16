@@ -21,8 +21,8 @@ namespace ThermoRawFileParser.Query
             HashSet<int> scanIds = ParseScanIds(parameters.scans);
             parameters.scanNumbers = scanIds;
             
-            ProxiSpectrumRetriever retriever = new ProxiSpectrumRetriever(parameters);
-            List<PROXISpectrum> results = retriever.Retrieve(RawFileReaderFactory.ReadFile(parameters.rawFilePath), scanIds);
+            ProxiSpectrumReader reader = new ProxiSpectrumReader(parameters);
+            List<PROXISpectrum> results = reader.Retrieve();
 
             OutputQueryData(results);
             //do stuff

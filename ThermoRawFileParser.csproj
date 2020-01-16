@@ -137,7 +137,7 @@
     <Compile Include="Query\PROXISpectrum.cs" />
     <Compile Include="Query\QueryParameters.cs" />
     <Compile Include="Query\QueryExecutor.cs" />
-    <Compile Include="Query\PROXISpectrumRetriever.cs" />
+    <Compile Include="Query\ProxiSpectrumReader.cs" />
     <Compile Include="RawFileParserException.cs" />
     <Compile Include="RawFileParser.cs" />
     <Compile Include="Util\LimitedSizeDictionary.cs" />

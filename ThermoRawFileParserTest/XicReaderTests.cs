@@ -10,7 +10,7 @@ namespace ThermoRawFileParserTest
     public class XicReaderTests
     {
         [Test]
-        public void testXicRetrieve()
+        public void testXicRead()
         {
             var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
             XicData xicData = new XicData
