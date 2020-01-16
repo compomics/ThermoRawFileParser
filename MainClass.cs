@@ -290,7 +290,6 @@ namespace ThermoRawFileParser
                         "specify a valid scan range",
                         "-s, --scans");
                 }
-                
             }
             catch (OptionException optionException)
             {
@@ -310,8 +309,8 @@ namespace ThermoRawFileParser
                         optionSet);
                 }
             }
-            var queryExecutor = new QueryExecutor(parameters);
-            queryExecutor.run();
+
+            QueryExecutor.Run(parameters);
             var exitCode = 1;
             try
             {
