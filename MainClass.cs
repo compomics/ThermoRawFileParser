@@ -2,6 +2,7 @@
 using System.IO;
 using log4net;
 using log4net.Core;
+using System.Collections.Generic;
 using Mono.Options;
 using ThermoFisher.CommonCore.Data;
 using System.Linq;
@@ -224,6 +225,7 @@ namespace ThermoRawFileParser
 
         private static void SpectrumQueryParametersParsing(string[] args)
         {
+            
             QueryParameters parameters = new QueryParameters();
             var optionSet = new OptionSet
             {

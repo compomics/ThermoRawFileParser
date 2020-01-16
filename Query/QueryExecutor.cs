@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Mono.Options;
 
 namespace ThermoRawFileParser.Query
 {
@@ -12,15 +13,15 @@ namespace ThermoRawFileParser.Query
         }
         
         
-        public HashSet<int> ParseRange(String text)
+        public static HashSet<int> ParseScanIds(String text)
         {
-            if (text.Length == 0) return null;
+            if (text.Length == 0) throw new OptionException("Scan ID string invalid, nothing specified", null);
             foreach (char c in text)
             {
                 int ic = (int)c;
                 if (!((ic == (int)',') || (ic == (int)'-') || (ic == (int)' ') || ('0' <= ic && ic <= '9')))
                 {
-                    return null;
+                    throw new OptionException("Scan ID string contains invalid character", null);
                 }
             }
             
@@ -30,7 +31,7 @@ namespace ThermoRawFileParser.Query
             
             for (int i = 0; i < tokens.Length; ++i)
             {
-                if (tokens[i].Length == 0) return null;
+                if (tokens[i].Length == 0) throw new OptionException("Scan ID string has invalid format", null);
                 string[] rangeBoundaries = tokens[i].Split(new char[]{'-'}, StringSplitOptions.None);
                 if (rangeBoundaries.Length == 1)
                 {
@@ -41,7 +42,7 @@ namespace ThermoRawFileParser.Query
                     }
                     catch (Exception e)
                     {
-                        return null;
+                        throw new OptionException("Scan ID string has invalid format", null);
                     }
                     container.Add(rangeStart);
                 }
@@ -56,14 +57,14 @@ namespace ThermoRawFileParser.Query
                     }
                     catch (Exception e)
                     {
-                        return null;
+                        throw new OptionException("Scan ID string has invalid format", null);
                     }
                     for (int l = rangeStart; l <= rangeEnd; ++l)
                     {
                         container.Add(l);
                     }
                 }
-                else return null;
+                else throw new OptionException("Scan ID string has invalid format", null);
             }
             return container;
         }
