@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace ThermoRawFileParser.Writer
 {
@@ -75,6 +76,29 @@ namespace ThermoRawFileParser.Writer
         {
             SampleData.Add(value);
         }     
+    }
+
+    public class PROXICVTerm
+    {
+        [JsonProperty("accession", NullValueHandling = NullValueHandling.Ignore)]
+        public string Accession { get; set; }
+        [JsonProperty("cv_param_group", NullValueHandling = NullValueHandling.Ignore)] 
+        public string CvGroup { get; set; }
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)] 
+        public string Name { get; set; }
+        [JsonProperty("value", NullValueHandling = NullValueHandling.Ignore)] 
+        public string Value { get; set; }
+        [JsonProperty("value_accession", NullValueHandling = NullValueHandling.Ignore)] 
+        public string ValueAccession { get; set; }
+
+        public PROXICVTerm(string accession, string cvGroup, string name, string value, string valueAccession)
+        {
+            Accession = accession;
+            CvGroup = cvGroup;
+            Name = name;
+            Value = value;
+            ValueAccession = valueAccession;
+        }
     }
 
     public class CVTerm{
