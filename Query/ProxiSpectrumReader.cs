@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using log4net;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
-using ThermoRawFileParser.Query;
+using ThermoRawFileParser.Writer;
 
-namespace ThermoRawFileParser.Writer
+namespace ThermoRawFileParser.Query
 {
     public class ProxiSpectrumReader
     {
         private static readonly ILog Log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
 
         private const string PositivePolarity = "+";
         private const string NegativePolarity = "-";
@@ -26,7 +26,6 @@ namespace ThermoRawFileParser.Writer
             this.queryParameters = _queryParameters;
         }
 
-        /// <inheritdoc />       
         public List<PROXISpectrum> Retrieve()
         {
             List<PROXISpectrum> resultList = new List<PROXISpectrum>();
@@ -55,7 +54,6 @@ namespace ThermoRawFileParser.Writer
                 // selected instrument to the MS instrument, first instance of it
                 rawFile.SelectInstrument(Device.MS, 1);
 
-                var lastScanProgress = 0;
                 foreach (int scanNumber in queryParameters.scanNumbers)
                 {
                     var proxiSpectrum = new PROXISpectrum();
@@ -86,7 +84,7 @@ namespace ThermoRawFileParser.Writer
                                 {
                                     Log.Warn("No reaction found for scan " + scanNumber);
                                 }
-
+                                
                                 goto default;
                             case MSOrderType.Ms3:
                             {
@@ -162,6 +160,7 @@ namespace ThermoRawFileParser.Writer
                                 // write the filter string
                                 proxiSpectrum.AddAttribute(accession: "MS:10000512", name: "filter string",
                                     value: scanEvent.ToString());
+
 
                                 // Check if the scan has a centroid stream
                                 if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||

@@ -144,7 +144,6 @@
     <Compile Include="Util\Peptide.cs" />
     <Compile Include="XIC\JSONInputUnit.cs" />
     <Compile Include="XIC\JSONParser.cs" />
-    <Compile Include="XIC\ThermoExampleCode.cs" />
     <Compile Include="XIC\XicData.cs" />
     <Compile Include="XIC\XicExecutor.cs" />
     <Compile Include="XIC\XicParameters.cs" />
@@ -162,7 +161,6 @@
     <Compile Include="Writer\ParquetSpectrumWriter.cs" />
     <Compile Include="Writer\S3Loader.cs" />
     <Compile Include="Writer\SpectrumWriter.cs" />
-    <Compile Include="XIC\ExampleCode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
