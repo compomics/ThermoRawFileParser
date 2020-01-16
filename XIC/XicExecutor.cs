@@ -19,7 +19,7 @@ namespace ThermoRawFileParser.XIC
             {
                 //do stuff
                 XicData dataInstance = new XicData(data);
-                XicRetriever.RetrieveXic(file, parameters.base64, dataInstance);
+                XicReader.ReadXic(file, parameters.base64, dataInstance);
                 
                 if (parameters.stdout)
                 {

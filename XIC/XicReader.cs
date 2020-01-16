@@ -8,11 +8,11 @@ using ThermoFisher.CommonCore.Data.Interfaces;
 
 namespace ThermoRawFileParser.XIC
 {
-    public class XicRetriever
+    public class XicReader
     {
         private const string MsFilter = "ms";
 
-        public static void RetrieveXic(string rawFilePath, bool base64, XicData xicData)
+        public static void ReadXic(string rawFilePath, bool base64, XicData xicData)
         {
             IRawDataPlus rawFile;
             using (rawFile = RawFileReaderFactory.ReadFile(rawFilePath))

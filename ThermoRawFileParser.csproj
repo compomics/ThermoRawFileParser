@@ -148,7 +148,7 @@
     <Compile Include="XIC\XicExecutor.cs" />
     <Compile Include="XIC\XicParameters.cs" />
     <Compile Include="XIC\XicMeta.cs" />
-    <Compile Include="XIC\XicRetriever.cs" />
+    <Compile Include="XIC\XicReader.cs" />
     <Compile Include="XIC\XicUnit.cs" />
     <Compile Include="XIC\XicOutputMeta.cs" />
     <Compile Include="Writer\ISpectrumWriter.cs" />
