@@ -193,14 +193,14 @@ namespace ThermoRawFileParser.Writer
                                 proxiSpectrum.AddIntensities(segmentedScan.Intensities);
                             }
 
-                            resultList.Append(proxiSpectrum);
+                            resultList.Add(proxiSpectrum);
                             Log.Debug("Spectrum finished " + scanNumber);
                             break;
                     }
                 }
             }
 
-            return (resultList);
+            return resultList;
         }
     }
 }
