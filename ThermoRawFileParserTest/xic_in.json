@@ -14,5 +14,10 @@
     "mz_end":752.8093,
     "rt_start":20,
     "rt_end":80
+  },
+  {
+    "sequence":"PEPTIDE",
+    "tolerance":0.5,
+    "tolerance_unit":"amu"
   }
 ]
