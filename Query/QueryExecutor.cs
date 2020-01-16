@@ -19,11 +19,10 @@ namespace ThermoRawFileParser.Query
             return 0;
         }
 
-        public void OutputQueryData(string outputFileName, ArrayList outputData)
+        public void OutputQueryData(ArrayList outputData)
         {
-            Console.WriteLine(outputFileName);
             string outputString = JsonConvert.SerializeObject(outputData);
-            File.WriteAllText(outputFileName, outputString);
+            Console.Write(outputString);
         }
         
         
