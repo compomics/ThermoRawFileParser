@@ -146,7 +146,7 @@ namespace ThermoRawFileParser
                 }
                 
                 
-                if (parameters.outputDirectory != null && !File.Exists(parameters.outputDirectory))
+                if (parameters.outputDirectory != null && !Directory.Exists(parameters.outputDirectory))
                 {
                     throw new OptionException(
                         "specify a valid output location",
