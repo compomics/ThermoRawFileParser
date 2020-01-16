@@ -23,7 +23,7 @@ namespace ThermoRawFileParser.XIC
             foreach (JSONInputUnit xic in jsonIn)
             {
                 if (xic.IsAmbigous())
-                    throw new Exception("The defenition of XIC is ambugous");
+                    throw new Exception("The defenition of XIC is ambigous");
 
                 if (xic.HasSequence())
                 {
@@ -47,7 +47,14 @@ namespace ThermoRawFileParser.XIC
                     data.content.Add(new XicUnit(xic.Mz - delta, xic.Mz + delta, xic.RtStart, xic.RtEnd));
                 }
 
-                if (xic.HasMzRange()) data.content.Add(new XicUnit(xic.MzStart, xic.MzEnd, xic.RtStart, xic.RtEnd));
+                else if (xic.HasMzRange())
+                {
+                    data.content.Add(new XicUnit(xic.MzStart, xic.MzEnd, xic.RtStart, xic.RtEnd));
+                }
+                else
+                {
+                    throw new Exception(String.Format("Unparsable JSON element:\n{0}", JsonConvert.SerializeObject(xic)));
+                }
             }
 
             return data;

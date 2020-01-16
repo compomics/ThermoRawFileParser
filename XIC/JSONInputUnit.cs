@@ -50,7 +50,7 @@ namespace ThermoRawFileParser.XIC
 
         public bool HasSequence()
         {
-            return Sequence != "";
+            return Sequence != "" && Tolerance != -1 && ToleranceUnit != "";
         }
 
         public bool IsAmbigous()
