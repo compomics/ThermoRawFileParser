@@ -32,6 +32,9 @@ namespace ThermoRawFileParser
                     // case "subdomain whatever": break;
 
                     case "query":
+                        SpectrumQueryParametersParsing(args.Skip(1).ToArray());
+                        break;
+                        
                         
                     default:
                         RegularParametersParsing(args);
