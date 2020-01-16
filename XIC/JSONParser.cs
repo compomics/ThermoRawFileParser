@@ -21,37 +21,24 @@ namespace ThermoRawFileParser.XIC
 
             foreach (JSONInputUnit xic in jsonIn)
             {
-                int counter = 0;
-                if (xic.Mz > 0) counter++;
-                if (xic.MzStart > 0 || xic.MzEnd > 0) counter++;
-                if (xic.Sequence != null && xic.Sequence != "") counter++;
-                
-                if (counter != 1) throw new Exception("Json input parsing error, more than one mz specified");
-                
-                if (xic.Mz > 0)
+                if (xic.RtStart == 0) xic.RtStart = -1;
+                if (xic.RtEnd == 0) xic.RtEnd = -1;
+                if (xic.Tolerance != 0 && xic.ToleranceUnit != null && xic.Mz != 0)
                 {
-                    
-                    if (xic.Tolerance < 0 || xic.ToleranceUnit == null || xic.ToleranceUnit == "" || !(new HashSet<string>(new string[2]{"da", "ppm"})).Contains(xic.ToleranceUnit)) throw new Exception("Json input parsing error, please specify a tolerance and tolerance unit [da, ppm]");
-                    
-                    double mzStart;
-                    double mzEnd;
-                    if (xic.ToleranceUnit == "da")
+                    double delta;
+                    switch (xic.ToleranceUnit.ToLower())
                     {
-                        mzStart = xic.Mz - xic.Tolerance;
-                        mzEnd = xic.Mz + xic.Tolerance;
+                        case "ppm": delta = xic.Mz * xic.Tolerance * 1e-6; break;
+                        case "amu": delta = xic.Tolerance; break;
+                        case "mmu": delta = xic.Tolerance * 1e-3; break;
+                        case "da": delta = xic.Tolerance; break;
+                        default:
+                            throw new Exception(String.Format("Cannot parse tolerance unit: {0}", xic.ToleranceUnit));
                     }
-                    else {
-                        double tol = xic.Tolerance / 1000000.0;
-                        mzStart = xic.Mz * (1 - tol);
-                        mzEnd = xic.Mz * (1 + tol);
-                    }
-                    data.content.Add(new XicUnit(xic.MzStart, xic.MzEnd, xic.RtStart, xic.RtEnd));
+                    data.content.Add(new XicUnit(xic.Mz - delta, xic.Mz + delta, xic.RtStart, xic.RtEnd));
                 }
-                
-                else if (xic.MzStart > 0 || xic.MzEnd > 0)
-                {
-                    data.content.Add(new XicUnit(xic.MzStart, xic.MzEnd, xic.RtStart, xic.RtEnd));
-                }
+
+                if (xic.MzStart != 0 && xic.MzEnd != 0) data.content.Add(new XicUnit(xic.MzStart, xic.MzEnd, xic.RtStart, xic.RtEnd));
             }
 
             return data;

@@ -20,13 +20,13 @@ namespace ThermoRawFileParserTest
                     {
                         Meta = new XicMeta()
                         {
-                            //MzStart = -1,
-                            MzStart = 749.786,
-                            MzEnd = 749.8093,
-                            //MzEnd = -1,
-                            RtStart = 0,
+                            MzStart = -1,
+                            //MzStart = 749.786,
+                            //MzEnd = 749.8093,
+                            MzEnd = -1,
+                            RtStart = -1,
                             //RtStart = 2,
-                            RtEnd = 900
+                            RtEnd = -1
                         }
                     }
                 }
