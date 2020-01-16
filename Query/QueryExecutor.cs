@@ -24,16 +24,45 @@ namespace ThermoRawFileParser.Query
             ProxiSpectrumRetriever retriever = new ProxiSpectrumRetriever(parameters);
             List<PROXISpectrum> results = retriever.Retrieve(RawFileReaderFactory.ReadFile(parameters.rawFilePath), scanIds);
 
-            OutputQueryData(results);
-            //do stuff
+            if (parameters.stdout)
+            {
+                StdOutputQueryData(results);
+            }
+            else 
+            {
+                string outputFileName;
+                // if outputFile has been defined, put output there.
+                if (parameters.outputFile != null)
+                {
+                    outputFileName = parameters.outputFile;
+                }
+                // otherwise put output files into the same directory as the raw file input
+                else
+                {
+                    outputFileName = Path.GetDirectoryName(parameters.rawFilePath);
+                }
+                outputFileName = Path.GetFileNameWithoutExtension(outputFileName) + ".JSON";
+                OutputQueryData(results, outputFileName);
+            }
             return 0;
         }
+        
+        
+        public static void OutputQueryData(List<PROXISpectrum> outputData, string outputFileName)
+        {
+            string outputString = JsonConvert.SerializeObject(outputData);
+            File.WriteAllText(outputFileName, outputString);
+        }
+        
 
-        public static void OutputQueryData(List<PROXISpectrum> outputData)
+        public static void StdOutputQueryData(List<PROXISpectrum> outputData)
         {
             string outputString = JsonConvert.SerializeObject(outputData);
             Console.Write(outputString);
         }
+        
+        
+        
 
         private static HashSet<int> ParseScanIds(string text)
         {
