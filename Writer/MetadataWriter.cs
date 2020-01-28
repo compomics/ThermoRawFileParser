@@ -241,7 +241,7 @@ namespace ThermoRawFileParser.Writer
             metadata.addMSData(new CVTerm("PRIDE:0000475", "PRIDE", "MS max RT", maxTime.ToString()));
 
             metadata.addMSData(new CVTerm("PRIDE:0000476", "PRIDE", "MS min MZ", minMz.ToString()));
-            metadata.addMSData(new CVTerm("PRIDE:0000477", "PRIDE", "MS min MZ", maxMz.ToString()));
+            metadata.addMSData(new CVTerm("PRIDE:0000477", "PRIDE", "MS max MZ", maxMz.ToString()));
 
 
             // Write the meta data to file
