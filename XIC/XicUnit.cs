@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 
 namespace ThermoRawFileParser.XIC
 {
@@ -22,13 +17,14 @@ namespace ThermoRawFileParser.XIC
             
         }
         
-        public XicUnit (double mzstart, double mzend, double rtstart, double rtend)
+        public XicUnit (double mzstart, double mzend, double rtstart, double rtend, string filter)
         {
             Meta = new XicMeta();
             Meta.MzStart = mzstart;
             Meta.MzEnd = mzend;
             Meta.RtStart = rtstart;
             Meta.RtEnd = rtend;
+            Meta.Filter = filter;
         }
 
         public XicUnit(XicUnit copy)

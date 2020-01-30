@@ -10,8 +10,6 @@ namespace ThermoRawFileParser.XIC
 {
     public class XicReader
     {
-        private const string MsFilter = "ms";
-
         public static void ReadXic(string rawFilePath, bool base64, XicData xicData)
         {
             IRawDataPlus rawFile;
@@ -65,7 +63,7 @@ namespace ThermoRawFileParser.XIC
                     {
                         settings = new ChromatogramTraceSettings(TraceType.MassRange)
                         {
-                            Filter = MsFilter,
+                            Filter = xicUnit.Meta.Filter ?? "ms",
                             MassRanges = new[]
                             {
                                 new Range(xicUnit.Meta.MzStart,
@@ -83,7 +81,7 @@ namespace ThermoRawFileParser.XIC
                         {
                             settings = new ChromatogramTraceSettings(TraceType.MassRange)
                             {
-                                Filter = MsFilter,
+                                Filter = xicUnit.Meta.Filter ?? "ms",
                                 MassRanges = new[]
                                 {
                                     new Range(minMass,
@@ -95,7 +93,7 @@ namespace ThermoRawFileParser.XIC
                         {
                             settings = new ChromatogramTraceSettings(TraceType.MassRange)
                             {
-                                Filter = MsFilter,
+                                Filter = xicUnit.Meta.Filter ?? "ms",
                                 MassRanges = new[]
                                 {
                                     new Range(xicUnit.Meta.MzStart,

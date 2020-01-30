@@ -1,9 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using ThermoRawFileParser.Util;
 
@@ -23,7 +20,7 @@ namespace ThermoRawFileParser.XIC
             foreach (JSONInputUnit xic in jsonIn)
             {
                 if (xic.IsAmbigous())
-                    throw new Exception("The defenition of XIC is ambigous");
+                    throw new Exception(String.Format("The defenition of XIC is ambigous\n{0}", JsonConvert.SerializeObject(xic, Formatting.Indented)));
 
                 if (xic.HasSequence())
                 {
@@ -44,12 +41,12 @@ namespace ThermoRawFileParser.XIC
                         default:
                             throw new Exception(String.Format("Cannot parse tolerance unit: {0}", xic.ToleranceUnit));
                     }
-                    data.content.Add(new XicUnit(xic.Mz - delta, xic.Mz + delta, xic.RtStart, xic.RtEnd));
+                    data.content.Add(new XicUnit(xic.Mz - delta, xic.Mz + delta, xic.RtStart, xic.RtEnd, xic.Filter));
                 }
 
                 else if (xic.HasMzRange())
                 {
-                    data.content.Add(new XicUnit(xic.MzStart, xic.MzEnd, xic.RtStart, xic.RtEnd));
+                    data.content.Add(new XicUnit(xic.MzStart, xic.MzEnd, xic.RtStart, xic.RtEnd, xic.Filter));
                 }
                 else
                 {

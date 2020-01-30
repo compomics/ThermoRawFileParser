@@ -1,9 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using Newtonsoft.Json;
 
 namespace ThermoRawFileParser.XIC
@@ -37,6 +32,9 @@ namespace ThermoRawFileParser.XIC
         [JsonProperty("rt_end", DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(-1)]
         public double RtEnd { get; set; }
+        [JsonProperty("scan_filter", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(null)]
+        public string Filter { get; set; }
 
         public bool HasMzRange()
         {
