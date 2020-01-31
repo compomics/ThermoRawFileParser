@@ -8,6 +8,7 @@ using ThermoFisher.CommonCore.Data;
 using System.Linq;
 using ThermoRawFileParser.Query;
 using ThermoRawFileParser.XIC;
+using System.Globalization;
 
 namespace ThermoRawFileParser
 {
@@ -20,6 +21,9 @@ namespace ThermoRawFileParser
 
         public static void Main(string[] args)
         {
+            //Set Invariant culture as default for all further processing
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+
             // introduce subcommand for xics and spectra query
             if (args.Length > 0)
             {
