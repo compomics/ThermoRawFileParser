@@ -1,15 +1,19 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 using ThermoRawFileParser.Util;
 
 namespace ThermoRawFileParser.XIC
 {
-    public class JSONParser
+    public static class JSONParser
     {
         public static XicData ParseJSON(string jsonPath)
         {
@@ -22,8 +26,8 @@ namespace ThermoRawFileParser.XIC
 
             foreach (JSONInputUnit xic in jsonIn)
             {
-                if (xic.IsAmbigous())
-                    throw new Exception("The defenition of XIC is ambigous");
+                if (xic.IsAmbiguous())
+                    throw new Exception("The definition of XIC is ambiguous");
 
                 if (xic.HasSequence())
                 {
@@ -36,24 +40,38 @@ namespace ThermoRawFileParser.XIC
                     double delta;
                     switch (xic.ToleranceUnit.ToLower())
                     {
-                        case "ppm": delta = xic.Mz * xic.Tolerance * 1e-6; break;
-                        case "amu": delta = xic.Tolerance; break;
-                        case "mmu": delta = xic.Tolerance * 1e-3; break;
-                        case "da": delta = xic.Tolerance; break;
-                        case "": delta = xic.Mz * xic.Tolerance * 1e-6; break;
+                        case "ppm":
+                            delta = xic.Mz.Value * xic.Tolerance.Value * 1e-6;
+                            break;
+                        case "amu":
+                            delta = xic.Tolerance.Value;
+                            break;
+                        case "mmu":
+                            delta = xic.Tolerance.Value * 1e-3;
+                            break;
+                        case "da":
+                            delta = xic.Tolerance.Value;
+                            break;
+                        case "":
+                            delta = xic.Mz.Value * xic.Tolerance.Value * 1e-6;
+                            break;
                         default:
-                            throw new Exception(String.Format("Cannot parse tolerance unit: {0}", xic.ToleranceUnit));
+                            throw new Exception($"Cannot parse tolerance unit: {xic.ToleranceUnit}");
                     }
-                    data.content.Add(new XicUnit(xic.Mz - delta, xic.Mz + delta, xic.RtStart, xic.RtEnd));
+
+                    data.content.Add(new XicUnit(xic.Mz.Value - delta, xic.Mz.Value + delta, xic.RtStart,
+                        xic.RtEnd));
                 }
 
                 else if (xic.HasMzRange())
                 {
-                    data.content.Add(new XicUnit(xic.MzStart, xic.MzEnd, xic.RtStart, xic.RtEnd));
+                    data.content.Add(
+                        new XicUnit(xic.MzStart.Value, xic.MzEnd.Value, xic.RtStart.Value, xic.RtEnd.Value));
                 }
                 else
                 {
-                    throw new Exception(String.Format("Unparsable JSON element:\n{0}", JsonConvert.SerializeObject(xic, Formatting.Indented)));
+                    throw new Exception(
+                        $"Unparsable JSON element:\n{JsonConvert.SerializeObject(xic, Formatting.Indented)}");
                 }
             }
 

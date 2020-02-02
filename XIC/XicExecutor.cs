@@ -6,30 +6,32 @@ namespace ThermoRawFileParser.XIC
 {
     public class XicExecutor
     {
-        public XicParameters parameters;
-        public XicData data;
-        
-        public XicExecutor(XicParameters _parameters){
-            this.parameters = _parameters;
-            this.data = JSONParser.ParseJSON(parameters.jsonFilePath);
+        private readonly XicParameters parameters;
+        private readonly XicData data;
+
+        public XicExecutor(XicParameters parameters)
+        {
+            this.parameters = parameters;
+            this.data = JSONParser.ParseJSON(this.parameters.jsonFilePath);
+            Console.WriteLine();
         }
 
-        public int run(){
+        public int run()
+        {
             foreach (string file in parameters.rawFileList)
             {
-                //do stuff
                 XicData dataInstance = new XicData(data);
                 XicReader.ReadXic(file, parameters.base64, dataInstance);
-                
+
                 if (parameters.stdout)
                 {
                     StdOutputXicData(dataInstance);
                 }
                 else
                 {
-                    string directory;
                     // if outputDirectory has been defined, put output there.
-                    if (parameters.outputDirectory!=null)
+                    string directory;
+                    if (parameters.outputDirectory != null)
                     {
                         directory = parameters.outputDirectory;
                     }
@@ -38,23 +40,25 @@ namespace ThermoRawFileParser.XIC
                     {
                         directory = Path.GetDirectoryName(file);
                     }
-                    string outputFileName = Path.Combine(directory, Path.GetFileNameWithoutExtension(file) + ".JSON");
+
+                    var outputFileName = Path.Combine(directory, Path.GetFileNameWithoutExtension(file) + ".JSON");
                     OutputXicData(dataInstance, outputFileName);
                 }
-
             }
+
             return 0;
         }
-        
-        public void StdOutputXicData(XicData outputData){
-            string outputString = JsonConvert.SerializeObject(outputData);
+
+        private void StdOutputXicData(XicData outputData)
+        {
+            var outputString = JsonConvert.SerializeObject(outputData);
             Console.WriteLine(outputString);
         }
-        
-        public void OutputXicData(XicData outputData, string outputFileName){
-            string outputString = JsonConvert.SerializeObject(outputData);
+
+        private void OutputXicData(XicData outputData, string outputFileName)
+        {
+            var outputString = JsonConvert.SerializeObject(outputData);
             File.WriteAllText(outputFileName, outputString);
         }
-
     }
 }

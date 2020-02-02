@@ -12,17 +12,16 @@ namespace ThermoRawFileParser.XIC
         public XicMeta Meta { get; set; }
         public object X { get; set; }
         public object Y { get; set; }
-    
-    
+
+
         public XicUnit()
         {
             Meta = new XicMeta();
             X = null;
             Y = null;
-            
         }
-        
-        public XicUnit (double mzstart, double mzend, double rtstart, double rtend)
+
+        public XicUnit(double mzstart, double mzend, double? rtstart, double? rtend)
         {
             Meta = new XicMeta();
             Meta.MzStart = mzstart;
@@ -34,20 +33,21 @@ namespace ThermoRawFileParser.XIC
         public XicUnit(XicUnit copy)
         {
             Meta = new XicMeta(copy.Meta);
-            
+
             if (copy.X != null)
             {
                 if (copy.X is string)
                 {
-                    X = (string)copy.X;
+                    X = (string) copy.X;
                 }
                 else
                 {
                     ArrayList x = new ArrayList();
-                    foreach (double d in (ArrayList)copy.X)
+                    foreach (double d in (ArrayList) copy.X)
                     {
                         x.Add(d);
                     }
+
                     X = x;
                 }
             }
@@ -55,24 +55,25 @@ namespace ThermoRawFileParser.XIC
             {
                 X = null;
             }
-            
+
             if (copy.Y != null)
             {
                 if (copy.Y is string)
                 {
-                    Y = (string)copy.Y;
+                    Y = (string) copy.Y;
                 }
                 else
                 {
                     ArrayList y = new ArrayList();
-                    foreach (double d in (ArrayList)copy.Y)
+                    foreach (double d in (ArrayList) copy.Y)
                     {
                         y.Add(d);
                     }
+
                     Y = y;
                 }
             }
-            else 
+            else
             {
                 Y = null;
             }

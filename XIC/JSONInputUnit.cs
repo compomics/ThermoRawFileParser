@@ -2,62 +2,79 @@
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace ThermoRawFileParser.XIC
 {
     public class JSONInputUnit
     {
         [JsonProperty("mz_start", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(-1)]
-        public double MzStart { get; set; }
+        [DefaultValue(null)]
+        public double? MzStart { get; set; }
+
         [JsonProperty("mz_end", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(-1)]
-        public double MzEnd { get; set; }
+        [DefaultValue(null)]
+        public double? MzEnd { get; set; }
+
         [JsonProperty("mz", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(-1)]
-        public double Mz { get; set; }
+        [DefaultValue(null)]
+        public double? Mz { get; set; }
+
         [JsonProperty("sequence", DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue("")]
         public string Sequence { get; set; }
+
         [JsonProperty("tolerance", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(-1)]
-        public double Tolerance { get; set; }
+        [DefaultValue(null)]
+        public double? Tolerance { get; set; }
+
         [JsonProperty("tolerance_unit", DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue("")]
         public string ToleranceUnit { get; set; }
+
         [JsonProperty("charge", DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(1)]
         public int Charge { get; set; }
+
         [JsonProperty("rt_start", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(-1)]
-        public double RtStart { get; set; }
+        [DefaultValue(null)]
+        public double? RtStart { get; set; }
+
         [JsonProperty("rt_end", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(-1)]
-        public double RtEnd { get; set; }
+        [DefaultValue(null)]
+        public double? RtEnd { get; set; }
 
         public bool HasMzRange()
         {
-            return MzStart != -1 && MzEnd != -1;
+            return MzStart != null && MzEnd != null;
         }
 
         public bool HasMzTol()
         {
-            return Mz != -1 && Tolerance != -1 && ToleranceUnit != "";
+            return Mz != null && Tolerance != null && ToleranceUnit != "";
         }
 
         public bool HasSequence()
         {
-            return Sequence != "" && Tolerance != -1 && ToleranceUnit != "";
+            return Sequence != "" && Tolerance != null && ToleranceUnit != "";
         }
 
-        public bool IsAmbigous()
+        public bool IsAmbiguous()
         {
-            return (this.HasMzTol() && this.HasMzRange()) || 
-                (this.HasMzTol() && this.HasSequence()) || 
-                (this.HasMzRange() && this.HasSequence());
+            return (this.HasMzTol() && this.HasMzRange()) ||
+                   (this.HasMzTol() && this.HasSequence()) ||
+                   (this.HasMzRange() && this.HasSequence());
+        }
+        
+        [OnError]
+        internal void OnError(StreamingContext context, ErrorContext errorContext)
+        {
+            Console.WriteLine("dijeieije");
+            errorContext.Handled = true;
         }
     }
 }

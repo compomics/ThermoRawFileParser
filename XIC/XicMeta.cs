@@ -8,21 +8,22 @@ namespace ThermoRawFileParser.XIC
 {
     public class XicMeta
     {
-        public double MzStart { get; set; }
-        public double MzEnd { get; set; }
-        public double RtStart { get; set; }
-        public double RtEnd { get; set; }
+        public double? MzStart { get; set; }
+        public double? MzEnd { get; set; }
+        public double? RtStart { get; set; }
+        public double? RtEnd { get; set; }
 
 
         public XicMeta()
         {
-            MzStart = -1;
-            MzEnd = -1;
-            RtStart = -1;
-            RtEnd = -1;
+            // MzStart = -1;
+            // MzEnd = -1;
+            // RtStart = -1;
+            // RtEnd = -1;
         }
-        
-        public XicMeta(XicMeta copy){
+
+        public XicMeta(XicMeta copy)
+        {
             MzStart = copy.MzStart;
             MzEnd = copy.MzEnd;
             RtStart = copy.RtStart;
