@@ -1,27 +1,41 @@
 using System;
+using System.Data;
 using System.IO;
+using System.Text;
 using Newtonsoft.Json;
+using ThermoFisher.CommonCore.Data;
 
 namespace ThermoRawFileParser.XIC
 {
-    public class XicExecutor
+    public static class XicExecutor
     {
-        private readonly XicParameters parameters;
-        private readonly XicData data;
-
-        public XicExecutor(XicParameters parameters)
+        public static void run(XicParameters parameters)
         {
-            this.parameters = parameters;
-            this.data = JSONParser.ParseJSON(this.parameters.jsonFilePath);
-            Console.WriteLine();
-        }
-
-        public int run()
-        {
-            foreach (string file in parameters.rawFileList)
+            var jsonString = File.ReadAllText(parameters.jsonFilePath, Encoding.UTF8);
+            var validationErrors = JSONParser.ValidateJson(jsonString);
+            if (!validationErrors.IsNullOrEmpty())
             {
-                XicData dataInstance = new XicData(data);
-                XicReader.ReadXic(file, parameters.base64, dataInstance);
+                var validationMessage = new StringBuilder("JSON validation error(s):\n");
+                foreach (var validationError in validationErrors)
+                {
+                    if (validationError.ToString().Contains("ExcludedSchemaValidates"))
+                    {
+                        validationMessage.Append(
+                            "Use M/Z and tolerance, M/Z start and M/Z end or sequence and tolerance, not a combination (with optional RT start and/or end).\n");
+                    }
+
+                    validationMessage.Append(
+                        $"element start line number: {validationError.LineNumber}\n{validationError.ToString()}");
+                }
+
+                throw new RawFileParserException(validationMessage.ToString());
+            }
+
+            var xicData = JSONParser.ParseJSON(jsonString);
+            foreach (string rawFile in parameters.rawFileList)
+            {
+                var dataInstance = new XicData(xicData);
+                XicReader.ReadXic(rawFile, parameters.base64, dataInstance);
 
                 if (parameters.stdout)
                 {
@@ -38,24 +52,24 @@ namespace ThermoRawFileParser.XIC
                     // otherwise put output files into the same directory as the raw file input
                     else
                     {
-                        directory = Path.GetDirectoryName(file);
+                        directory = Path.GetDirectoryName(rawFile);
                     }
 
-                    var outputFileName = Path.Combine(directory, Path.GetFileNameWithoutExtension(file) + ".JSON");
+                    var outputFileName = Path.Combine(directory ?? throw new NoNullAllowedException(),
+                        Path.GetFileNameWithoutExtension(rawFile) + ".json");
+
                     OutputXicData(dataInstance, outputFileName);
                 }
             }
-
-            return 0;
         }
 
-        private void StdOutputXicData(XicData outputData)
+        private static void StdOutputXicData(XicData outputData)
         {
             var outputString = JsonConvert.SerializeObject(outputData);
             Console.WriteLine(outputString);
         }
 
-        private void OutputXicData(XicData outputData, string outputFileName)
+        private static void OutputXicData(XicData outputData, string outputFileName)
         {
             var outputString = JsonConvert.SerializeObject(outputData);
             File.WriteAllText(outputFileName, outputString);

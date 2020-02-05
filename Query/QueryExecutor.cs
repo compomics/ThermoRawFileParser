@@ -10,22 +10,23 @@ namespace ThermoRawFileParser.Query
 {
     public class QueryExecutor
     {
-        public static int Run(QueryParameters parameters)
+        public static void Run(QueryParameters parameters)
         {
             // parse the scans string
-            HashSet<int> scanIds = ParseScanIds(parameters.scans);
+            var scanIds = ParseScanIds(parameters.scans);
             parameters.scanNumbers = scanIds;
-            
-            ProxiSpectrumReader reader = new ProxiSpectrumReader(parameters);
-            List<PROXISpectrum> results = reader.Retrieve();
+
+            var reader = new ProxiSpectrumReader(parameters);
+            var results = reader.Retrieve();
 
             if (parameters.stdout)
             {
                 StdOutputQueryData(results);
             }
-            else 
+            else
             {
                 string outputFileName;
+
                 // if outputFile has been defined, put output there.
                 if (parameters.outputFile != null)
                 {
@@ -36,34 +37,35 @@ namespace ThermoRawFileParser.Query
                 {
                     outputFileName = Path.GetFullPath(parameters.rawFilePath);
                 }
-                string directory = Path.GetDirectoryName(outputFileName);
-                outputFileName = Path.Combine(directory ?? throw new NoNullAllowedException(), Path.GetFileNameWithoutExtension(outputFileName) + ".JSON");
+
+                var directory = Path.GetDirectoryName(outputFileName);
+
+                outputFileName = Path.Combine(directory ?? throw new NoNullAllowedException(),
+                    Path.GetFileNameWithoutExtension(outputFileName) + ".json");
+
                 OutputQueryData(results, outputFileName);
             }
-            return 0;
         }
-        
-        
-        public static void OutputQueryData(List<PROXISpectrum> outputData, string outputFileName)
+
+
+        private static void OutputQueryData(List<PROXISpectrum> outputData, string outputFileName)
         {
-            string outputString = JsonConvert.SerializeObject(outputData);
+            var outputString = JsonConvert.SerializeObject(outputData);
             File.WriteAllText(outputFileName, outputString);
         }
-        
 
-        public static void StdOutputQueryData(List<PROXISpectrum> outputData)
+
+        private static void StdOutputQueryData(List<PROXISpectrum> outputData)
         {
-            string outputString = JsonConvert.SerializeObject(outputData);
+            var outputString = JsonConvert.SerializeObject(outputData);
             Console.Write(outputString);
         }
-        
-        
-        
+
 
         private static HashSet<int> ParseScanIds(string text)
         {
             if (text.Length == 0) throw new OptionException("Scan ID string invalid, nothing specified", null);
-            foreach (char c in text)
+            foreach (var c in text)
             {
                 int ic = c;
                 if (!((ic == ',') || (ic == '-') || (ic == ' ') || ('0' <= ic && ic <= '9')))
@@ -72,14 +74,14 @@ namespace ThermoRawFileParser.Query
                 }
             }
 
-            string[] tokens = text.Split(new[] {','}, StringSplitOptions.None);
+            var tokens = text.Split(new[] {','}, StringSplitOptions.None);
 
-            HashSet<int> container = new HashSet<int>();
+            var container = new HashSet<int>();
 
-            for (int i = 0; i < tokens.Length; ++i)
+            for (var i = 0; i < tokens.Length; ++i)
             {
                 if (tokens[i].Length == 0) throw new OptionException("Scan ID string has invalid format", null);
-                string[] rangeBoundaries = tokens[i].Split(new[] {'-'}, StringSplitOptions.None);
+                var rangeBoundaries = tokens[i].Split(new[] {'-'}, StringSplitOptions.None);
                 if (rangeBoundaries.Length == 1)
                 {
                     int rangeStart;
@@ -108,7 +110,7 @@ namespace ThermoRawFileParser.Query
                         throw new OptionException("Scan ID string has invalid format", null);
                     }
 
-                    for (int l = rangeStart; l <= rangeEnd; ++l)
+                    for (var l = rangeStart; l <= rangeEnd; ++l)
                     {
                         container.Add(l);
                     }

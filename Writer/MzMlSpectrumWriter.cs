@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
@@ -1537,7 +1536,7 @@ namespace ThermoRawFileParser.Writer
                 scanType.userParam[0] = new UserParamType
                 {
                     name = "[Thermo Trailer Extra]Monoisotopic M/Z:",
-                    value = monoisotopicMass.ToString(),
+                    value = monoisotopicMass.Value.ToString(CultureInfo.InvariantCulture),
                     type = "xsd:float"
                 };
             }

@@ -110,7 +110,7 @@ namespace ThermoRawFileParser.Writer
 
             var metadata = new Metadata();
 
-            /** File Properties **/
+            // File Properties
             metadata.addFileProperty(new CVTerm("NCIT:C47922", "NCIT", "Pathname", rawFile.FileName));
             metadata.addFileProperty(new CVTerm("NCIT:C25714", "NCIT", "Version",
                 rawFile.FileHeader.Revision.ToString()));
@@ -179,7 +179,7 @@ namespace ThermoRawFileParser.Writer
 
                 if (scanFilter.MSOrder == MSOrderType.Ms2)
                 {
-                    fragmentationType.Add(parseActivationType(scanFilter.GetActivation(0)));
+                    fragmentationType.Add(ParseActivationType(scanFilter.GetActivation(0)));
 
                     if (scanEvent.ScanData == ScanDataType.Centroid || (scanEvent.ScanData == ScanDataType.Profile))
                     {
@@ -261,7 +261,7 @@ namespace ThermoRawFileParser.Writer
             File.WriteAllText(metadataOutputPath, json);
         }
 
-        public CVTerm parseActivationType(ActivationType activation)
+        private static CVTerm ParseActivationType(ActivationType activation)
         {
             string word = activation.ToString();
 

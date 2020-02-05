@@ -51,10 +51,10 @@ namespace ThermoRawFileParser.XIC
                 var maxMass = rawFile.RunHeaderEx.HighMass;
 
                 // Update global metadata
-                xicData.outputmeta.base64 = base64;
-                xicData.outputmeta.timeunit = "minutes";
+                xicData.OutputMeta.base64 = base64;
+                xicData.OutputMeta.timeunit = "minutes";
 
-                foreach (var xicUnit in xicData.content)
+                foreach (var xicUnit in xicData.Content)
                 {
                     IChromatogramSettings settings = null;
                     if (!xicUnit.Meta.MzStart.HasValue && !xicUnit.Meta.MzEnd.HasValue)
@@ -127,13 +127,13 @@ namespace ThermoRawFileParser.XIC
                     {
                         if (!base64)
                         {
-                            xicUnit.X = chromatogramTrace[0].Times;
-                            xicUnit.Y = chromatogramTrace[0].Intensities;
+                            xicUnit.RetentionTimes = chromatogramTrace[0].Times;
+                            xicUnit.Intensities = chromatogramTrace[0].Intensities;
                         }
                         else
                         {
-                            xicUnit.X = GetBase64String(chromatogramTrace[0].Times);
-                            xicUnit.Y = GetBase64String(chromatogramTrace[0].Intensities);
+                            xicUnit.RetentionTimes = GetBase64String(chromatogramTrace[0].Times);
+                            xicUnit.Intensities = GetBase64String(chromatogramTrace[0].Intensities);
                         }
                     }
                 }

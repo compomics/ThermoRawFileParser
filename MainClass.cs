@@ -15,7 +15,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.1.11 ";
+        public const string Version = "1.2.0 ";
 
         public static void Main(string[] args)
         {
@@ -75,7 +75,7 @@ namespace ThermoRawFileParser
                 },
                 {
                     "p|print_example",
-                    "Printing an examplarily json input file.",
+                    "Show a json input file example.",
                     v => parameters.printJsonExample = v != null
                 },
                 {
@@ -90,7 +90,7 @@ namespace ThermoRawFileParser
                 },
                 {
                     "s|stdout",
-                    "Pipes the output into standard output. Logging is being turned off",
+                    "Pipes the output into standard output. Logging is being turned off.",
                     v => parameters.stdout = v != null
                 }
             };
@@ -115,10 +115,10 @@ namespace ThermoRawFileParser
 
                 if (parameters.printJsonExample)
                 {
-                    string example_json =
+                    var exampleJson =
                         "[\n  {\n    \"mz\":673.363,\n    \"tolerance\":10,\n    \"tolerance_unit\": \"ppm\",\n  },\n  {\n    \"mz\":867.345,\n    \"tolerance\": 0.02,\n    \"tolerance_unit\": \"da\",\n    \"rt_start\":87.56,\n    \"rt_end\":99.56\n  }\n]";
 
-                    Console.WriteLine(example_json);
+                    Console.WriteLine(exampleJson);
                     return;
                 }
 
@@ -174,12 +174,12 @@ namespace ThermoRawFileParser
                 }
                 else
                 {
-                    DirectoryInfo d = new DirectoryInfo(Path.GetFullPath(fileDirectory));
-                    FileInfo[] files = d.GetFiles("*", SearchOption.TopDirectoryOnly)
+                    var directoryInfo = new DirectoryInfo(Path.GetFullPath(fileDirectory));
+                    var files = directoryInfo.GetFiles("*", SearchOption.TopDirectoryOnly)
                         .Where(f => f.Extension.ToLower() == ".raw").ToArray<FileInfo>();
-                    foreach (FileInfo file in files)
+                    foreach (var file in files)
                     {
-                        parameters.rawFileList.Add(Path.GetFullPath(file.Name));
+                        parameters.rawFileList.Add(file.FullName);
                     }
                 }
             }
@@ -206,8 +206,9 @@ namespace ThermoRawFileParser
             try
             {
                 // execute the xic commands
-                XicExecutor executor = new XicExecutor(parameters);
-                exitCode = executor.run();
+                XicExecutor.run(parameters);
+
+                exitCode = 0;
             }
             catch (Exception ex)
             {
@@ -324,18 +325,6 @@ namespace ThermoRawFileParser
             {
                 QueryExecutor.Run(parameters);
                 exitCode = 0;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                Log.Error(!ex.Message.IsNullOrEmpty()
-                    ? ex.Message
-                    : "Attempting to write to an unauthorized location.");
-            }
-            catch (Amazon.S3.AmazonS3Exception ex)
-            {
-                Log.Error(!ex.Message.IsNullOrEmpty()
-                    ? "An Amazon S3 exception occured: " + ex.Message
-                    : "An Amazon S3 exception occured: " + ex);
             }
             catch (Exception ex)
             {

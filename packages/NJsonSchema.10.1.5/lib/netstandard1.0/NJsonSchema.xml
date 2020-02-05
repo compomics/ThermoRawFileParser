@@ -429,6 +429,14 @@
             <param name="contextualType">The type.</param>
             <returns>true or false.</returns>
         </member>
+        <member name="M:NJsonSchema.Generation.DefaultReflectionService.IsIAsyncEnumerableType(Namotion.Reflection.ContextualType)">
+            <summary>Checks whether the given type is an IAsyncEnumerable type.</summary>
+            <remarks>
+            See this issue: https://github.com/RicoSuter/NSwag/issues/2582#issuecomment-576165669
+            </remarks>
+            <param name="contextualType">The type.</param>
+            <returns>true or false.</returns>
+        </member>
         <member name="M:NJsonSchema.Generation.DefaultReflectionService.IsArrayType(Namotion.Reflection.ContextualType)">
             <summary>Checks whether the given type is an array type.</summary>
             <param name="contextualType">The type.</param>

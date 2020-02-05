@@ -33,7 +33,7 @@ namespace ThermoRawFileParser.XIC
         public double? Tolerance { get; set; }
 
         [JsonProperty("tolerance_unit", DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue("")]
+        [DefaultValue("ppm")]
         public string ToleranceUnit { get; set; }
 
         [JsonProperty("charge", DefaultValueHandling = DefaultValueHandling.Populate)]
@@ -53,28 +53,14 @@ namespace ThermoRawFileParser.XIC
             return MzStart != null && MzEnd != null;
         }
 
-        public bool HasMzTol()
+        public bool HasMz()
         {
-            return Mz != null && Tolerance != null && ToleranceUnit != "";
+            return Mz != null;
         }
 
         public bool HasSequence()
         {
-            return Sequence != "" && Tolerance != null && ToleranceUnit != "";
-        }
-
-        public bool IsAmbiguous()
-        {
-            return (this.HasMzTol() && this.HasMzRange()) ||
-                   (this.HasMzTol() && this.HasSequence()) ||
-                   (this.HasMzRange() && this.HasSequence());
-        }
-        
-        [OnError]
-        internal void OnError(StreamingContext context, ErrorContext errorContext)
-        {
-            Console.WriteLine("dijeieije");
-            errorContext.Handled = true;
+            return Sequence != "";
         }
     }
 }

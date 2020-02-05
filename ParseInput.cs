@@ -92,6 +92,7 @@ namespace ThermoRawFileParser
         public ParseInput()
         {
             MetadataFormat = MetadataFormat.NONE;
+            OutputFormat = OutputFormat.NONE;
             Gzip = false;
             NoPeakPicking = false;
             NoZlibCompression = false;
