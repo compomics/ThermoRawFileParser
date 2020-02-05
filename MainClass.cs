@@ -21,10 +21,10 @@ namespace ThermoRawFileParser
 
         public static void Main(string[] args)
         {
-            //Set Invariant culture as default for all further processing
+            // Set Invariant culture as default for all further processing
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
 
-            // introduce subcommand for xics and spectra query
+            // Introduce subcommand for xics and spectra query
             if (args.Length > 0)
             {
                 switch (args[0])
@@ -32,15 +32,9 @@ namespace ThermoRawFileParser
                     case "xic":
                         XicParametersParsing(args.Skip(1).ToArray()); // skip first command
                         break;
-
-                    // if we want more subcommands, we can introduce here different cases
-                    // case "subdomain whatever": break;
-
                     case "query":
                         SpectrumQueryParametersParsing(args.Skip(1).ToArray());
                         break;
-
-
                     default:
                         RegularParametersParsing(args);
                         break;
@@ -460,7 +454,7 @@ namespace ThermoRawFileParser
                     string helpmessage = String.Format("usage is {0} [subcommand] [options]\nsubcommand is xic|query\n",
                         Assembly.GetExecutingAssembly().GetName().Name);
                     ShowHelp(helpmessage +
-                        "(use -option=value for the optional arguments):", null,
+                             "(use -option=value for the optional arguments):", null,
                         optionSet);
                     return;
                 }
