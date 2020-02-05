@@ -18,6 +18,7 @@
   {
     "sequence":"PEPTIDE",
     "tolerance":0.5,
-    "tolerance_unit":"amu"
+    "tolerance_unit":"amu",
+    "scan_filter": "ms2"
   }
 ]

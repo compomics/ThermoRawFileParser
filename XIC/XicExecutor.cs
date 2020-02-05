@@ -45,7 +45,7 @@ namespace ThermoRawFileParser.XIC
             }
             return 0;
         }
-        
+
         public void StdOutputXicData(XicData outputData){
             string outputString = JsonConvert.SerializeObject(outputData);
             Console.WriteLine(outputString);

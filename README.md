@@ -26,7 +26,9 @@ For running on Windows, omit `mono`. The optional parameters only work in the -o
 
 ```
 ThermoRawFileParser.exe --help
- usage is (use -option=value for the optional arguments):
+ usage is ThermoRawFileParser [subcommand] [option]
+ subcommand is xic|query
+ (use -option=value for the optional arguments):
   -h, --help                 Prints out the options.
       --version              Prints out the library version.
   -i, --input=VALUE          The raw file input (Required). Specify this or an

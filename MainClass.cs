@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.IO;
 using log4net;
 using log4net.Core;
@@ -7,6 +8,7 @@ using ThermoFisher.CommonCore.Data;
 using System.Linq;
 using ThermoRawFileParser.Query;
 using ThermoRawFileParser.XIC;
+using System.Globalization;
 
 namespace ThermoRawFileParser
 {
@@ -19,6 +21,9 @@ namespace ThermoRawFileParser
 
         public static void Main(string[] args)
         {
+            //Set Invariant culture as default for all further processing
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+
             // introduce subcommand for xics and spectra query
             if (args.Length > 0)
             {
@@ -479,7 +484,10 @@ namespace ThermoRawFileParser
 
                 if (help)
                 {
-                    ShowHelp("usage is (use -option=value for the optional arguments):", null,
+                    string helpmessage = String.Format("usage is {0} [subcommand] [options]\nsubcommand is xic|query\n",
+                        Assembly.GetExecutingAssembly().GetName().Name);
+                    ShowHelp(helpmessage +
+                        "(use -option=value for the optional arguments):", null,
                         optionSet);
                     return;
                 }
