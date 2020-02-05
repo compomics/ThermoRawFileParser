@@ -80,7 +80,8 @@ namespace ThermoRawFileParserTest
         {
             'mz':488.5384,
             'tolerance':10,
-            'tolerance_unit':'ppm'           
+            'tolerance_unit':'ppm',
+            'scan_filter':'ms'           
         },
         {
             'mz':575.2413,
@@ -171,7 +172,8 @@ namespace ThermoRawFileParserTest
         {
             'mz': 488.5384,
             'tolerance':10,
-            'tolerance_unit':'ppm'           
+            'tolerance_unit':'ppm',
+            'scan_filter': 'ms2'          
         },
         {
             'mz':575.2413,

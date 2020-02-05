@@ -2,7 +2,8 @@
   {
     "mz": 488.5384,
     "tolerance": 2,
-    "tolerance_unit": "da"
+    "tolerance_unit": "da",
+    "filter": "ms2"
   },
   {
     "mz": 570.2413,

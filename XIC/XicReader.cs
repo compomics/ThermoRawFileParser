@@ -61,7 +61,7 @@ namespace ThermoRawFileParser.XIC
                     {
                         settings = new ChromatogramTraceSettings()
                         {
-                            Filter = MsFilter
+                            Filter = xicUnit.Meta.Filter ?? "ms"
                         };
                     }
 
@@ -79,7 +79,7 @@ namespace ThermoRawFileParser.XIC
                     {
                         settings = new ChromatogramTraceSettings(TraceType.MassRange)
                         {
-                            Filter = MsFilter,
+                            Filter = xicUnit.Meta.Filter ?? "ms",
                             MassRanges = new[]
                             {
                                 new Range(xicUnit.Meta.MzStart.Value,

@@ -1,16 +1,7 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
 using NJsonSchema.Validation;
-using ThermoFisher.CommonCore.Data;
 using ThermoRawFileParser.Util;
 
 namespace ThermoRawFileParser.XIC
@@ -39,7 +30,8 @@ namespace ThermoRawFileParser.XIC
             {'required' : ['mz_start','tolerance']},            
             {'required' : ['mz_end','tolerance']},            
         ]
-     },             
+     },
+     'additionalProperties': false,             
      'properties': {
         'mz': {
             '$id': '#/items/properties/mz',
@@ -58,13 +50,13 @@ namespace ThermoRawFileParser.XIC
             'type': 'string',
             'title': 'The Tolerance_unit Schema',
             'enum': ['ppm', 'amu', 'mmu', 'da']
-        },
+         },
         'mz_start': {
             '$id': '#/items/properties/mz_start',
             'type': 'number',
             'minimum': 0, 
             'title': 'The Mz_start Schema',    
-        },
+         },
         'mz_end': {
             '$id': '#/items/properties/mz_end',
             'type': 'number',
@@ -87,6 +79,11 @@ namespace ThermoRawFileParser.XIC
             '$id': '#/items/properties/sequence',
             'type': 'string',
             'title': 'The Sequence Schema',
+         },
+         'scan_filter': {
+            '$id': '#/items/properties/scan_filter',
+            'type': 'string',
+            'title': 'The Filter Schema',
          }
         }
        }
@@ -139,11 +136,11 @@ namespace ThermoRawFileParser.XIC
                     }
 
                     xicUnit = new XicUnit(xic.Mz.Value - delta, xic.Mz.Value + delta, xic.RtStart,
-                        xic.RtEnd);
+                        xic.RtEnd, xic.Filter);
                 }
                 else if (xic.HasMzRange())
                 {
-                    xicUnit = new XicUnit(xic.MzStart.Value, xic.MzEnd.Value, xic.RtStart, xic.RtEnd);
+                    xicUnit = new XicUnit(xic.MzStart.Value, xic.MzEnd.Value, xic.RtStart, xic.RtEnd, xic.Filter);
                 }
 
                 if (xicUnit == null || !xicUnit.HasValidRanges())

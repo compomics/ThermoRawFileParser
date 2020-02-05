@@ -115,8 +115,8 @@ namespace ThermoRawFileParser.Query
                                 // trailer extra data list
                                 var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
                                 int charge = 0;
-                                double? monoisotopicMz = null;
-                                double? isolationWidth = null;
+                                double monoisotopicMz = 0.0;
+                                double isolationWidth = 0.0;
                                 for (var i = 0; i < trailerData.Length; i++)
                                 {
                                     if (trailerData.Labels[i] == "Ion Injection Time (ms):")
@@ -148,10 +148,20 @@ namespace ThermoRawFileParser.Query
 
                                 if (reaction != null)
                                 {
+                                    // Store the precursor information
                                     var selectedIonMz =
                                         SpectrumWriter.CalculateSelectedIonMz(reaction, monoisotopicMz, isolationWidth);
                                     proxiSpectrum.AddAttribute(accession: "MS:10000744", name: "selected ion m/z",
                                         value: selectedIonMz.ToString(CultureInfo.InvariantCulture));
+                                    proxiSpectrum.AddAttribute(accession: "MS:1000827", name: "isolation window target m/z",
+                                        value: selectedIonMz.ToString(CultureInfo.InvariantCulture));
+
+                                    // Store the isolation window information
+                                    double isolationHalfWidth = isolationWidth / 2;
+                                    proxiSpectrum.AddAttribute(accession: "MS:1000828", name: "isolation window lower offset",
+                                        value: isolationHalfWidth.ToString(CultureInfo.InvariantCulture));
+                                    proxiSpectrum.AddAttribute(accession: "MS:1000829", name: "isolation window upper offset",
+                                        value: isolationHalfWidth.ToString(CultureInfo.InvariantCulture));
                                 }
 
                                 // scan polarity

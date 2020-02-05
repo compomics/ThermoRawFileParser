@@ -1,25 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using Newtonsoft.Json;
 
 namespace ThermoRawFileParser.XIC
 {
     public class XicMeta
     {
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(null)]
         public double? MzStart { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(null)]
         public double? MzEnd { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(null)]
         public double? RtStart { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(null)]
         public double? RtEnd { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(null)]
+        public string Filter { get; set; }
 
 
         public XicMeta()
         {
-            // MzStart = -1;
-            // MzEnd = -1;
-            // RtStart = -1;
-            // RtEnd = -1;
+            MzStart = null;
+            MzEnd = null;
+            RtStart = null;
+            RtEnd = null;
+            Filter = null;
         }
 
         public XicMeta(XicMeta copy)
@@ -28,6 +41,7 @@ namespace ThermoRawFileParser.XIC
             MzEnd = copy.MzEnd;
             RtStart = copy.RtStart;
             RtEnd = copy.RtEnd;
+            Filter = copy.Filter;
         }
     }
 }
