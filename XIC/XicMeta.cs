@@ -6,17 +6,21 @@ namespace ThermoRawFileParser.XIC
     public class XicMeta
     {
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        [DefaultValue(-1.0)]
-        public double MzStart { get; set; }
+        [DefaultValue(null)]
+        public double? MzStart { get; set; }
+
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        [DefaultValue(-1.0)] 
-        public double MzEnd { get; set; }
+        [DefaultValue(null)]
+        public double? MzEnd { get; set; }
+
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        [DefaultValue(-1.0)] 
-        public double RtStart { get; set; }
+        [DefaultValue(null)]
+        public double? RtStart { get; set; }
+
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        [DefaultValue(-1.0)] 
-        public double RtEnd { get; set; }
+        [DefaultValue(null)]
+        public double? RtEnd { get; set; }
+
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         [DefaultValue(null)]
         public string Filter { get; set; }
@@ -24,14 +28,15 @@ namespace ThermoRawFileParser.XIC
 
         public XicMeta()
         {
-            MzStart = -1;
-            MzEnd = -1;
-            RtStart = -1;
-            RtEnd = -1;
+            MzStart = null;
+            MzEnd = null;
+            RtStart = null;
+            RtEnd = null;
             Filter = null;
         }
-        
-        public XicMeta(XicMeta copy){
+
+        public XicMeta(XicMeta copy)
+        {
             MzStart = copy.MzStart;
             MzEnd = copy.MzEnd;
             RtStart = copy.RtStart;

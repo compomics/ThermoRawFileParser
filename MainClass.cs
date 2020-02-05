@@ -17,7 +17,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.1.11 ";
+        public const string Version = "1.2.0 ";
 
         public static void Main(string[] args)
         {
@@ -80,7 +80,7 @@ namespace ThermoRawFileParser
                 },
                 {
                     "p|print_example",
-                    "Printing an examplarily json input file.",
+                    "Show a json input file example.",
                     v => parameters.printJsonExample = v != null
                 },
                 {
@@ -95,7 +95,7 @@ namespace ThermoRawFileParser
                 },
                 {
                     "s|stdout",
-                    "Pipes the output into standard output. Logging is being turned off",
+                    "Pipes the output into standard output. Logging is being turned off.",
                     v => parameters.stdout = v != null
                 }
             };
@@ -120,10 +120,10 @@ namespace ThermoRawFileParser
 
                 if (parameters.printJsonExample)
                 {
-                    string example_json =
+                    var exampleJson =
                         "[\n  {\n    \"mz\":673.363,\n    \"tolerance\":10,\n    \"tolerance_unit\": \"ppm\",\n  },\n  {\n    \"mz\":867.345,\n    \"tolerance\": 0.02,\n    \"tolerance_unit\": \"da\",\n    \"rt_start\":87.56,\n    \"rt_end\":99.56\n  }\n]";
 
-                    Console.WriteLine(example_json);
+                    Console.WriteLine(exampleJson);
                     return;
                 }
 
@@ -179,12 +179,12 @@ namespace ThermoRawFileParser
                 }
                 else
                 {
-                    DirectoryInfo d = new DirectoryInfo(Path.GetFullPath(fileDirectory));
-                    FileInfo[] files = d.GetFiles("*", SearchOption.TopDirectoryOnly)
+                    var directoryInfo = new DirectoryInfo(Path.GetFullPath(fileDirectory));
+                    var files = directoryInfo.GetFiles("*", SearchOption.TopDirectoryOnly)
                         .Where(f => f.Extension.ToLower() == ".raw").ToArray<FileInfo>();
-                    foreach (FileInfo file in files)
+                    foreach (var file in files)
                     {
-                        parameters.rawFileList.Add(Path.GetFullPath(file.Name));
+                        parameters.rawFileList.Add(file.FullName);
                     }
                 }
             }
@@ -211,8 +211,9 @@ namespace ThermoRawFileParser
             try
             {
                 // execute the xic commands
-                XicExecutor executor = new XicExecutor(parameters);
-                exitCode = executor.run();
+                XicExecutor.run(parameters);
+
+                exitCode = 0;
             }
             catch (Exception ex)
             {
@@ -330,18 +331,6 @@ namespace ThermoRawFileParser
                 QueryExecutor.Run(parameters);
                 exitCode = 0;
             }
-            catch (UnauthorizedAccessException ex)
-            {
-                Log.Error(!ex.Message.IsNullOrEmpty()
-                    ? ex.Message
-                    : "Attempting to write to an unauthorized location.");
-            }
-            catch (Amazon.S3.AmazonS3Exception ex)
-            {
-                Log.Error(!ex.Message.IsNullOrEmpty()
-                    ? "An Amazon S3 exception occured: " + ex.Message
-                    : "An Amazon S3 exception occured: " + ex);
-            }
             catch (Exception ex)
             {
                 if (ex is RawFileParserException)
@@ -364,26 +353,10 @@ namespace ThermoRawFileParser
         {
             var help = false;
             var version = false;
-            string rawFilePath = null;
-            string rawDirectoryPath = null;
-            string outputDirectory = null;
-            string outputFile = null;
             string outputFormatString = null;
-            var outputFormat = OutputFormat.NONE;
-            string outputMetadataString = null;
-            var outputMetadataFormat = MetadataFormat.NONE;
-            string metadataOutputFile = null;
-            var gzip = false;
-            var noPeakPicking = false;
-            var noZlibCompression = false;
-            var logFormat = LogFormat.DEFAULT;
-            var ignoreInstrumentErrors = false;
-            string s3url = null;
-            string s3AccessKeyId = null;
-            string s3SecretAccessKey = null;
+            string metadataFormatString = null;
             string logFormatString = null;
-            string bucketName = null;
-
+            var parseInput = new ParseInput();
 
             var optionSet = new OptionSet
             {
@@ -397,22 +370,22 @@ namespace ThermoRawFileParser
                 },
                 {
                     "i=|input=", "The raw file input (Required). Specify this or an input directory -d.",
-                    v => rawFilePath = v
+                    v => parseInput.RawFilePath = v
                 },
                 {
                     "d=|input_directory=",
                     "The directory containing the raw files (Required). Specify this or an input raw file -i.",
-                    v => rawDirectoryPath = v
+                    v => parseInput.RawDirectoryPath = v
                 },
                 {
                     "o=|output=",
                     "The output directory. Specify this or an output file -b. Specifying neither writes to the input directory.",
-                    v => outputDirectory = v
+                    v => parseInput.OutputDirectory = v
                 },
                 {
                     "b=|output_file",
                     "The output file. Specify this or an output directory -o. Specifying neither writes to the input directory.",
-                    v => outputFile = v
+                    v => parseInput.OutputFile = v
                 },
                 {
                     "f=|format=",
@@ -421,26 +394,26 @@ namespace ThermoRawFileParser
                 },
                 {
                     "m=|metadata=", "The metadata output format: 0 for JSON, 1 for TXT.",
-                    v => outputMetadataString = v
+                    v => metadataFormatString = v
                 },
                 {
                     "c=|metadata_output_file",
                     "The metadata output file. By default the metadata file is written to the output directory.",
-                    v => metadataOutputFile = v
+                    v => parseInput.MetadataOutputFile = v
                 },
                 {
                     "g|gzip", "GZip the output file.",
-                    v => gzip = v != null
+                    v => parseInput.Gzip = v != null
                 },
                 {
                     "p|noPeakPicking",
                     "Don't use the peak picking provided by the native Thermo library. By default peak picking is enabled.",
-                    v => noPeakPicking = v != null
+                    v => parseInput.NoPeakPicking = v != null
                 },
                 {
                     "z|noZlibCompression",
                     "Don't use zlib compression for the m/z ratios and intensities. By default zlib compression is enabled.",
-                    v => noZlibCompression = v != null
+                    v => parseInput.NoZlibCompression = v != null
                 },
                 {
                     "l=|logging=", "Optional logging level: 0 for silent, 1 for verbose.",
@@ -448,27 +421,27 @@ namespace ThermoRawFileParser
                 },
                 {
                     "e|ignoreInstrumentErrors", "Ignore missing properties by the instrument.",
-                    v => ignoreInstrumentErrors = v != null
+                    v => parseInput.IgnoreInstrumentErrors = v != null
                 },
                 {
                     "u:|s3_url:",
                     "Optional property to write directly the data into S3 Storage.",
-                    v => s3url = v
+                    v => parseInput.S3Url = v
                 },
                 {
                     "k:|s3_accesskeyid:",
                     "Optional key for the S3 bucket to write the file output.",
-                    v => s3AccessKeyId = v
+                    v => parseInput.S3AccessKeyId = v
                 },
                 {
                     "t:|s3_secretaccesskey:",
                     "Optional key for the S3 bucket to write the file output.",
-                    v => s3SecretAccessKey = v
+                    v => parseInput.S3SecretAccessKey = v
                 },
                 {
                     "n:|s3_bucketName:",
                     "S3 bucket name",
-                    v => bucketName = v
+                    v => parseInput.BucketName = v
                 }
             };
 
@@ -498,77 +471,87 @@ namespace ThermoRawFileParser
                     return;
                 }
 
-                if (rawFilePath == null && rawDirectoryPath == null)
+                if (parseInput.RawFilePath == null && parseInput.RawDirectoryPath == null)
                 {
                     throw new OptionException(
                         "specify an input file or an input directory",
                         "-i, --input or -d, --input_directory");
                 }
 
-                if (rawFilePath != null && rawDirectoryPath != null)
+                if (parseInput.RawFilePath != null)
                 {
-                    throw new OptionException(
-                        "specify an input file or an input directory, not both",
-                        "-i, --input or -d, --input_directory");
+                    if (parseInput.RawDirectoryPath != null)
+                    {
+                        throw new OptionException(
+                            "specify an input file or an input directory, not both",
+                            "-i, --input or -d, --input_directory");
+                    }
+
+                    if (!File.Exists(parseInput.RawFilePath))
+                    {
+                        throw new OptionException(
+                            "specify a valid RAW file location",
+                            "-i, --input");
+                    }
                 }
 
-                if (rawFilePath != null && !File.Exists(rawFilePath))
-                {
-                    throw new OptionException(
-                        "specify a valid RAW file location",
-                        "-i, --input");
-                }
-
-                if (rawDirectoryPath != null && !Directory.Exists(rawDirectoryPath))
+                if (parseInput.RawDirectoryPath != null && !Directory.Exists(parseInput.RawDirectoryPath))
                 {
                     throw new OptionException(
                         "specify a valid input directory",
                         "-d, --input_directory");
                 }
 
-                if (outputFile == null && outputDirectory == null)
+                if (parseInput.OutputFile == null && parseInput.OutputDirectory == null)
                 {
-                    if (rawFilePath != null)
+                    if (parseInput.RawFilePath != null)
                     {
-                        outputDirectory = Path.GetDirectoryName(rawFilePath);
+                        parseInput.OutputDirectory = Path.GetDirectoryName(parseInput.RawFilePath);
                     }
-                    else if (rawDirectoryPath != null)
+                    else if (parseInput.RawDirectoryPath != null)
                     {
-                        outputDirectory = rawDirectoryPath;
+                        parseInput.OutputDirectory = parseInput.RawDirectoryPath;
                     }
                 }
 
-                if (outputFile != null && outputDirectory != null)
+                if (parseInput.OutputFile != null)
                 {
-                    throw new OptionException(
-                        "specify an output directory or an output file, not both",
-                        "-o, --output or -b, --output_file");
+                    if (parseInput.OutputDirectory == null)
+                    {
+                        parseInput.OutputDirectory = Path.GetDirectoryName(parseInput.OutputFile);
+                    }
+                    else
+                    {
+                        throw new OptionException(
+                            "specify an output directory or an output file, not both",
+                            "-o, --output or -b, --output_file");
+                    }
+
+                    if (Directory.Exists(parseInput.OutputFile))
+                    {
+                        throw new OptionException(
+                            "specify a valid output file, not a directory",
+                            "-b, --output_file");
+                    }
+
+                    if (parseInput.RawDirectoryPath != null)
+                    {
+                        throw new OptionException(
+                            "when using an input directory, specify an output directory instead of an output file",
+                            "-o, --output instead of -b, --output_file");
+                    }
                 }
 
-                if (outputFile != null && Directory.Exists(outputFile))
-                {
-                    throw new OptionException(
-                        "specify a valid output file, not a directory",
-                        "-b, --output_file");
-                }
-
-                if (outputFile != null && rawDirectoryPath != null)
-                {
-                    throw new OptionException(
-                        "when using an input directory, specify an output directory instead of an output file",
-                        "-o, --output instead of -b, --output_file");
-                }
-
-                if (outputDirectory != null && !Directory.Exists(outputDirectory))
+                if (parseInput.OutputDirectory != null && !Directory.Exists(parseInput.OutputDirectory))
                 {
                     throw new OptionException(
                         "specify a valid output directory",
                         "-o, --output");
                 }
 
-                if (outputMetadataString == null && outputFormatString == null)
+                if (metadataFormatString == null && outputFormatString == null)
                 {
-                    outputFormat = OutputFormat.MzML;
+                    parseInput.OutputFormat = OutputFormat.MzML;
                 }
 
                 if (outputFormatString != null)
@@ -588,7 +571,7 @@ namespace ThermoRawFileParser
                     if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt) &&
                         ((OutputFormat) outPutFormatInt) != OutputFormat.NONE)
                     {
-                        outputFormat = (OutputFormat) outPutFormatInt;
+                        parseInput.OutputFormat = (OutputFormat) outPutFormatInt;
                     }
                     else
                     {
@@ -598,12 +581,12 @@ namespace ThermoRawFileParser
                     }
                 }
 
-                if (outputMetadataString != null)
+                if (metadataFormatString != null)
                 {
                     int metadataInt;
                     try
                     {
-                        metadataInt = int.Parse(outputMetadataString);
+                        metadataInt = int.Parse(metadataFormatString);
                     }
                     catch (FormatException)
                     {
@@ -614,7 +597,7 @@ namespace ThermoRawFileParser
                     if (Enum.IsDefined(typeof(MetadataFormat), metadataInt) &&
                         ((MetadataFormat) metadataInt) != MetadataFormat.NONE)
                     {
-                        outputMetadataFormat = (MetadataFormat) metadataInt;
+                        parseInput.MetadataFormat = (MetadataFormat) metadataInt;
                     }
                     else
                     {
@@ -623,20 +606,20 @@ namespace ThermoRawFileParser
                     }
                 }
 
-                if (metadataOutputFile != null && Directory.Exists(metadataOutputFile))
+                if (parseInput.MetadataOutputFile != null && Directory.Exists(parseInput.MetadataOutputFile))
                 {
                     throw new OptionException(
                         "specify a valid metadata output file, not a directory",
                         "-c, --metadata_output_file");
                 }
 
-                if (metadataOutputFile != null && outputMetadataFormat == MetadataFormat.NONE)
+                if (parseInput.MetadataOutputFile != null && parseInput.MetadataFormat == MetadataFormat.NONE)
                 {
                     throw new OptionException("specify a metadata format (0 for JSON, 1 for TXT)",
                         "-m, --metadata");
                 }
 
-                if (metadataOutputFile != null && rawDirectoryPath != null)
+                if (parseInput.MetadataOutputFile != null && parseInput.RawDirectoryPath != null)
                 {
                     throw new OptionException(
                         "when using an input directory, specify an output directory instead of a metadata output file",
@@ -660,7 +643,7 @@ namespace ThermoRawFileParser
                     {
                         if ((LogFormat) logFormatInt != LogFormat.NONE)
                         {
-                            logFormat = (LogFormat) logFormatInt;
+                            parseInput.LogFormat = (LogFormat) logFormatInt;
                         }
                     }
                     else
@@ -669,6 +652,17 @@ namespace ThermoRawFileParser
                             "-l, --logging");
                     }
                 }
+
+                if (parseInput.S3Url != null && parseInput.S3AccessKeyId != null &&
+                    parseInput.S3SecretAccessKey != null && parseInput.BucketName != null)
+                    if (Uri.IsWellFormedUriString(parseInput.S3Url, UriKind.Absolute))
+                    {
+                        parseInput.InitializeS3Bucket();
+                    }
+                    else
+                    {
+                        throw new RawFileParserException("Invalid S3 url: " + parseInput.S3Url);
+                    }
             }
             catch (OptionException optionException)
             {
@@ -692,7 +686,7 @@ namespace ThermoRawFileParser
             var exitCode = 1;
             try
             {
-                switch (logFormat)
+                switch (parseInput.LogFormat)
                 {
                     case LogFormat.VERBOSE:
                         ((log4net.Repository.Hierarchy.Hierarchy) LogManager.GetRepository()).Root.Level =
@@ -708,9 +702,6 @@ namespace ThermoRawFileParser
                         break;
                 }
 
-                var parseInput = new ParseInput(rawFilePath, rawDirectoryPath, outputDirectory, outputFile,
-                    outputFormat, outputMetadataFormat, metadataOutputFile, gzip, noPeakPicking, noZlibCompression,
-                    logFormat, ignoreInstrumentErrors, s3url, s3AccessKeyId, s3SecretAccessKey, bucketName);
                 RawFileParser.Parse(parseInput);
 
                 exitCode = 0;

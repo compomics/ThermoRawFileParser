@@ -103,7 +103,7 @@ namespace ThermoRawFileParser
                 var firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
                 var lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
 
-                if (parseInput.OutputMetadata != MetadataFormat.NONE)
+                if (parseInput.MetadataFormat != MetadataFormat.NONE)
                 {
                     MetadataWriter metadataWriter;
                     if (parseInput.MetadataOutputFile != null)
@@ -116,7 +116,7 @@ namespace ThermoRawFileParser
                             parseInput.RawFileNameWithoutExtension);
                     }
 
-                    switch (parseInput.OutputMetadata)
+                    switch (parseInput.MetadataFormat)
                     {
                         case MetadataFormat.JSON:
                             metadataWriter.WriteJsonMetada(rawFile, firstScanNumber, lastScanNumber);

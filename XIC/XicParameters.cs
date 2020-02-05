@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 
 namespace ThermoRawFileParser.XIC
@@ -36,6 +35,7 @@ namespace ThermoRawFileParser.XIC
             {
                 rawFileList.Add(fileName);
             }
+
             jsonFilePath = copy.jsonFilePath;
             outputDirectory = copy.outputDirectory;
             printJsonExample = copy.printJsonExample;

@@ -1,0 +1,26 @@
+[
+  {
+    "mz": 488.5384,
+    "tolerance": 2,
+    "tolerance_unit": "da",
+    "filter": "ms2"
+  },
+  {
+    "mz": 570.2413,
+    "tolerance": 1000,
+    "tolerance_unit": "ppm",
+    "rt_start": 20,
+    "rt_end": 80
+  },
+  {
+    "mz_start": 749.7860,
+    "mz_end": 752.8093,
+    "rt_start": 20,
+    "rt_end": 80
+  },
+  {
+    "sequence": "PEPTIDE",
+    "tolerance": 0.5,
+    "tolerance_unit": "amu"
+  }
+]

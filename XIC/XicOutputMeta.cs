@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace ThermoRawFileParser.XIC
 {
@@ -17,7 +12,7 @@ namespace ThermoRawFileParser.XIC
             base64 = false;
             timeunit = String.Empty;
         }
-        
+
         public XicOutputMeta(XicOutputMeta copy)
         {
             base64 = copy.base64;

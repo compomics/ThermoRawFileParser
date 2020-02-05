@@ -80,12 +80,21 @@
       <HintPath>packages\MathNet.Numerics.4.8.1\lib\net461\MathNet.Numerics.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Mono.Options, Version=5.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>packages\Mono.Options.5.3.0.1\lib\net4-client\Mono.Options.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
+    <Reference Include="Namotion.Reflection, Version=1.0.8.0, Culture=neutral, PublicKeyToken=c2f9c3bdfae56102">
+      <HintPath>packages\Namotion.Reflection.1.0.8\lib\net45\Namotion.Reflection.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
       <HintPath>packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NJsonSchema, Version=10.1.5.0, Culture=neutral, PublicKeyToken=c2f9c3bdfae56102">
+      <HintPath>packages\NJsonSchema.10.1.5\lib\net45\NJsonSchema.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.framework, Version=3.12.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb">
@@ -96,7 +105,9 @@
       <HintPath>packages\Parquet.Net.2.0.0\lib\net451\Parquet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <HintPath>packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>

@@ -19,7 +19,7 @@ namespace ThermoRawFileParser.Query
         private const string PositivePolarity = "+";
         private const string NegativePolarity = "-";
 
-        private QueryParameters queryParameters;
+        private readonly QueryParameters queryParameters;
 
         public ProxiSpectrumReader(QueryParameters _queryParameters)
         {

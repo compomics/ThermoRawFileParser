@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
+using ThermoFisher.CommonCore.Data;
+using ThermoRawFileParser;
 using ThermoRawFileParser.XIC;
 
 namespace ThermoRawFileParserTest
@@ -10,34 +12,241 @@ namespace ThermoRawFileParserTest
     public class XicReaderTests
     {
         [Test]
-        public void testXicRead()
+        public void testXicReadFullRange()
         {
-            var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"small.RAW");
+            var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data/small.RAW");
             XicData xicData = new XicData
             {
                 // test the full range
-                content = new List<XicUnit>
+                Content = new List<XicUnit>
                 {
                     new XicUnit()
                     {
                         Meta = new XicMeta()
                         {
-                            MzStart = -1,
-                            //MzStart = 749.786,
-                            //MzEnd = 749.8093,
-                            MzEnd = -1,
-                            RtStart = -1,
-                            //RtStart = 2,
-                            RtEnd = -1
+                            MzStart = null,
+                            MzEnd = null,
+                            RtStart = null,
+                            RtEnd = null
                         }
                     }
                 }
             };
-            
-            XicReader.ReadXic(testRawFile, true, xicData);
-            Assert.AreEqual(xicData.content, "dijfijf");
+            XicReader.ReadXic(testRawFile, false, xicData);
+            XicUnit xicUnit = xicData.Content[0];
+            Assert.AreEqual(14, ((Array) xicUnit.RetentionTimes).Length);
+            Assert.AreEqual(14, ((Array) xicUnit.Intensities).Length);
+            Assert.AreEqual(140, xicUnit.Meta.MzStart, 0.01);
+            Assert.AreEqual(2000, xicUnit.Meta.MzEnd, 0.01);
+            Assert.AreEqual(0.004935, xicUnit.Meta.RtStart, 0.01);
+            Assert.AreEqual(0.4872366666, xicUnit.Meta.RtEnd, 0.01);
         }
-        
-        
+
+        [Test]
+        public void testXicRead()
+        {
+            var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data/small2.RAW");
+            XicData xicData = new XicData
+            {
+                // test the full range
+                Content = new List<XicUnit>
+                {
+                    new XicUnit()
+                    {
+                        Meta = new XicMeta()
+                        {
+                            MzStart = 749.786,
+                            MzEnd = 749.8093,
+                            RtStart = null,
+                            RtEnd = null
+                        }
+                    }
+                }
+            };
+            XicReader.ReadXic(testRawFile, false, xicData);
+            XicUnit xicUnit = xicData.Content[0];
+            Assert.AreEqual(46, ((Array) xicUnit.RetentionTimes).Length);
+            Assert.AreEqual(46, ((Array) xicUnit.Intensities).Length);
+            Assert.AreEqual(749.786, xicUnit.Meta.MzStart, 0.01);
+            Assert.AreEqual(749.8093, xicUnit.Meta.MzEnd, 0.01);
+            Assert.AreEqual(10, xicUnit.Meta.RtStart, 0.01);
+            Assert.AreEqual(10.98, xicUnit.Meta.RtEnd, 0.01);
+        }
+
+        [Test]
+        public void testValidateJson()
+        {
+            string json = @"[
+        {
+            'mz':488.5384,
+            'tolerance':10,
+            'tolerance_unit':'ppm',
+            'scan_filter':'ms'           
+        },
+        {
+            'mz':575.2413,
+            'tolerance':10,
+            'tolerance_unit':'ppm'
+        },
+        {
+            'mz_start':749.7860,
+            'mz_end' : 750.4,            
+            'rt_start':630,
+            'rt_end':660
+        },
+        {
+            'sequence':'LENNART',
+            'tolerance':10,
+            'rt_start':630,
+            'rt_end':660
+        }
+        ]";
+
+            // test a valid json
+            var errors = JSONParser.ValidateJson(json);
+            Assert.True(errors.IsNullOrEmpty());
+
+            json = @"[
+        {
+            'mz':488.5384,
+            'tolerance_unit':'ppm'           
+        },
+        {
+            'mz':575.2413,
+            'tolerance':10,
+            'tolerance_unit':'ppm'
+        },
+        {
+            'mz_start':749.7860,
+            'mz_end' : 750.4, 
+            'rt_start':630,
+            'rt_end':660
+        },
+        {
+            'sequence':'LENNART',
+            'rt_start':630,
+            'rt_end':660
+        }
+        ]";
+
+            // test a json with 2 missing properties
+            errors = JSONParser.ValidateJson(json);
+            Assert.False(errors.IsNullOrEmpty());
+            Assert.AreEqual(2, errors.Count);
+
+            json = @"[
+        {
+            'mz': -488.5384,
+            'tolerance':10,
+            'tolerance_unit':'ppm'           
+        },
+        {
+            'mz':575.2413,
+            'tolerance':10,
+            'tolerance_unit':'ppm'
+        },
+        {
+            'mz_start':749.7860,
+            'mz_end' : 750.4, 
+            'rt_start': -630,
+            'rt_end': 660
+        },
+        {
+            'sequence':'LENNART',
+            'tolerance':10,
+            'rt_start': 630,
+            'rt_end': 660
+        }
+        ]";
+
+            // test a json with 2 negative numbers
+            errors = JSONParser.ValidateJson(json);
+            Assert.False(errors.IsNullOrEmpty());
+            Assert.AreEqual(2, errors.Count);
+        }
+
+        [Test]
+        public void testParseJson()
+        {
+            string json = @"[
+        {
+            'mz': 488.5384,
+            'tolerance':10,
+            'tolerance_unit':'ppm',
+            'scan_filter': 'ms2'          
+        },
+        {
+            'mz':575.2413,
+            'tolerance':10,
+        },
+        {
+            'mz_start':749.7860,
+            'mz_end' : 750.4, 
+            'rt_start': 630,
+            'rt_end': 660
+        },
+        {
+            'sequence':'LENNART',
+            'tolerance':10,
+            'rt_start': 630,
+            'rt_end': 660
+        }
+        ]";
+
+            var xicData = JSONParser.ParseJSON(json);
+            Assert.NotNull(xicData);
+
+            json = @"[
+        {
+            'mz': 488.5384,
+            'tolerance':10,
+            'tolerance_unit':'ppm'           
+        },
+        {
+            'mz':575.2413,
+            'tolerance':10,
+        },
+        {
+            'mz_start':749.7860,
+            'mz_end' : 750.4, 
+            'rt_start': 680,
+            'rt_end': 660
+        },
+        {
+            'sequence':'LENNART',
+            'tolerance':10,
+            'rt_start': 630,
+            'rt_end': 660
+        }
+        ]";
+
+            Assert.Throws<RawFileParserException>(() => JSONParser.ParseJSON(json));
+
+            json = @"[
+        {
+            'mz': 488.5384,
+            'tolerance':10,
+            'tolerance_unit':'ppm'           
+        },
+        {
+            'mz':575.2413,
+            'tolerance':10,
+        },
+        {
+            'mz_start':849.7860,
+            'mz_end' : 750.4, 
+            'rt_start': 630,
+            'rt_end': 660
+        },
+        {
+            'sequence':'LENNART',
+            'tolerance':10,
+            'rt_start': 630,
+            'rt_end': 660
+        }
+        ]";
+
+            Assert.Throws<RawFileParserException>(() => JSONParser.ParseJSON(json));
+        }
     }
 }

@@ -55,6 +55,10 @@
       <HintPath>..\packages\mzLib.1.0.450\lib\net471\Chemistry.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="DotLiquid, Version=2.0.314.0, Culture=neutral, PublicKeyToken=82e46016ecf9f07c">
+      <HintPath>..\packages\DotLiquid.2.0.314\lib\net45\DotLiquid.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="DotNetZip, Version=1.13.3.0, Culture=neutral, PublicKeyToken=6583c7c814667745">
       <HintPath>..\packages\DotNetZip.1.13.3\lib\net40\DotNetZip.dll</HintPath>
       <Private>True</Private>
@@ -79,6 +83,7 @@
       <HintPath>..\packages\mzLib.1.0.450\lib\net471\Mgf.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="MzIdentML, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\mzLib.1.0.450\lib\net471\MzIdentML.dll</HintPath>
       <Private>True</Private>
@@ -91,8 +96,16 @@
       <HintPath>..\packages\mzLib.1.0.450\lib\net471\MzML.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Namotion.Reflection, Version=1.0.8.0, Culture=neutral, PublicKeyToken=c2f9c3bdfae56102">
+      <HintPath>..\packages\Namotion.Reflection.1.0.8\lib\net45\Namotion.Reflection.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
       <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NJsonSchema, Version=10.1.5.0, Culture=neutral, PublicKeyToken=c2f9c3bdfae56102">
+      <HintPath>..\packages\NJsonSchema.10.1.5\lib\net45\NJsonSchema.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.framework, Version=3.12.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb">
@@ -114,9 +127,11 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Net" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="ThermoFisher.CommonCore.BackgroundSubtraction, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
       <HintPath>..\packages\mzLib.1.0.450\lib\net471\ThermoFisher.CommonCore.BackgroundSubtraction.dll</HintPath>
       <Private>True</Private>
@@ -154,6 +169,12 @@
     <Compile Include="XicReaderTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Data\TestFolderMgfs\small1.RAW">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\TestFolderMgfs\small2.RAW">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -163,18 +184,26 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="small.RAW">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="TestFolderMgfs\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Data\small.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\small.RAW">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\small2.RAW">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\xic_in.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="small2.RAW" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\AWSSDK.CloudWatchLogs.3.3.101.14\analyzers\dotnet\cs\AWSSDK.CloudWatchLogs.CodeAnalysis.dll" />

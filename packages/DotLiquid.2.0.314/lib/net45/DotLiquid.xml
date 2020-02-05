@@ -1,0 +1,1829 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DotLiquid</name>
+    </assembly>
+    <members>
+        <member name="T:DotLiquid.ActivatorTagFactory">
+            <summary>
+            Tag factory using System.Activator to instanciate the tag.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.ActivatorTagFactory.TagName">
+            <summary>
+            Name of the tag
+            </summary>
+        </member>
+        <member name="M:DotLiquid.ActivatorTagFactory.#ctor(System.Type,System.String)">
+            <summary>
+            Instanciates a new ActivatorTagFactory
+            </summary>
+            <param name="tagType">Name of the tag</param>
+            <param name="tagName">Type of the tag. must inherit from DotLiquid.Tag.</param>
+        </member>
+        <member name="M:DotLiquid.ActivatorTagFactory.Create">
+            <summary>
+            Creates the tag
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:DotLiquid.Block">
+            <summary>
+            Represents a block in liquid:
+            {% random 5 %} you have drawn number ^^^, lucky you! {% endrandom %}
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Block.Parse(System.Collections.Generic.List{System.String})">
+            <summary>
+            Parses a list of tokens
+            </summary>
+            <param name="tokens"></param>
+        </member>
+        <member name="M:DotLiquid.Block.EndTag">
+            <summary>
+            Called at the end of the parsing of the tag
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Block.UnknownTag(System.String,System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Handles an unknown tag
+            </summary>
+            <param name="tag"></param>
+            <param name="markup"></param>
+            <param name="tokens"></param>
+        </member>
+        <member name="P:DotLiquid.Block.BlockDelimiter">
+            <summary>
+            Delimiter signaling the end of the block.
+            </summary>
+            <remarks>Usually "end"+block name</remarks>
+        </member>
+        <member name="M:DotLiquid.Block.CreateVariable(System.String)">
+            <summary>
+            Creates a variable from a token:
+            
+            {{ variable }}
+            </summary>
+            <param name="token"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Block.Render(DotLiquid.Context,System.IO.TextWriter)">
+            <summary>
+            Renders the block
+            </summary>
+            <param name="context"></param>
+            <param name="result"></param>
+        </member>
+        <member name="M:DotLiquid.Block.AssertMissingDelimitation">
+            <summary>
+            Throw an exception if the block isn't closed
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Block.RenderAll(System.Collections.Generic.List{System.Object},DotLiquid.Context,System.IO.TextWriter)">
+            <summary>
+            Renders all the objects in the list
+            </summary>
+            <param name="list"></param>
+            <param name="context"></param>
+            <param name="result"></param>
+        </member>
+        <member name="T:DotLiquid.Condition">
+             <summary>
+             Container for liquid nodes which conveniently wraps decision making logic
+            
+             Example:
+            
+             c = Condition.new('1', '==', '1')
+             c.evaluate #=> true
+             </summary>
+        </member>
+        <member name="T:DotLiquid.Context">
+            <summary>
+            Context keeps the variable stack and resolves variables, as well as keywords
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Context.Environments">
+            <summary>
+            Environments
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Context.Scopes">
+            <summary>
+            Scopes
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Context.Registers">
+            <summary>
+            Hash of user-defined, internally-available variables
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Context.Errors">
+            <summary>
+            Exceptions that have been raised during rendering
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Context.#ctor(System.Collections.Generic.List{DotLiquid.Hash},DotLiquid.Hash,DotLiquid.Hash,DotLiquid.ErrorsOutputMode,System.Int32,System.Int32,System.IFormatProvider)">
+            <summary>
+            Creates a new rendering context
+            </summary>
+            <param name="environments"></param>
+            <param name="outerScope"></param>
+            <param name="registers"></param>
+            <param name="errorsOutputMode"></param>
+        </member>
+        <member name="M:DotLiquid.Context.#ctor(System.IFormatProvider)">
+            <summary>
+            Creates a new rendering context
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Context.Strainer">
+            <summary>
+            Strainer for the current context
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Context.AddFilter``2(System.String,System.Func{``0,``1})">
+            <summary>
+            Adds a filter from a function
+            </summary>
+            <typeparam name="TIn">Type of the parameter</typeparam>
+            <typeparam name="TOut">Type of the returned value</typeparam>
+            <param name="filterName">Filter name</param>
+            <param name="func">Filter function</param>
+        </member>
+        <member name="M:DotLiquid.Context.AddFilter``3(System.String,System.Func{``0,``1,``2})">
+            <summary>
+            Adds a filter from a function
+            </summary>
+            <typeparam name="TIn">Type of the first parameter</typeparam>
+            <typeparam name="TIn2">Type of the second paramter</typeparam>
+            <typeparam name="TOut">Type of the returned value</typeparam>
+            <param name="filterName">Filter name</param>
+            <param name="func">Filter function</param>
+        </member>
+        <member name="M:DotLiquid.Context.AddFilters(System.Collections.Generic.IEnumerable{System.Type})">
+            <summary>
+            Adds filters to this context.
+            this does not register the filters with the main Template object. see <tt>Template.register_filter</tt>
+            for that
+            </summary>
+            <param name="filters"></param>
+        </member>
+        <member name="M:DotLiquid.Context.AddFilters(System.Type[])">
+            <summary>
+            Add filters from a list of types
+            </summary>
+            <param name="filters"></param>
+        </member>
+        <member name="M:DotLiquid.Context.HandleError(System.Exception)">
+            <summary>
+            Handles error during rendering
+            </summary>
+            <param name="ex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Context.Invoke(System.String,System.Collections.Generic.List{System.Object})">
+            <summary>
+            Invokes a strainer method
+            </summary>
+            <param name="method"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Context.Push(DotLiquid.Hash)">
+            <summary>
+            Push new local scope on the stack. use <tt>Context#stack</tt> instead
+            </summary>
+            <param name="newScope"></param>
+        </member>
+        <member name="M:DotLiquid.Context.Merge(DotLiquid.Hash)">
+            <summary>
+            Merge a hash of variables in the current local scope
+            </summary>
+            <param name="newScopes"></param>
+        </member>
+        <member name="M:DotLiquid.Context.Pop">
+            <summary>
+            Pop from the stack. use <tt>Context#stack</tt> instead
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Context.Stack(DotLiquid.Hash,System.Action)">
+             <summary>
+             Pushes a new local scope on the stack, pops it at the end of the block
+            
+             Example:
+            
+             context.stack do
+             context['var'] = 'hi'
+             end
+             context['var] #=> nil
+             </summary>
+             <param name="newScope"></param>
+             <param name="callback"></param>
+             <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Context.Stack(System.Action)">
+            <summary>
+            Pushes a new hash on the stack, pops it at the end of the block
+            </summary>
+            <param name="callback"></param>
+        </member>
+        <member name="M:DotLiquid.Context.ClearInstanceAssigns">
+            <summary>
+            Clear the current instance assigns
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Context.Item(System.String,System.Boolean)">
+            <summary>
+            Only allow String, Numeric, Hash, Array, Proc, Boolean or <tt>Liquid::Drop</tt>
+            </summary>
+            <param name="key"></param>
+            <param name="notifyNotFound">True to notify if variable is not found; Default true.</param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Context.HasKey(System.String)">
+            <summary>
+            Checks if a variable key exists
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Context.Resolve(System.String,System.Boolean)">
+             <summary>
+             Look up variable, either resolve directly after considering the name. We can directly handle
+             Strings, digits, floats and booleans (true,false). If no match is made we lookup the variable in the current scope and
+             later move up to the parent blocks to see if we can resolve the variable somewhere up the tree.
+             Some special keywords return symbols. Those symbols are to be called on the rhs object in expressions
+            
+             Example:
+            
+             products == empty #=> products.empty?
+             </summary>
+             <param name="key"></param>
+             <param name="notifyNotFound">True to notify if variable is not found; Default true.</param>
+             <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Context.FindVariable(System.String)">
+            <summary>
+            Fetches an object starting at the local scope and then moving up
+            the hierarchy
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Context.Variable(System.String,System.Boolean)">
+             <summary>
+             Resolves namespaced queries gracefully.
+            
+             Example
+            
+             @context['hash'] = {"name" => 'tobi'}
+             assert_equal 'tobi', @context['hash.name']
+             assert_equal 'tobi', @context['hash["name"]']
+             </summary>
+             <param name="markup"></param>
+             <param name="notifyNotFound"></param>
+             <returns></returns>
+        </member>
+        <member name="T:DotLiquid.Document">
+            <summary>
+            Represents the Liquid template
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Document.Initialize(System.String,System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            We don't need markup to open this block
+            </summary>
+            <param name="tagName"></param>
+            <param name="markup"></param>
+            <param name="tokens"></param>
+        </member>
+        <member name="P:DotLiquid.Document.BlockDelimiter">
+            <summary>
+            There isn't a real delimiter
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Document.AssertMissingDelimitation">
+            <summary>
+            Document blocks don't need to be terminated since they are not actually opened
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Document.Render(DotLiquid.Context,System.IO.TextWriter)">
+            <summary>
+            Renders the Document
+            </summary>
+            <param name="context"></param>
+            <param name="result"></param>
+        </member>
+        <member name="T:DotLiquid.TypeResolution">
+            <summary>
+                Configurable typing metadata collection
+            </summary>
+        </member>
+        <member name="M:DotLiquid.TypeResolution.GetPropertiesWithoutDuplicateNames(System.Type,System.Func{System.Reflection.PropertyInfo,System.Boolean})">
+            <summary>
+                Gets all of the properties for a type, filtering out properties with duplicate names by choosing the property with
+                the most derived declaring type.
+            </summary>
+            <param name="type">Type to get properties for</param>
+            <param name="bindingFlags">Binding flags for properties</param>
+            <param name="predicate">Any additional filtering on properties</param>
+            <returns>Filtered properties</returns>
+        </member>
+        <member name="M:DotLiquid.TypeResolution.GetMethodsWithoutDuplicateNames(System.Type,System.Func{System.Reflection.MethodInfo,System.Boolean})">
+            <summary>
+                Gets all of the methods for a type, filtering out methods with duplicate names by choosing the method with the most
+                derived declaring type.
+            </summary>
+            <param name="type">Type to get methods for</param>
+            <param name="bindingFlags">Binding flags for methods</param>
+            <param name="predicate">Any additional filtering on methods</param>
+            <returns>Filtered methods</returns>
+        </member>
+        <member name="M:DotLiquid.TypeResolution.GetMembersWithoutDuplicateNames(System.Collections.Generic.ICollection{System.Reflection.MemberInfo})">
+            <summary>
+                Filters a collection of MemberInfos by removing MemberInfos with duplicate names. If duplicate names exist, the
+                MemberInfo with the most derived DeclaringType will be chosen.
+            </summary>
+            <param name="members">Collection of MemberInfos to filter</param>
+            <returns>Filtered MemberInfos</returns>
+        </member>
+        <member name="T:DotLiquid.DropBase">
+             <summary>
+             A drop in liquid is a class which allows you to to export DOM like things to liquid
+             Methods of drops are callable.
+             The main use for liquid drops is the implement lazy loaded objects.
+             If you would like to make data available to the web designers which you don't want loaded unless needed then
+             a drop is a great way to do that
+                 Example:
+                 class ProductDrop &lt; Liquid::Drop
+                 def top_sales
+                 Shop.current.products.find(:all, :order => 'sales', :limit => 10 )
+                 end
+                 end
+                 tmpl = Liquid::Template.parse( ' {% for product in product.top_sales %} {{ product.name }} {%endfor%} ' )
+                 tmpl.render('product' => ProductDrop.new ) # will invoke top_sales query.
+            
+             Your drop can either implement the methods sans any parameters or implement the before_method(name) method which is a
+             catch all
+             </summary>
+        </member>
+        <member name="P:DotLiquid.DropBase.Item(System.Object)">
+            <summary>
+            Just an alias for InvokeDrop - but the presence of the indexer
+            means that Liquid will access Drop objects as though they are
+            dictionaries or hashes.
+            </summary>
+            <param name="method"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.DropBase.BeforeMethod(System.String)">
+            <summary>
+            Catch all for the method
+            </summary>
+            <param name="method"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.DropBase.InvokeDrop(System.Object)">
+            <summary>
+                Called by liquid to invoke a drop
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="T:DotLiquid.DropProxy">
+            <summary>
+            Proxy for types not derived from DropBase
+            </summary>
+        </member>
+        <member name="M:DotLiquid.DropProxy.#ctor(System.Object,System.String[])">
+            <summary>
+            Create a new DropProxy object
+            </summary>
+            <param name="obj">The object to create a proxy for</param>
+            <param name="allowedMembers">An array of property and method names that are allowed to be called on the object.</param>
+        </member>
+        <member name="M:DotLiquid.DropProxy.#ctor(System.Object,System.String[],System.Func{System.Object,System.Object})">
+            <summary>
+            Create a new DropProxy object
+            </summary>
+            <param name="obj">The object to create a proxy for</param>
+            <param name="allowedMembers">An array of property and method names that are allowed to be called on the object.</param>
+            <param name="value">Function that converts the specified type into a Liquid Drop-compatible object (eg, implements ILiquidizable)</param>
+        </member>
+        <member name="T:DotLiquid.ErrorsOutputMode">
+            <summary>
+            Errors output mode
+            </summary>
+        </member>
+        <member name="F:DotLiquid.ErrorsOutputMode.Rethrow">
+            <summary>
+            Rethrow the errors
+            </summary>
+        </member>
+        <member name="F:DotLiquid.ErrorsOutputMode.Suppress">
+            <summary>
+            Suppress the errors
+            </summary>
+        </member>
+        <member name="F:DotLiquid.ErrorsOutputMode.Display">
+            <summary>
+            DIsplay the errors
+            </summary>
+        </member>
+        <member name="T:DotLiquid.FileSystems.EmbeddedFileSystem">
+             <summary>
+             This implements a file system which retrieves template files from embedded resources in .NET assemblies.
+            
+             Its behavior is the same as with the Local File System, except this uses namespaces and embedded resources
+             instead of directories and files.
+            
+             Example:
+            
+             var fileSystem = new EmbeddedFileSystem("My.Base.Namespace");
+            
+             fileSystem.FullPath("mypartial") # => "My.Base.Namespace._mypartial.liquid"
+             fileSystem.FullPath("dir/mypartial") # => "My.Base.Namespace.dir._mypartial.liquid"
+             </summary>
+        </member>
+        <member name="T:DotLiquid.FileSystems.IFileSystem">
+             <summary>
+             A Liquid file system is way to let your templates retrieve other templates for use with the include tag.
+            
+             You can implement subclasses that retrieve templates from the database, from the file system using a different
+             path structure, you can provide them as hard-coded inline strings, or any manner that you see fit.
+            
+             You can add additional instance variables, arguments, or methods as needed.
+            
+             Example:
+            
+             Liquid::Template.file_system = Liquid::LocalFileSystem.new(template_path)
+             liquid = Liquid::Template.parse(template)
+            
+             This will parse the template with a LocalFileSystem implementation rooted at 'template_path'.
+             </summary>
+        </member>
+        <member name="M:DotLiquid.FileSystems.IFileSystem.ReadTemplateFile(DotLiquid.Context,System.String)">
+            <summary>
+            Called by Liquid to retrieve a template file
+            </summary>
+            <param name="templatePath"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotLiquid.FileSystems.ITemplateFileSystem">
+            <summary>
+            This interface allow you return a Template instance,
+            it can reduce the template parsing time in some cases.
+            Please also provide the implementation of ReadTemplateFile for fallback purpose.
+            </summary>
+        </member>
+        <member name="M:DotLiquid.FileSystems.ITemplateFileSystem.GetTemplate(DotLiquid.Context,System.String)">
+            <summary>
+            Called by Liquid to retrieve a template instance
+            </summary>
+            <param name="templatePath"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotLiquid.FileSystems.LocalFileSystem">
+             <summary>
+             This implements an abstract file system which retrieves template files named in a manner similar to Rails partials,
+             ie. with the template name prefixed with an underscore. The extension ".liquid" is also added.
+            
+             For security reasons, template paths are only allowed to contain letters, numbers, and underscore.
+            
+             Example:
+            
+             file_system = Liquid::LocalFileSystem.new("/some/path")
+            
+             file_system.full_path("mypartial") # => "/some/path/_mypartial.liquid"
+             file_system.full_path("dir/mypartial") # => "/some/path/dir/_mypartial.liquid"
+             </summary>
+        </member>
+        <member name="M:DotLiquid.Hash.FromAnonymousObject(System.Object,System.Boolean)">
+            <summary>
+            
+            </summary>
+            <param name="anonymousObject"></param>
+            <param name="includeBaseClassProperties">If this is set to true, method will map base class' properties too. </param>
+            <returns></returns>
+        </member>
+        <member name="T:DotLiquid.ILiquidizable">
+            <summary>
+            See here for motivation: <see cref="!:http://wiki.github.com/tobi/liquid/using-liquid-without-rails"/>.
+            This allows for extra security by only giving the template access to the specific
+            variables you want it to have access to.
+            </summary>
+        </member>
+        <member name="T:DotLiquid.IRenderable">
+            <summary>
+            Object that can render itslef
+            </summary>
+        </member>
+        <member name="T:DotLiquid.ITagFactory">
+            <summary>
+            Interface for tag factory.
+            </summary>
+            <remarks>Can be usefull when the tag needs a parameter and can't be created with parameterless constructor.</remarks>
+        </member>
+        <member name="P:DotLiquid.ITagFactory.TagName">
+            <summary>
+            Name of the tag
+            </summary>
+        </member>
+        <member name="M:DotLiquid.ITagFactory.Create">
+            <summary>
+            Creates the tag
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:DotLiquid.Liquid">
+            <summary>
+            Utiliy containing regexes for Liquid syntax and registering default tags and blocks
+            </summary>
+        </member>
+        <member name="T:DotLiquid.LiquidTypeAttribute">
+            <summary>
+            Specifies the type is safe to be rendered by DotLiquid.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.LiquidTypeAttribute.AllowedMembers">
+            <summary>
+            An array of property and method names that are allowed to be called on the object.
+            </summary>
+        </member>
+        <member name="M:DotLiquid.LiquidTypeAttribute.#ctor(System.String[])">
+             <summary>
+            
+             </summary>
+             <param name="allowedMembers">An array of property and method names that are allowed to be called on the object.</param>
+        </member>
+        <member name="T:DotLiquid.NamingConventions.RubyNamingConvention">
+             <summary>
+             Converts C# member names to Ruby-style names for access by Liquid templates.
+             </summary>
+             <example>
+             Input: Text
+             Output: text
+            
+             Input: ScopesAsArray
+             Output: scopes_as_array
+             </example>
+        </member>
+        <member name="T:DotLiquid.Properties.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.AssignTagSyntaxException">
+            <summary>
+              Looks up a localized string similar to Syntax Error in &apos;assign&apos; tag - Valid syntax: assign [var] = [source].
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.BlankFileSystemDoesNotAllowIncludesException">
+            <summary>
+              Looks up a localized string similar to Error - This liquid context does not allow includes.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.BlockTagAlreadyDefinedException">
+            <summary>
+              Looks up a localized string similar to Liquid Error - Block &apos;{0}&apos; already defined.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.BlockTagNoElseException">
+            <summary>
+              Looks up a localized string similar to {0} tag does not expect else tag.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.BlockTagNoEndException">
+            <summary>
+              Looks up a localized string similar to &apos;end&apos; is not a valid delimiter for {0} tags. Use {1}.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.BlockTagNotClosedException">
+            <summary>
+              Looks up a localized string similar to {0} tag was never closed.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.BlockTagNotTerminatedException">
+            <summary>
+              Looks up a localized string similar to Tag &apos;{0}&apos; was not properly terminated with regexp: {1}.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.BlockTagSyntaxException">
+            <summary>
+              Looks up a localized string similar to Syntax Error in &apos;block&apos; tag - Valid syntax: block [name].
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.BlockUnknownTagException">
+            <summary>
+              Looks up a localized string similar to Unknown tag &apos;{0}&apos;.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.BlockVariableNotTerminatedException">
+            <summary>
+              Looks up a localized string similar to Variable &apos;{0}&apos; was not properly terminated with regexp: {1}.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.CaptureTagSyntaxException">
+            <summary>
+              Looks up a localized string similar to Syntax Error in &apos;capture&apos; tag - Valid syntax: capture [var].
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.CaseTagElseSyntaxException">
+            <summary>
+              Looks up a localized string similar to Syntax Error in &apos;case&apos; tag - Valid else condition: {{% else %}} (no parameters).
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.CaseTagSyntaxException">
+            <summary>
+              Looks up a localized string similar to Syntax Error in &apos;case&apos; tag - Valid syntax: case [condition].
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.CaseTagWhenSyntaxException">
+            <summary>
+              Looks up a localized string similar to Syntax Error in &apos;case&apos; tag - Valid when condition: {{% when [condition] [or condition2...] %}}.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.ConditionUnknownOperatorException">
+            <summary>
+              Looks up a localized string similar to Unknown operator {0}.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.ContextLiquidError">
+            <summary>
+              Looks up a localized string similar to Liquid error: {0}.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.ContextLiquidSyntaxError">
+            <summary>
+              Looks up a localized string similar to Liquid syntax error: {0}.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.ContextObjectInvalidException">
+            <summary>
+              Looks up a localized string similar to Object &apos;{0}&apos; is invalid because it is neither a built-in type nor implements ILiquidizable.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.ContextStackException">
+            <summary>
+              Looks up a localized string similar to Nesting too deep.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.CycleTagSyntaxException">
+            <summary>
+              Looks up a localized string similar to Syntax Error in &apos;cycle&apos; tag - Valid syntax: cycle [name :] var [, var2, var3 ...].
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.DropWrongNamingConventionMessage">
+            <summary>
+              Looks up a localized string similar to Missing property. Did you mean &apos;{0}&apos;?.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.ExtendsTagCanBeUsedOneException">
+            <summary>
+              Looks up a localized string similar to Liquid Error - &apos;extends&apos; tag can be used only once.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.ExtendsTagMustBeFirstTagException">
+            <summary>
+              Looks up a localized string similar to Liquid Error - &apos;extends&apos; must be the first tag in an extending template.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.ExtendsTagSyntaxException">
+            <summary>
+              Looks up a localized string similar to Syntax Error in &apos;extends&apos; tag - Valid syntax: extends [template].
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.ExtendsTagUnallowedTagsException">
+            <summary>
+              Looks up a localized string similar to Liquid Error - Only &apos;comment&apos; and &apos;block&apos; tags are allowed in an extending template.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.ForTagSyntaxException">
+            <summary>
+              Looks up a localized string similar to Syntax Error in &apos;for&apos; tag - Valid syntax: for [item] in [collection].
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.IfTagSyntaxException">
+            <summary>
+              Looks up a localized string similar to Syntax Error in &apos;if&apos; tag - Valid syntax: if [expression].
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.IncludeTagSyntaxException">
+            <summary>
+              Looks up a localized string similar to Syntax Error in &apos;include&apos; tag - Valid syntax: include [template].
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.LocalFileSystemIllegalTemplateNameException">
+            <summary>
+              Looks up a localized string similar to Error - Illegal template name &apos;{0}&apos;.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.LocalFileSystemIllegalTemplatePathException">
+            <summary>
+              Looks up a localized string similar to Error - Illegal template path &apos;{0}&apos;.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.LocalFileSystemTemplateNotFoundException">
+            <summary>
+              Looks up a localized string similar to Error - No such template &apos;{0}&apos;.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.StrainerFilterHasNoValueException">
+            <summary>
+              Looks up a localized string similar to Error - Filter &apos;{0}&apos; does not have a default value for &apos;{1}&apos; and no value was supplied.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.TableRowTagSyntaxException">
+            <summary>
+              Looks up a localized string similar to Syntax Error in &apos;tablerow&apos; tag - Valid syntax: tablerow [item] in [collection] cols=[number].
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.VariableFilterNotFoundException">
+            <summary>
+              Looks up a localized string similar to Error - Filter &apos;{0}&apos; in &apos;{1}&apos; could not be found..
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.VariableNotFoundException">
+            <summary>
+              Looks up a localized string similar to Error - Variable &apos;{0}&apos; could not be found..
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Properties.Resources.WeakTableKeyNotFoundException">
+            <summary>
+              Looks up a localized string similar to key could not be found.
+            </summary>
+        </member>
+        <member name="T:DotLiquid.RenderParameters">
+            <summary>
+            Rendering parameters
+            </summary>
+        </member>
+        <member name="P:DotLiquid.RenderParameters.Context">
+            <summary>
+            If you provide a Context object, you do not need to set any other parameters.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.RenderParameters.LocalVariables">
+            <summary>
+            Hash of local variables used during rendering
+            </summary>
+        </member>
+        <member name="P:DotLiquid.RenderParameters.Filters">
+            <summary>
+            Filters used during rendering
+            </summary>
+        </member>
+        <member name="P:DotLiquid.RenderParameters.Registers">
+            <summary>
+            Hash of user-defined, internally-available variables
+            </summary>
+        </member>
+        <member name="P:DotLiquid.RenderParameters.RethrowErrors">
+            <summary>
+            Gets or sets a value that controls whether errors are thrown as exceptions.
+            </summary>
+        </member>
+        <member name="P:DotLiquid.RenderParameters.ErrorsOutputMode">
+            <summary>
+            Errors output mode
+            </summary>
+        </member>
+        <member name="P:DotLiquid.RenderParameters.MaxIterations">
+            <summary>
+            Maximum number of iterations for the For tag
+            </summary>
+        </member>
+        <member name="P:DotLiquid.RenderParameters.Timeout">
+            <summary>
+            Rendering timeout in ms
+            </summary>
+        </member>
+        <member name="M:DotLiquid.RenderParameters.FromContext(DotLiquid.Context,System.IFormatProvider)">
+            <summary>
+            Creates a RenderParameters from a context
+            </summary>
+            <param name="context"></param>
+            <param name="formatProvider"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotLiquid.StandardFilters">
+            <summary>
+            Standard Liquid filters
+            </summary>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Size(System.Object)">
+            <summary>
+            Return the size of an array or of an string
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Slice(System.String,System.Int32,System.Int32)">
+            <summary>
+            Return a Part of a String
+            </summary>
+            <param name="input"></param>
+            <param name="start"></param>
+            <param name="len"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Downcase(System.String)">
+            <summary>
+            convert a input string to DOWNCASE
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Upcase(System.String)">
+            <summary>
+            convert a input string to UPCASE
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.UrlEncode(System.String)">
+            <summary>
+            convert a input string to URLENCODE
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.UrlDecode(System.String)">
+            <summary>
+            convert a input string to URLDECODE
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Capitalize(System.String)">
+            <summary>
+            capitalize words in the input sentence
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Escape(System.String)">
+            <summary>
+            Escape html chars
+            </summary>
+            <param name="input">String to escape</param>
+            <returns>Escaped string</returns>
+            <remarks>Alias of H</remarks>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.H(System.String)">
+            <summary>
+            Escape html chars
+            </summary>
+            <param name="input">String to escape</param>
+            <returns>Escaped string</returns>
+            <remarks>Alias of Escape</remarks>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Truncate(System.String,System.Int32,System.String)">
+            <summary>
+            Truncates a string down to x characters
+            </summary>
+            <param name="input"></param>
+            <param name="length"></param>
+            <param name="truncateString"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.TruncateWords(System.String,System.Int32,System.String)">
+            <summary>
+            Truncate a string down to x words
+            </summary>
+            <param name="input"></param>
+            <param name="words"></param>
+            <param name="truncateString"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Split(System.String,System.String)">
+            <summary>
+            Split input string into an array of substrings separated by given pattern.
+            </summary>
+            <param name="input"></param>
+            <param name="pattern"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.StripHtml(System.String)">
+            <summary>
+            Strip all html nodes from input
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Strip(System.String)">
+            <summary>
+            Strip all whitespace from input
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Lstrip(System.String)">
+            <summary>
+            Strip all leading whitespace from input
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Rstrip(System.String)">
+            <summary>
+            Strip all trailing whitespace from input
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Currency(System.Object,System.String)">
+            <summary>
+            Converts the input object into a formatted currency as specified by the culture info.
+            </summary>
+            <param name="input"></param>
+            <param name="cultureInfo"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.StripNewlines(System.String)">
+            <summary>
+            Remove all newlines from the string
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Join(System.Collections.IEnumerable,System.String)">
+            <summary>
+            Join elements of the array with a certain character between them
+            </summary>
+            <param name="input"></param>
+            <param name="glue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Sort(System.Object,System.String)">
+            <summary>
+            Sort elements of the array
+            provide optional property with which to sort an array of hashes or drops
+            </summary>
+            <param name="input"></param>
+            <param name="property"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Map(System.Collections.IEnumerable,System.String)">
+            <summary>
+            Map/collect on a given property
+            </summary>
+            <param name="input"></param>
+            <param name="property"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Replace(System.String,System.String,System.String)">
+            <summary>
+            Replace occurrences of a string with another
+            </summary>
+            <param name="input"></param>
+            <param name="string"></param>
+            <param name="replacement"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.ReplaceFirst(System.String,System.String,System.String)">
+            <summary>
+            Replace the first occurence of a string with another
+            </summary>
+            <param name="input"></param>
+            <param name="string"></param>
+            <param name="replacement"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Remove(System.String,System.String)">
+            <summary>
+            Remove a substring
+            </summary>
+            <param name="input"></param>
+            <param name="string"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.RemoveFirst(System.String,System.String)">
+            <summary>
+            Remove the first occurrence of a substring
+            </summary>
+            <param name="input"></param>
+            <param name="string"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Append(System.String,System.String)">
+            <summary>
+            Add one string to another
+            </summary>
+            <param name="input"></param>
+            <param name="string"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Prepend(System.String,System.String)">
+            <summary>
+            Prepend a string to another
+            </summary>
+            <param name="input"></param>
+            <param name="string"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.NewlineToBr(System.String)">
+            <summary>
+            Add <br /> tags in front of all newlines in input string
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Date(System.Object,System.String)">
+            <summary>
+            Formats a date using a .NET date format string
+            </summary>
+            <param name="input"></param>
+            <param name="format"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.First(System.Collections.IEnumerable)">
+             <summary>
+             Get the first element of the passed in array
+            
+             Example:
+               {{ product.images | first | to_img }}
+             </summary>
+             <param name="array"></param>
+             <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Last(System.Collections.IEnumerable)">
+             <summary>
+             Get the last element of the passed in array
+            
+             Example:
+               {{ product.images | last | to_img }}
+             </summary>
+             <param name="array"></param>
+             <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Plus(System.Object,System.Object)">
+            <summary>
+            Addition
+            </summary>
+            <param name="input"></param>
+            <param name="operand"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Minus(System.Object,System.Object)">
+            <summary>
+            Subtraction
+            </summary>
+            <param name="input"></param>
+            <param name="operand"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Times(System.Object,System.Object)">
+            <summary>
+            Multiplication
+            </summary>
+            <param name="input"></param>
+            <param name="operand"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Round(System.Object,System.Object)">
+            <summary>
+            Rounds a decimal value to the specified places
+            </summary>
+            <param name="input"></param>
+            <param name="places"></param>
+            <returns>The rounded value; null if an exception have occured</returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.DividedBy(System.Object,System.Object)">
+            <summary>
+            Division
+            </summary>
+            <param name="input"></param>
+            <param name="operand"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Modulo(System.Object,System.Object)">
+            <summary>
+            Performs an arithmetic remainder operation on the input
+            </summary>
+            <param name="input"></param>
+            <param name="operand"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Default(System.String,System.String)">
+            <summary>
+            If a value isn't set for a variable in the template, allow the user to specify a default value for that variable
+            </summary>
+            <param name="input"></param>
+            <param name="defaultValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Uniq(System.Object)">
+            <summary>
+            Removes any duplicate elements in an array.
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Abs(System.Object)">
+            <summary>
+            Returns the absolute value of a number.
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.AtLeast(System.Object,System.Object)">
+            <summary>
+            Limits a number to a minimum value.
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.AtMost(System.Object,System.Object)">
+            <summary>
+            Limits a number to a maximum value.
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.StandardFilters.Compact(System.Object)">
+            <summary>
+            Removes any nil values from an array.
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotLiquid.Strainer">
+             <summary>
+             Strainer is the parent class for the filters system.
+             New filters are mixed into the strainer class which is then instanciated for each liquid template render run.
+            
+             One of the strainer's responsibilities is to keep malicious method calls out
+             </summary>
+        </member>
+        <member name="M:DotLiquid.Strainer.Extend(System.Type)">
+            <summary>
+            In this C# implementation, we can't use mixins. So we grab all the static
+            methods from the specified type and use them instead.
+            </summary>
+            <param name="type"></param>
+        </member>
+        <member name="T:DotLiquid.Tag">
+            <summary>
+            Represents a tag in Liquid:
+            {% cycle 'one', 'two', 'three' %}
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Tag.NodeList">
+            <summary>
+            List of the nodes composing the tag
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Tag.TagName">
+            <summary>
+            Name of the tag
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Tag.Markup">
+            <summary>
+            Content of the tag node except the name.
+            E.g. for {% tablerow n in numbers cols:3%} {{n}} {% endtablerow %}
+            It is "n in numbers cols:3"
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Tag.#ctor">
+            <summary>
+            Only want to allow Tags to be created in inherited classes or tests.
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Tag.Initialize(System.String,System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Initializes the tag
+            </summary>
+            <param name="tagName">Name of the parsed tag</param>
+            <param name="markup">Markup of the parsed tag</param>
+            <param name="tokens">Tokens of the parsed tag</param>
+        </member>
+        <member name="M:DotLiquid.Tag.Parse(System.Collections.Generic.List{System.String})">
+            <summary>
+            Parses the tag
+            </summary>
+            <param name="tokens"></param>
+        </member>
+        <member name="P:DotLiquid.Tag.Name">
+            <summary>
+            Name of the tag, usually the type name in lowercase
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Tag.Render(DotLiquid.Context,System.IO.TextWriter)">
+            <summary>
+            Renders the tag
+            </summary>
+            <param name="context"></param>
+            <param name="result"></param>
+        </member>
+        <member name="M:DotLiquid.Tag.Render(DotLiquid.Context)">
+            <summary>
+            Primarily intended for testing.
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotLiquid.Tags.Assign">
+             <summary>
+             Assign sets a variable in your template.
+            
+             {% assign foo = 'monkey' %}
+            
+             You can then use the variable later in the page.
+            
+             {{ foo }}
+             </summary>
+        </member>
+        <member name="T:DotLiquid.Tags.Block">
+            <summary>
+            The Block tag is used in conjunction with the Extends tag to provide template inheritance.
+            For an example please refer to the Extends tag.
+            </summary>
+        </member>
+        <member name="T:DotLiquid.Tags.Capture">
+             <summary>
+             Capture stores the result of a block into a variable without rendering it inplace.
+            
+             {% capture heading %}
+             Monkeys!
+             {% endcapture %}
+             ...
+             <h1>{{ heading }}</h1>
+            
+             Capture is useful for saving content for use later in your template, such as
+             in a sidebar or footer.
+             </summary>
+        </member>
+        <member name="T:DotLiquid.Tags.Cycle">
+             <summary>
+             Cycle is usually used within a loop to alternate between values, like colors or DOM classes.
+            
+               {% for item in items %}
+                &lt;div class="{% cycle 'red', 'green', 'blue' %}"&gt; {{ item }} &lt;/div&gt;
+               {% end %}
+            
+                &lt;div class="red"&gt; Item one &lt;/div&gt;
+                &lt;div class="green"&gt; Item two &lt;/div&gt;
+                &lt;div class="blue"&gt; Item three &lt;/div&gt;
+                &lt;div class="red"&gt; Item four &lt;/div&gt;
+                &lt;div class="green"&gt; Item five&lt;/div&gt;
+             </summary>
+        </member>
+        <member name="M:DotLiquid.Tags.Cycle.Initialize(System.String,System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Initializes the cycle tag
+            </summary>
+            <param name="tagName"></param>
+            <param name="markup"></param>
+            <param name="tokens"></param>
+        </member>
+        <member name="M:DotLiquid.Tags.Cycle.Render(DotLiquid.Context,System.IO.TextWriter)">
+            <summary>
+            Renders the cycle tag
+            </summary>
+            <param name="context"></param>
+            <param name="result"></param>
+        </member>
+        <member name="T:DotLiquid.Tags.Extends">
+             <summary>
+             The Extends tag is used in conjunction with the Block tag to provide template inheritance.
+             For further syntax and usage please refer to
+             <see cref="!:http://docs.djangoproject.com/en/dev/topics/templates/#template-inheritance"/>
+             </summary>
+             <example>
+             To see how Extends and Block can be used together, start by considering this example:
+            
+             <html>
+             <head>
+               <title>{% block title %}My Website{% endblock %}</title>
+             </head>
+            
+             <body>
+               <div id="sidebar">
+                 {% block sidebar %}
+                 <ul>
+                   <li><a href="/">Home</a></li>
+                   <li><a href="/blog/">Blog</a></li>
+                 </ul>
+                 {% endblock %}
+               </div>
+            
+               <div id="content">
+                 {% block content %}{% endblock %}
+               </div>
+             </body>
+             </html>
+            
+             We'll assume this is saved in a file called base.html. In ASP.NET MVC terminology, this file would
+             be the master page or layout, and each of the "blocks" would be a section. Child templates
+             (in ASP.NET MVC terminology, views) fill or override these blocks with content. If a child template
+             does not define a particular block, then the content from the parent template is used as a fallback.
+            
+             A child template might look like this:
+            
+             {% extends "base.html" %}
+             {% block title %}My AMAZING Website{% endblock %}
+            
+             {% block content %}
+             {% for entry in blog_entries %}
+               <h2>{{ entry.title }}</h2>
+               <p>{{ entry.body }}</p>
+             {% endfor %}
+             {% endblock %}
+            
+             The current IFileSystem will be used to locate "base.html".
+             </example>
+        </member>
+        <member name="T:DotLiquid.Tags.For">
+             <summary>
+             "For" iterates over an array or collection.
+             Several useful variables are available to you within the loop.
+            
+             == Basic usage:
+                {% for item in collection %}
+                  {{ forloop.index }}: {{ item.name }}
+                {% endfor %}
+            
+             == Advanced usage:
+                {% for item in collection %}
+                  &lt;div {% if forloop.first %}class="first"{% endif %}&gt;
+                    Item {{ forloop.index }}: {{ item.name }}
+                  &lt;/div&gt;
+                {% endfor %}
+            
+             You can also define a limit and offset much like SQL.  Remember
+             that offset starts at 0 for the first item.
+            
+                {% for item in collection limit:5 offset:10 %}
+                  {{ item.name }}
+                {% end %}
+            
+              To reverse the for loop simply use {% for item in collection reversed %}
+            
+             == Available variables:
+            
+             forloop.name:: 'item-collection'
+             forloop.length:: Length of the loop
+             forloop.index:: The current item's position in the collection;
+                             forloop.index starts at 1.
+                             This is helpful for non-programmers who start believe
+                             the first item in an array is 1, not 0.
+             forloop.index0:: The current item's position in the collection
+                              where the first item is 0
+             forloop.rindex:: Number of items remaining in the loop
+                              (length - index) where 1 is the last item.
+             forloop.rindex0:: Number of items remaining in the loop
+                               where 0 is the last item.
+             forloop.first:: Returns true if the item is the first item.
+             forloop.last:: Returns true if the item is the last item.
+             </summary>
+        </member>
+        <member name="M:DotLiquid.Tags.For.Initialize(System.String,System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Initializes the for tag
+            </summary>
+            <param name="tagName">Name of the parsed tag</param>
+            <param name="markup">Markup of the parsed tag</param>
+            <param name="tokens">Toeksn of the parsed tag</param>
+        </member>
+        <member name="M:DotLiquid.Tags.For.Render(DotLiquid.Context,System.IO.TextWriter)">
+            <summary>
+            Renders the for tag
+            </summary>
+            <param name="context"></param>
+            <param name="result"></param>
+        </member>
+        <member name="T:DotLiquid.Tags.Html.TableRow">
+            <summary>
+            TablerRow tag
+            </summary>
+            <example>
+            &lt;table&gt;
+              {% tablerow product in collection.products %}
+                {{ product.title }}
+              {% endtablerow %}
+            &lt;/table&gt;
+            </example>
+        </member>
+        <member name="M:DotLiquid.Tags.Html.TableRow.Initialize(System.String,System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Initializes the tablerow tag
+            </summary>
+            <param name="tagName">Name of the parsed tag</param>
+            <param name="markup">Markup of the parsed tag</param>
+            <param name="tokens">Toeksn of the parsed tag</param>
+        </member>
+        <member name="M:DotLiquid.Tags.Html.TableRow.Render(DotLiquid.Context,System.IO.TextWriter)">
+            <summary>
+            Renders the tablerow tag
+            </summary>
+            <param name="context"></param>
+            <param name="result"></param>
+        </member>
+        <member name="T:DotLiquid.Tags.If">
+             <summary>
+             If is the conditional block
+            
+             {% if user.admin %}
+               Admin user!
+             {% else %}
+               Not admin user
+             {% endif %}
+            
+              There are {% if count &lt; 5 %} less {% else %} more {% endif %} items than you need.
+             </summary>
+        </member>
+        <member name="T:DotLiquid.Tags.Literal">
+             <summary>
+             Literal
+             Literal outputs text as is, usefull if your template contains Liquid syntax.
+            
+             {% literal %}{% if user = 'tobi' %}hi{% endif %}{% endliteral %}
+            
+             or (shorthand version)
+            
+             {{{ {% if user = 'tobi' %}hi{% endif %} }}}
+             </summary>
+        </member>
+        <member name="M:DotLiquid.Tags.Literal.FromShortHand(System.String)">
+            <summary>
+            Creates a literal from shorthand
+            </summary>
+            <param name="string"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Tags.Literal.Parse(System.Collections.Generic.List{System.String})">
+            <summary>
+            Parses the tag
+            </summary>
+            <param name="tokens"></param>
+        </member>
+        <member name="T:DotLiquid.Tags.Raw">
+             <summary>
+             Raw
+             Raw outputs text as is, usefull if your template contains Liquid syntax.
+            
+             {% raw %}{% if user = 'tobi' %}hi{% endif %}{% endraw %}
+             </summary>
+        </member>
+        <member name="T:DotLiquid.Tags.Unless">
+             <summary>
+             Unless is a conditional just like 'if' but works on the inverse logic.
+            
+              {% unless x &lt; 0 %} x is greater than zero {% end %}
+             </summary>
+        </member>
+        <member name="T:DotLiquid.Template">
+             <summary>
+             Templates are central to liquid.
+             Interpreting templates is a two step process. First you compile the
+             source code you got. During compile time some extensive error checking is performed.
+             your code should expect to get some SyntaxErrors.
+            
+             After you have a compiled template you can then <tt>render</tt> it.
+             You can use a compiled template over and over again and keep it cached.
+            
+             Example:
+            
+             template = Liquid::Template.parse(source)
+             template.render('user_name' => 'bob')
+             </summary>
+        </member>
+        <member name="P:DotLiquid.Template.NamingConvention">
+            <summary>
+            Naming convention used for template parsing
+            </summary>
+            <remarks>Default is Ruby</remarks>
+        </member>
+        <member name="P:DotLiquid.Template.FileSystem">
+            <summary>
+            Filesystem used for template reading
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Template.DefaultIsThreadSafe">
+            <summary>
+            Indicates if the default is thread safe
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Template.RegexTimeOut">
+            <summary>
+            TimeOut used for all Regex in DotLiquid
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Template.RegisterTag``1(System.String)">
+            <summary>
+            Register a tag
+            </summary>
+            <typeparam name="T">Type of the tag</typeparam>
+            <param name="name">Name of the tag</param>
+        </member>
+        <member name="M:DotLiquid.Template.RegisterTagFactory(DotLiquid.ITagFactory)">
+            <summary>
+            Registers a tag factory.
+            </summary>
+            <param name="tagFactory">The ITagFactory to be registered</param>
+        </member>
+        <member name="M:DotLiquid.Template.GetTagType(System.String)">
+            <summary>
+            Get the tag type from it's name
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Template.RegisterFilter(System.Type)">
+            <summary>
+            Pass a module with filter methods which should be available
+             to all liquid views. Good for registering the standard library
+            </summary>
+            <param name="filter"></param>
+        </member>
+        <member name="M:DotLiquid.Template.RegisterSafeType(System.Type,System.String[])">
+            <summary>
+            Registers a simple type. DotLiquid will wrap the object in a <see cref="T:DotLiquid.DropProxy"/> object.
+            </summary>
+            <param name="type">The type to register</param>
+            <param name="allowedMembers">An array of property and method names that are allowed to be called on the object.</param>
+        </member>
+        <member name="M:DotLiquid.Template.RegisterSafeType(System.Type,System.String[],System.Func{System.Object,System.Object})">
+            <summary>
+            Registers a simple type. DotLiquid will wrap the object in a <see cref="T:DotLiquid.DropProxy"/> object.
+            </summary>
+            <param name="type">The type to register</param>
+            <param name="allowedMembers">An array of property and method names that are allowed to be called on the object.</param>
+            <param name="func">Function that converts the specified type into a Liquid Drop-compatible object (eg, implements ILiquidizable)</param>
+        </member>
+        <member name="M:DotLiquid.Template.RegisterSafeType(System.Type,System.Func{System.Object,System.Object})">
+            <summary>
+            Registers a simple type using the specified transformer.
+            </summary>
+            <param name="type">The type to register</param>
+            <param name="func">Function that converts the specified type into a Liquid Drop-compatible object (eg, implements ILiquidizable)</param>
+        </member>
+        <member name="M:DotLiquid.Template.RegisterValueTypeTransformer(System.Type,System.Func{System.Object,System.Object})">
+            <summary>
+            Registers a simple value type transformer.  Used for rendering a variable to the output stream
+            </summary>
+            <param name="type">The type to register</param>
+            <param name="func">Function that converts the specified type into a Liquid Drop-compatible object (eg, implements ILiquidizable)</param>
+        </member>
+        <member name="M:DotLiquid.Template.GetValueTypeTransformer(System.Type)">
+            <summary>
+            Gets the corresponding value type converter
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Template.GetSafeTypeTransformer(System.Type)">
+            <summary>
+            Gets the corresponding safe type transformer
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Template.Parse(System.String)">
+            <summary>
+            Creates a new <tt>Template</tt> object from liquid source code
+            </summary>
+            <param name="source"></param>
+            <returns></returns>
+        </member>
+        <member name="P:DotLiquid.Template.Root">
+            <summary>
+            Liquid document
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Template.Registers">
+            <summary>
+            Hash of user-defined, internally-available variables
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Template.Errors">
+            <summary>
+            Exceptions that have been raised during template rendering
+            </summary>
+        </member>
+        <member name="P:DotLiquid.Template.IsThreadSafe">
+            <summary>
+            Indicates if the parsed templates will be thread safe
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Template.#ctor">
+            <summary>
+            Creates a new <tt>Template</tt> from an array of tokens. Use <tt>Template.parse</tt> instead
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Template.ParseInternal(System.String)">
+            <summary>
+            Parse source code.
+            Returns self for easy chaining
+            </summary>
+            <param name="source"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Template.MakeThreadSafe">
+            <summary>
+            Make this template instance thread safe.
+            After this call, you can't use template owned variables anymore.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Template.Render(System.IFormatProvider)">
+            <summary>
+            Renders the template using default parameters and the current culture and returns a string containing the result.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Template.Render(DotLiquid.Hash,System.IFormatProvider)">
+            <summary>
+            Renders the template using the specified local variables and returns a string containing the result.
+            </summary>
+            <param name="localVariables"></param>
+            <param name="formatProvider"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Template.Render(DotLiquid.RenderParameters)">
+            <summary>
+            Renders the template using the specified parameters and returns a string containing the result.
+            </summary>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotLiquid.Template.StreamWriterWithFormatProvider">
+            <inheritdoc />
+        </member>
+        <member name="M:DotLiquid.Template.Render(System.IO.Stream,DotLiquid.RenderParameters)">
+            <summary>
+            Renders the template into the specified Stream.
+            </summary>
+            <param name="stream"></param>
+            <param name="parameters"></param>
+        </member>
+        <member name="M:DotLiquid.Template.RenderInternal(System.IO.TextWriter,DotLiquid.RenderParameters)">
+             <summary>
+             Render takes a hash with local variables.
+            
+             if you use the same filters over and over again consider registering them globally
+             with <tt>Template.register_filter</tt>
+            
+             Following options can be passed:
+            
+             * <tt>filters</tt> : array with local filters
+             * <tt>registers</tt> : hash with register variables. Those can be accessed from
+             filters and tags and might be useful to integrate liquid more with its host application
+             </summary>
+        </member>
+        <member name="M:DotLiquid.Template.Tokenize(System.String)">
+            <summary>
+            Uses the <tt>Liquid::TemplateParser</tt> regexp to tokenize the passed source
+            </summary>
+            <param name="source"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotLiquid.Util.ExpressionUtility">
+            <summary>
+            Some of this code was taken from http://www.yoda.arachsys.com/csharp/miscutil/usage/genericoperators.html.
+            General purpose Expression utilities
+            </summary>
+        </member>
+        <member name="M:DotLiquid.Util.ExpressionUtility.BinaryNumericResultType(System.Type,System.Type)">
+            <summary>
+            Perform the implicit conversions as set out in the C# spec docs at
+            https://docs.microsoft.com/en-us/dotnet/standard/base-types/conversion-tables
+            </summary>
+            <param name="left"></param>
+            <param name="right"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Util.ExpressionUtility.CreateExpression(System.Func{System.Linq.Expressions.Expression,System.Linq.Expressions.Expression,System.Linq.Expressions.BinaryExpression},System.Type,System.Type)">
+            <summary>
+            Create a function delegate representing a binary operation
+            </summary>
+            <param name="body">Body factory</param>
+            <param name="leftType"></param>
+            <param name="rightType"></param>
+            <exception cref="T:System.ArgumentException"></exception>
+            <returns>Compiled function delegate</returns>
+        </member>
+        <member name="M:DotLiquid.Util.ListExtensionMethods.TryGetAtIndex``1(System.Collections.Generic.List{``0},System.Int32)">
+            <summary>
+            Returns the element at a certain position in the list.
+            Returns null if there is no such element.
+            The list is not modified.
+            </summary>
+            <typeparam name="T">type</typeparam>
+            <param name="list">list</param>
+            <param name="index">index (0 is the first element in the list)</param>
+            <returns>element</returns>
+        </member>
+        <member name="M:DotLiquid.Util.ListExtensionMethods.TryGetAtIndexReverse``1(System.Collections.Generic.List{``0},System.Int32)">
+            <summary>
+            Returns the element at a certain position in the list, but in reverse.
+            Returns null if there is no such element.
+            The list is not modified.
+            </summary>
+            <typeparam name="T">type</typeparam>
+            <param name="list">list</param>
+            <param name="rindex">reverse index (0 is the last element in the list)</param>
+            <returns>element</returns>
+        </member>
+        <member name="M:DotLiquid.Util.ListExtensionMethods.Shift``1(System.Collections.Generic.List{``0})">
+            <summary>
+            Removes the first element from the list and returns it,
+            or null if the list is empty.
+            WARNING: The RemoveAt() operation is O(N). 
+            If the element does not actually need to be removed from the list, use TryGetAtIndex() instead.
+            </summary>
+            <param name="list"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Util.ListExtensionMethods.Pop``1(System.Collections.Generic.List{``0})">
+            <summary>
+            Removes the last element from the list and returns it,
+            or null if the list is empty.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="list"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DotLiquid.Util.R.C(System.String,System.Text.RegularExpressions.RegexOptions)">
+            <summary>
+            All regexes in DotLiquid use fixed known patterns and are used repeatedly, many times repeatedly within a single template.
+            Compiled regexes should be used in these cases to avoid calling the Regex constructor needlessly.
+            The .NET Regex constructor contains a static cache lookup that requires acquisition of a lock, so in a multithreaded system
+            under high load, there will be severe lock contention if regexes are constantly being constructed by different threads.
+            Using compiled regexes and making them "static readonly" completely avoids this problem.
+            In recent versions of .NET, compiled regexes also generally perform measurably faster than uncompiled ones (when used a large number of times).
+            There is of course an initial cost for compilation, but the benefits for high-scale applications far outweigh the initial cost and
+            low-scale applications are unlikely to care about the difference anyway.
+            </summary>
+            <param name="pattern">regex pattern</param>
+            <param name="options">regex options; use the default (Compiled) unless there is a good reason not to</param>
+            <returns>the regex</returns>
+        </member>
+        <member name="M:DotLiquid.Util.R.Scan(System.String,System.Text.RegularExpressions.Regex)">
+            <summary>
+            Scan the input text finding all matches for the given regex.
+            Passing in the regex instead of the pattern avoids problems with Regex construction.
+            See associated comments above for the C() method.
+            </summary>
+            <param name="input">input text</param>
+            <param name="regex">regex</param>
+            <returns>matches</returns>
+        </member>
+        <member name="M:DotLiquid.Util.R.Scan(System.String,System.String)">
+            <summary>
+            Deprecated for performance reasons. New code should not use this.
+            See comments for Scan(string, Regex) above.
+            </summary>
+            <param name="input">input text</param>
+            <param name="pattern">regex pattern</param>
+            <returns>matches</returns>
+        </member>
+        <member name="M:DotLiquid.Util.R.Scan(System.String,System.String,System.Action{System.String,System.String})">
+            <summary>
+            Overload that only works when the pattern contains two groups. The callback
+            is called for each match, passing the two group values.
+            </summary>
+            <param name="input"></param>
+            <param name="pattern"></param>
+            <param name="callback"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DotLiquid.Util.Range">
+            <summary>
+            Taken from code at http://www.pluralsight-training.net/community/blogs/dbox/archive/2005/04/24/7690.aspx.
+            </summary>
+        </member>
+        <member name="T:DotLiquid.Variable">
+             <summary>
+             Holds variables. Variables are only loaded "just in time"
+             and are not evaluated as part of the render stage
+            
+             {{ monkey }}
+             {{ user.name }}
+            
+             Variables can be combined with filters:
+            
+             {{ user | link }}
+             </summary>
+        </member>
+        <member name="M:DotLiquid.Variable.Render(DotLiquid.Context)">
+            <summary>
+            Primarily intended for testing.
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

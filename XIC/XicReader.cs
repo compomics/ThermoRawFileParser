@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
@@ -10,6 +9,8 @@ namespace ThermoRawFileParser.XIC
 {
     public class XicReader
     {
+        private const string MsFilter = "ms";
+
         public static void ReadXic(string rawFilePath, bool base64, XicData xicData)
         {
             IRawDataPlus rawFile;
@@ -49,82 +50,64 @@ namespace ThermoRawFileParser.XIC
                 var minMass = rawFile.RunHeaderEx.LowMass;
                 var maxMass = rawFile.RunHeaderEx.HighMass;
 
-                //var generator = new ChromatogramBatchGenerator();
-                //ParallelChromatogramFactory.FromRawData(generator, rawFile);
+                // Update global metadata
+                xicData.OutputMeta.base64 = base64;
+                xicData.OutputMeta.timeunit = "minutes";
 
-                //update global metadata
-                xicData.outputmeta.base64 = base64;
-                xicData.outputmeta.timeunit = "minutes";
-
-                foreach (var xicUnit in xicData.content)
+                foreach (var xicUnit in xicData.Content)
                 {
-                    IChromatogramSettings settings;
-                    if (xicUnit.Meta.MzStart >= 0.0 && xicUnit.Meta.MzEnd >= 0.0)
+                    IChromatogramSettings settings = null;
+                    if (!xicUnit.Meta.MzStart.HasValue && !xicUnit.Meta.MzEnd.HasValue)
+                    {
+                        settings = new ChromatogramTraceSettings()
+                        {
+                            Filter = xicUnit.Meta.Filter ?? "ms"
+                        };
+                    }
+
+                    if (!xicUnit.Meta.MzStart.HasValue)
+                    {
+                        xicUnit.Meta.MzStart = minMass;
+                    }
+
+                    if (!xicUnit.Meta.MzEnd.HasValue)
+                    {
+                        xicUnit.Meta.MzEnd = maxMass;
+                    }
+
+                    if (settings == null)
                     {
                         settings = new ChromatogramTraceSettings(TraceType.MassRange)
                         {
                             Filter = xicUnit.Meta.Filter ?? "ms",
                             MassRanges = new[]
                             {
-                                new Range(xicUnit.Meta.MzStart,
-                                    xicUnit.Meta.MzEnd)
+                                new Range(xicUnit.Meta.MzStart.Value,
+                                    xicUnit.Meta.MzEnd.Value)
                             }
                         };
                     }
-                    else
+
+                    List<int> rtFilteredScans = null;
+                    if (!xicUnit.Meta.RtStart.HasValue && !xicUnit.Meta.RtEnd.HasValue)
                     {
-                        if (xicUnit.Meta.MzStart < 0.0 && xicUnit.Meta.MzEnd < 0.0)
-                        {
-                            settings = new ChromatogramTraceSettings();
-                        }
-                        else if (xicUnit.Meta.MzStart < 0.0)
-                        {
-                            settings = new ChromatogramTraceSettings(TraceType.MassRange)
-                            {
-                                Filter = xicUnit.Meta.Filter ?? "ms",
-                                MassRanges = new[]
-                                {
-                                    new Range(minMass,
-                                        xicUnit.Meta.MzEnd)
-                                }
-                            };
-                        }
-                        else
-                        {
-                            settings = new ChromatogramTraceSettings(TraceType.MassRange)
-                            {
-                                Filter = xicUnit.Meta.Filter ?? "ms",
-                                MassRanges = new[]
-                                {
-                                    new Range(xicUnit.Meta.MzStart,
-                                        maxMass)
-                                }
-                            };
-                        }
+                        rtFilteredScans = new List<int>();
                     }
 
-                    List<int> rtFilteredScans;
-                    if (xicUnit.Meta.RtStart >= 0.0 && xicUnit.Meta.RtEnd >= 0.0)
+                    if (!xicUnit.Meta.RtStart.HasValue)
                     {
-                        rtFilteredScans = rawFile.GetFilteredScansListByTimeRange(string.Empty,
-                            xicUnit.Meta.RtStart, xicUnit.Meta.RtEnd);
+                        xicUnit.Meta.RtStart = startTime;
                     }
-                    else
+
+                    if (!xicUnit.Meta.RtEnd.HasValue)
                     {
-                        if (xicUnit.Meta.RtStart < 0.0 && xicUnit.Meta.RtEnd < 0.0)
-                        {
-                            rtFilteredScans = new List<int>();
-                        }
-                        else if (xicUnit.Meta.RtStart < 0.0)
-                        {
-                            rtFilteredScans = rawFile.GetFilteredScansListByTimeRange(string.Empty,
-                                startTime, xicUnit.Meta.RtEnd);
-                        }
-                        else
-                        {
-                            rtFilteredScans = rawFile.GetFilteredScansListByTimeRange(string.Empty,
-                                xicUnit.Meta.RtStart, endTime);
-                        }
+                        xicUnit.Meta.RtEnd = endTime;
+                    }
+
+                    if (rtFilteredScans == null)
+                    {
+                        rtFilteredScans = rawFile.GetFilteredScansListByTimeRange(MsFilter,
+                            xicUnit.Meta.RtStart.Value, xicUnit.Meta.RtEnd.Value);
                     }
 
                     IChromatogramData data;
@@ -144,13 +127,13 @@ namespace ThermoRawFileParser.XIC
                     {
                         if (!base64)
                         {
-                            xicUnit.X = chromatogramTrace[0].Times;
-                            xicUnit.Y = chromatogramTrace[0].Intensities;
+                            xicUnit.RetentionTimes = chromatogramTrace[0].Times;
+                            xicUnit.Intensities = chromatogramTrace[0].Intensities;
                         }
                         else
                         {
-                            xicUnit.X = GetBase64String(chromatogramTrace[0].Times);
-                            xicUnit.Y = GetBase64String(chromatogramTrace[0].Intensities);
+                            xicUnit.RetentionTimes = GetBase64String(chromatogramTrace[0].Times);
+                            xicUnit.Intensities = GetBase64String(chromatogramTrace[0].Intensities);
                         }
                     }
                 }

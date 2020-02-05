@@ -1,28 +1,27 @@
-using System;
 using System.Collections.Generic;
 
 namespace ThermoRawFileParser.XIC
 {
     public class XicData
     {
-        public XicOutputMeta outputmeta { get; set; }
-        public List<XicUnit> content { get; set; }
+        public XicOutputMeta OutputMeta { get; set; }
+        public List<XicUnit> Content { get; set; }
 
         public XicData()
         {
-            outputmeta = new XicOutputMeta();
+            OutputMeta = new XicOutputMeta();
 
-            content = new List<XicUnit>();
+            Content = new List<XicUnit>();
         }
-        
-        public XicData(XicData copy){
-            
-            outputmeta = new XicOutputMeta(copy.outputmeta);
 
-            content = new List<XicUnit>();
-            foreach (XicUnit unit in copy.content)
+        public XicData(XicData copy)
+        {
+            OutputMeta = new XicOutputMeta(copy.OutputMeta);
+
+            Content = new List<XicUnit>();
+            foreach (XicUnit unit in copy.Content)
             {
-                content.Add(new XicUnit(unit));
+                Content.Add(new XicUnit(unit));
             }
         }
     }
