@@ -65,13 +65,13 @@ namespace ThermoRawFileParser.XIC
 
         private static void StdOutputXicData(XicData outputData)
         {
-            var outputString = JsonConvert.SerializeObject(outputData);
+            var outputString = JsonConvert.SerializeObject(outputData, Formatting.Indented);
             Console.WriteLine(outputString);
         }
 
         private static void OutputXicData(XicData outputData, string outputFileName)
         {
-            var outputString = JsonConvert.SerializeObject(outputData);
+            var outputString = JsonConvert.SerializeObject(outputData, Formatting.Indented);
             File.WriteAllText(outputFileName, outputString);
         }
     }

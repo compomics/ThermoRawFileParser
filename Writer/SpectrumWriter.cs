@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Reflection;
+using log4net;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
@@ -9,6 +11,9 @@ namespace ThermoRawFileParser.Writer
 {
     public abstract class SpectrumWriter : ISpectrumWriter
     {
+        private static readonly ILog Log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         private const string MsFilter = "ms";
         private const double Tolerance = 0.01;
         protected const double ZeroDelta = 0.0001;
@@ -145,6 +150,22 @@ namespace ThermoRawFileParser.Writer
             }
 
             return selectedIonMz;
+        }
+
+        public static IReaction GetReaction(IScanEvent scanEvent, int scanNumber)
+        {
+            IReaction reaction = null;
+            try
+            {
+                var order = (int) scanEvent.MSOrder;
+                reaction = scanEvent.GetReaction(order - 2);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                Log.Warn("No reaction found for scan " + scanNumber);
+            }
+
+            return reaction;
         }
 
         /// <summary>

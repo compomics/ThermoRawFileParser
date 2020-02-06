@@ -6,17 +6,15 @@ namespace ThermoRawFileParser.Writer
     public class Metadata
     {
         /** The general Path properties contains: RAW path , RAW file version **/
-
         /** The Instruments properties contains the information of the instrument **/
-
         /** Scan Settings **/
-
         /** MS and MS data including number of MS and MS/MS **/
-
         /**
          * Default constructor 
          */
-        public Metadata(){}
+        public Metadata()
+        {
+        }
 
         public Metadata(List<CVTerm> fileProperties,
             List<CVTerm> instrumentProperties,
@@ -45,7 +43,7 @@ namespace ThermoRawFileParser.Writer
             FileProperties.Add(value);
         }
 
-        public void addInstrumentProperty( CVTerm value)
+        public void addInstrumentProperty(CVTerm value)
         {
             InstrumentProperties.Add(value);
         }
@@ -54,19 +52,18 @@ namespace ThermoRawFileParser.Writer
         {
             ScanSettings.Add(value);
         }
-        
+
         public void addScanSetting(ICollection<CVTerm> value)
         {
             ScanSettings.AddRange(value);
         }
 
-        
 
         public void addMSData(CVTerm value)
         {
             MsData.Add(value);
         }
-        
+
         public void addMSData(HashSet<CVTerm> value)
         {
             MsData.AddRange(value);
@@ -75,23 +72,27 @@ namespace ThermoRawFileParser.Writer
         public void addSampleProperty(CVTerm value)
         {
             SampleData.Add(value);
-        }     
+        }
     }
 
-    public class PROXICVTerm
+    public class ProxiCvTerm
     {
         [JsonProperty("accession", NullValueHandling = NullValueHandling.Ignore)]
         public string Accession { get; set; }
-        [JsonProperty("cv_param_group", NullValueHandling = NullValueHandling.Ignore)] 
+
+        [JsonProperty("cv_param_group", NullValueHandling = NullValueHandling.Ignore)]
         public string CvGroup { get; set; }
-        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)] 
+
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
         public string Name { get; set; }
-        [JsonProperty("value", NullValueHandling = NullValueHandling.Ignore)] 
+
+        [JsonProperty("value", NullValueHandling = NullValueHandling.Ignore)]
         public string Value { get; set; }
-        [JsonProperty("value_accession", NullValueHandling = NullValueHandling.Ignore)] 
+
+        [JsonProperty("value_accession", NullValueHandling = NullValueHandling.Ignore)]
         public string ValueAccession { get; set; }
 
-        public PROXICVTerm(string accession, string cvGroup, string name, string value, string valueAccession)
+        public ProxiCvTerm(string accession, string cvGroup, string name, string value, string valueAccession)
         {
             Accession = accession;
             CvGroup = cvGroup;
@@ -101,12 +102,12 @@ namespace ThermoRawFileParser.Writer
         }
     }
 
-    public class CVTerm{
-        
+    public class CVTerm
+    {
         private readonly string acc = "";
-        private readonly string cvLabelID ="";
+        private readonly string cvLabelID = "";
         private readonly string cvName = "";
-        private readonly string cvValue ="";
+        private readonly string cvValue = "";
 
         public CVTerm()
         {
@@ -125,11 +126,10 @@ namespace ThermoRawFileParser.Writer
         public string name => cvName;
         public string value => cvValue;
 
-       
+
         public override int GetHashCode()
         {
-            return CvTermComparer.GetHashCode(this); 
-            
+            return CvTermComparer.GetHashCode(this);
         }
 
         private sealed class CvTermEqualityComparer : IEqualityComparer<CVTerm>
@@ -140,7 +140,8 @@ namespace ThermoRawFileParser.Writer
                 if (ReferenceEquals(x, null)) return false;
                 if (ReferenceEquals(y, null)) return false;
                 if (x.GetType() != y.GetType()) return false;
-                return string.Equals(x.acc, y.acc) && string.Equals(x.cvLabelID, y.cvLabelID) && string.Equals(x.cvName, y.cvName) && string.Equals(x.cvValue, y.cvValue);
+                return string.Equals(x.acc, y.acc) && string.Equals(x.cvLabelID, y.cvLabelID) &&
+                       string.Equals(x.cvName, y.cvName) && string.Equals(x.cvValue, y.cvValue);
             }
 
             public int GetHashCode(CVTerm obj)
@@ -163,5 +164,4 @@ namespace ThermoRawFileParser.Writer
             return CvTermComparer.Equals(obj);
         }
     }
-    
 }

@@ -59,140 +59,112 @@ namespace ThermoRawFileParser.Writer
                     // Get the scan event for this scan number
                     var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
 
-                    IReaction reaction = null;
-                    switch (scanFilter.MSOrder)
+                    // don't include MS1 spectra
+                    if (scanFilter.MSOrder != MSOrderType.Ms)
                     {
-                        case MSOrderType.Ms:
-                            // Keep track of scan number for precursor reference
-                            break;
-                        case MSOrderType.Ms2:
-                            try
-                            {
-                                reaction = scanEvent.GetReaction(0);
-                            }
-                            catch (ArgumentOutOfRangeException)
-                            {
-                                Log.Warn("No reaction found for scan " + scanNumber);
-                            }
+                        IReaction reaction = GetReaction(scanEvent, scanNumber);
 
-                            goto default;
-                        case MSOrderType.Ms3:
+                        Writer.WriteLine("BEGIN IONS");
+                        Writer.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
+                        Writer.WriteLine($"SCANS={scanNumber}");
+                        Writer.WriteLine(
+                            $"RTINSECONDS={(time * 60).ToString(CultureInfo.InvariantCulture)}");
+
+                        // trailer extra data list
+                        var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
+                        int? charge = null;
+                        double? monoisotopicMz = null;
+                        double? isolationWidth = null;
+                        for (var i = 0; i < trailerData.Length; i++)
                         {
-                            try
+                            if (trailerData.Labels[i] == "Charge State:")
                             {
-                                reaction = scanEvent.GetReaction(1);
-                            }
-                            catch (ArgumentOutOfRangeException)
-                            {
-                                Log.Warn("No reaction found for scan " + scanNumber);
+                                if (Convert.ToInt32(trailerData.Values[i]) > 0)
+                                {
+                                    charge = Convert.ToInt32(trailerData.Values[i]);
+                                }
                             }
 
-                            goto default;
+                            if (trailerData.Labels[i] == "Monoisotopic M/Z:")
+                            {
+                                monoisotopicMz = double.Parse(trailerData.Values[i], NumberStyles.Any,
+                                    CultureInfo.CurrentCulture);
+                            }
+
+                            if (trailerData.Labels[i] == "MS" + (int) scanFilter.MSOrder + " Isolation Width:")
+                            {
+                                isolationWidth = double.Parse(trailerData.Values[i], NumberStyles.Any,
+                                    CultureInfo.CurrentCulture);
+                            }
                         }
-                        default:
-                            Writer.WriteLine("BEGIN IONS");
-                            Writer.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
-                            Writer.WriteLine($"SCANS={scanNumber}");
-                            Writer.WriteLine(
-                                $"RTINSECONDS={(time * 60).ToString(CultureInfo.InvariantCulture)}");
 
-                            // trailer extra data list
-                            var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
-                            int? charge = null;
-                            double? monoisotopicMz = null;
-                            double? isolationWidth = null;
-                            for (var i = 0; i < trailerData.Length; i++)
+                        if (reaction != null)
+                        {
+                            var selectedIonMz =
+                                CalculateSelectedIonMz(reaction, monoisotopicMz, isolationWidth);
+
+                            Writer.WriteLine("PEPMASS=" +
+                                             selectedIonMz.ToString(CultureInfo.InvariantCulture));
+                        }
+
+                        // charge
+                        if (charge != null)
+                        {
+                            // Scan polarity            
+                            var polarity = PositivePolarity;
+                            if (scanFilter.Polarity == PolarityType.Negative)
                             {
-                                if (trailerData.Labels[i] == "Charge State:")
-                                {
-                                    if (Convert.ToInt32(trailerData.Values[i]) > 0)
-                                    {
-                                        charge = Convert.ToInt32(trailerData.Values[i]);
-                                    }
-                                }
-
-                                if (trailerData.Labels[i] == "Monoisotopic M/Z:")
-                                {
-                                    monoisotopicMz = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                                        CultureInfo.CurrentCulture);
-                                }
-
-                                if (trailerData.Labels[i] == "MS" + (int) scanFilter.MSOrder + " Isolation Width:")
-                                {
-                                    isolationWidth = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                                        CultureInfo.CurrentCulture);
-                                }
+                                polarity = NegativePolarity;
                             }
 
-                            if (reaction != null)
+                            Writer.WriteLine($"CHARGE={charge}{polarity}");
+                        }
+
+                        // write the filter string
+                        //Writer.WriteLine($"SCANEVENT={scanEvent.ToString()}");
+
+                        // Check if the scan has a centroid stream
+                        if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||
+                                                       (scanEvent.ScanData == ScanDataType.Profile &&
+                                                        !ParseInput.NoPeakPicking)))
+                        {
+                            var centroidStream = rawFile.GetCentroidStream(scanNumber, false);
+                            if (scan.CentroidScan.Length > 0)
                             {
-                                var selectedIonMz =
-                                    CalculateSelectedIonMz(reaction, monoisotopicMz, isolationWidth);
-
-                                Writer.WriteLine("PEPMASS=" +
-                                                 selectedIonMz.ToString(CultureInfo.InvariantCulture));
-                            }
-
-                            // charge
-                            if (charge != null)
-                            {
-                                // Scan polarity            
-                                var polarity = PositivePolarity;
-                                if (scanFilter.Polarity == PolarityType.Negative)
-                                {
-                                    polarity = NegativePolarity;
-                                }
-
-                                Writer.WriteLine($"CHARGE={charge}{polarity}");
-                            }
-
-                            // write the filter string
-                            //Writer.WriteLine($"SCANEVENT={scanEvent.ToString()}");
-
-                            // Check if the scan has a centroid stream
-                            if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||
-                                                           (scanEvent.ScanData == ScanDataType.Profile &&
-                                                            !ParseInput.NoPeakPicking)))
-                            {
-                                var centroidStream = rawFile.GetCentroidStream(scanNumber, false);
-                                if (scan.CentroidScan.Length > 0)
-                                {
-                                    for (var i = 0; i < centroidStream.Length; i++)
-                                    {
-                                        Writer.WriteLine(
-                                            centroidStream.Masses[i].ToString("0.0000000",
-                                                CultureInfo.InvariantCulture)
-                                            + " "
-                                            + centroidStream.Intensities[i].ToString("0.0000000000",
-                                                CultureInfo.InvariantCulture));
-                                    }
-                                }
-                            }
-                            // Otherwise take the profile data
-                            else
-                            {
-                                // Get the scan statistics from the RAW file for this scan number
-                                var scanStatistics = rawFile.GetScanStatsForScanNumber(scanNumber);
-
-                                // Get the segmented (low res and profile) scan data
-                                var segmentedScan =
-                                    rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
-                                for (var i = 0; i < segmentedScan.Positions.Length; i++)
+                                for (var i = 0; i < centroidStream.Length; i++)
                                 {
                                     Writer.WriteLine(
-                                        segmentedScan.Positions[i].ToString("0.0000000",
+                                        centroidStream.Masses[i].ToString("0.0000000",
                                             CultureInfo.InvariantCulture)
                                         + " "
-                                        + segmentedScan.Intensities[i].ToString("0.0000000000",
+                                        + centroidStream.Intensities[i].ToString("0.0000000000",
                                             CultureInfo.InvariantCulture));
                                 }
                             }
+                        }
+                        // Otherwise take the profile data
+                        else
+                        {
+                            // Get the scan statistics from the RAW file for this scan number
+                            var scanStatistics = rawFile.GetScanStatsForScanNumber(scanNumber);
 
-                            Writer.WriteLine("END IONS");
+                            // Get the segmented (low res and profile) scan data
+                            var segmentedScan =
+                                rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
+                            for (var i = 0; i < segmentedScan.Positions.Length; i++)
+                            {
+                                Writer.WriteLine(
+                                    segmentedScan.Positions[i].ToString("0.0000000",
+                                        CultureInfo.InvariantCulture)
+                                    + " "
+                                    + segmentedScan.Intensities[i].ToString("0.0000000000",
+                                        CultureInfo.InvariantCulture));
+                            }
+                        }
 
-                            Log.Debug("Spectrum written to file -- SCAN " + scanNumber);
+                        Writer.WriteLine("END IONS");
 
-                            break;
+                        Log.Debug("Spectrum written to file -- SCAN " + scanNumber);
                     }
                 }
 

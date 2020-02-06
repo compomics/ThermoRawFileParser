@@ -7,22 +7,22 @@ using ThermoRawFileParser.Writer;
 
 namespace ThermoRawFileParser.Query
 {
-    public class PROXISpectrum
+    public class ProxiSpectrum
     {
         public List<double> mzs { get; set; }
         public List<double> intensities { get; set; }
-        public List<PROXICVTerm> attributes { get; set; }
+        public List<ProxiCvTerm> attributes { get; set; }
 
-        public PROXISpectrum()
+        public ProxiSpectrum()
         {
             mzs = new List<double>();
             intensities = new List<double>();
-            attributes = new List<PROXICVTerm>();
+            attributes = new List<ProxiCvTerm>();
         }
 
         public void AddAttribute(string accession=null, string cvGroup=null, string name=null, string value=null, string valueAccession=null)
         {
-            attributes.Add(new PROXICVTerm(accession, cvGroup, name, value, valueAccession));
+            attributes.Add(new ProxiCvTerm(accession, cvGroup, name, value, valueAccession));
         }
 
         public void AddMz(IList<double> mzList)

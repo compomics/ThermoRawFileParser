@@ -15,10 +15,6 @@ namespace ThermoRawFileParser.Query
         private static readonly ILog Log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-
-        private const string PositivePolarity = "+";
-        private const string NegativePolarity = "-";
-
         private readonly QueryParameters queryParameters;
 
         public ProxiSpectrumReader(QueryParameters _queryParameters)
@@ -26,9 +22,9 @@ namespace ThermoRawFileParser.Query
             this.queryParameters = _queryParameters;
         }
 
-        public List<PROXISpectrum> Retrieve()
+        public List<ProxiSpectrum> Retrieve()
         {
-            List<PROXISpectrum> resultList = new List<PROXISpectrum>();
+            var resultList = new List<ProxiSpectrum>();
             IRawDataPlus rawFile;
             using (rawFile = RawFileReaderFactory.ReadFile(queryParameters.rawFilePath))
             {
@@ -55,11 +51,12 @@ namespace ThermoRawFileParser.Query
                 rawFile.SelectInstrument(Device.MS, 1);
 
                 // Set a cvGroup number counter
-                int cvGroup = 1;
+                var cvGroup = 1;
 
-                foreach (int scanNumber in queryParameters.scanNumbers)
+                foreach (var scanNumber in queryParameters.scanNumbers)
                 {
-                    var proxiSpectrum = new PROXISpectrum();
+                    var proxiSpectrum = new ProxiSpectrum();
+                    double monoisotopicMz = 0.0;
                     try
                     {
                         // Get each scan from the RAW file
@@ -78,156 +75,134 @@ namespace ThermoRawFileParser.Query
                         var isCentroid = true;
 
                         IReaction reaction = null;
-                        switch (scanFilter.MSOrder)
+                        if (scanEvent.MSOrder != MSOrderType.Ms)
                         {
-                            case MSOrderType.Ms2:
-                                try
-                                {
-                                    reaction = scanEvent.GetReaction(0);
-                                }
-                                catch (ArgumentOutOfRangeException)
-                                {
-                                    Log.Warn("No reaction found for scan " + scanNumber);
-                                }
-
-                                goto default;
-                            case MSOrderType.Ms3:
-                            {
-                                try
-                                {
-                                    reaction = scanEvent.GetReaction(1);
-                                }
-                                catch (ArgumentOutOfRangeException)
-                                {
-                                    Log.Warn("No reaction found for scan " + scanNumber);
-                                }
-
-                                goto default;
-                            }
-                            default:
-                                proxiSpectrum.AddAttribute(accession: "MS:10003057", name: "scan number",
-                                    value: scanNumber.ToString(CultureInfo.InvariantCulture));
-                                proxiSpectrum.AddAttribute(accession: "MS:10000016", name: "scan start time",
-                                    value: (time * 60).ToString(CultureInfo.InvariantCulture));
-                                proxiSpectrum.AddAttribute(accession: "MS:1000511", name: "ms level",
-                                    value: ((int) scanFilter.MSOrder).ToString(CultureInfo.InvariantCulture));
-
-                                // trailer extra data list
-                                var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
-                                int charge = 0;
-                                double monoisotopicMz = 0.0;
-                                double isolationWidth = 0.0;
-                                for (var i = 0; i < trailerData.Length; i++)
-                                {
-                                    if (trailerData.Labels[i] == "Ion Injection Time (ms):")
-                                    {
-                                        proxiSpectrum.AddAttribute(accession: "MS:10000927", name: "ion injection time",
-                                            value: trailerData.Values[i], cvGroup: cvGroup.ToString());
-                                        proxiSpectrum.AddAttribute(accession: "UO:0000028", name: "millisecond",
-                                            cvGroup: cvGroup.ToString());
-                                        cvGroup++;
-                                    }
-
-                                    if (trailerData.Labels[i] == "Charge State:")
-                                    {
-                                        charge = Convert.ToInt32(trailerData.Values[i]);
-                                    }
-
-                                    if (trailerData.Labels[i] == "Monoisotopic M/Z:")
-                                    {
-                                        monoisotopicMz = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                                            CultureInfo.CurrentCulture);
-                                    }
-
-                                    if (trailerData.Labels[i] == "MS" + (int) scanFilter.MSOrder + " Isolation Width:")
-                                    {
-                                        isolationWidth = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                                            CultureInfo.CurrentCulture);
-                                    }
-                                }
-
-                                if (reaction != null)
-                                {
-                                    // Store the precursor information
-                                    var selectedIonMz =
-                                        SpectrumWriter.CalculateSelectedIonMz(reaction, monoisotopicMz, isolationWidth);
-                                    proxiSpectrum.AddAttribute(accession: "MS:10000744", name: "selected ion m/z",
-                                        value: selectedIonMz.ToString(CultureInfo.InvariantCulture));
-                                    proxiSpectrum.AddAttribute(accession: "MS:1000827", name: "isolation window target m/z",
-                                        value: selectedIonMz.ToString(CultureInfo.InvariantCulture));
-
-                                    // Store the isolation window information
-                                    double isolationHalfWidth = isolationWidth / 2;
-                                    proxiSpectrum.AddAttribute(accession: "MS:1000828", name: "isolation window lower offset",
-                                        value: isolationHalfWidth.ToString(CultureInfo.InvariantCulture));
-                                    proxiSpectrum.AddAttribute(accession: "MS:1000829", name: "isolation window upper offset",
-                                        value: isolationHalfWidth.ToString(CultureInfo.InvariantCulture));
-                                }
-
-                                // scan polarity
-                                 if (scanFilter.Polarity == PolarityType.Positive)
-                                {
-                                    proxiSpectrum.AddAttribute(accession: "MS:10000465", name: "scan polarity",
-                                        value: "positive scan", valueAccession: "MS:1000130");
-                                }
-                                else
-                                {
-                                    proxiSpectrum.AddAttribute(accession: "MS:10000465", name: "scan polarity",
-                                        value: "negative scan", valueAccession: "MS:1000129");
-                                }
- 
-                                // charge state
-                                proxiSpectrum.AddAttribute(accession: "MS:10000041", name: "charge state",
-                                    value: charge.ToString(CultureInfo.InvariantCulture));
-
-                                // write the filter string
-                                proxiSpectrum.AddAttribute(accession: "MS:10000512", name: "filter string",
-                                    value: scanEvent.ToString());
-
-                                // Check if the scan has a centroid stream
-                                if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||
-                                                               (scanEvent.ScanData == ScanDataType.Profile &&
-                                                                !queryParameters.noPeakPicking)))
-                                {
-                                    var centroidStream = rawFile.GetCentroidStream(scanNumber, false);
-                                    if (scan.CentroidScan.Length > 0)
-                                    {
-                                        proxiSpectrum.AddMz(centroidStream.Masses);
-                                        proxiSpectrum.AddIntensities(centroidStream.Intensities);
-                                    }
-                                }
-                                // Otherwise take the profile data
-                                else
-                                {
-                                    // Get the scan statistics from the RAW file for this scan number
-                                    var scanStatistics = rawFile.GetScanStatsForScanNumber(scanNumber);
-
-                                    // Get the segmented (low res and profile) scan data
-                                    var segmentedScan =
-                                        rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
-                                    proxiSpectrum.AddMz(segmentedScan.Positions);
-                                    proxiSpectrum.AddIntensities(segmentedScan.Intensities);
-
-                                    if (scanEvent.ScanData.Equals(ScanDataType.Profile))
-                                    {
-                                        isCentroid = false;
-                                    }
-                                }
-
-                                if (isCentroid)
-                                {
-                                    proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
-                                        value: "centroid spectrum", valueAccession: "MS:1000127");
-                                }
-                                else
-                                {
-                                    proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
-                                        value: "profile spectrum", valueAccession: "MS:1000128");
-                                }
-
-                                resultList.Add(proxiSpectrum);
-                                break;
+                            reaction = SpectrumWriter.GetReaction(scanEvent, scanNumber);
                         }
+
+                        proxiSpectrum.AddAttribute(accession: "MS:10003057", name: "scan number",
+                            value: scanNumber.ToString(CultureInfo.InvariantCulture));
+                        proxiSpectrum.AddAttribute(accession: "MS:10000016", name: "scan start time",
+                            value: (time * 60).ToString(CultureInfo.InvariantCulture));
+                        proxiSpectrum.AddAttribute(accession: "MS:1000511", name: "ms level",
+                            value: ((int) scanFilter.MSOrder).ToString(CultureInfo.InvariantCulture));
+
+                        // trailer extra data list
+                        var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
+                        var charge = 0;
+                        var isolationWidth = 0.0;
+                        for (var i = 0; i < trailerData.Length; i++)
+                        {
+                            if (trailerData.Labels[i] == "Ion Injection Time (ms):")
+                            {
+                                proxiSpectrum.AddAttribute(accession: "MS:10000927", name: "ion injection time",
+                                    value: trailerData.Values[i], cvGroup: cvGroup.ToString());
+                                proxiSpectrum.AddAttribute(accession: "UO:0000028", name: "millisecond",
+                                    cvGroup: cvGroup.ToString());
+                                cvGroup++;
+                            }
+
+                            if (trailerData.Labels[i] == "Charge State:")
+                            {
+                                charge = Convert.ToInt32(trailerData.Values[i]);
+                            }
+
+                            if (trailerData.Labels[i] == "Monoisotopic M/Z:")
+                            {
+                                monoisotopicMz = double.Parse(trailerData.Values[i], NumberStyles.Any,
+                                    CultureInfo.CurrentCulture);
+                            }
+
+                            if (trailerData.Labels[i] == "MS" + (int) scanFilter.MSOrder + " Isolation Width:")
+                            {
+                                isolationWidth = double.Parse(trailerData.Values[i], NumberStyles.Any,
+                                    CultureInfo.CurrentCulture);
+                            }
+                        }
+
+                        if (reaction != null)
+                        {
+                            // Store the precursor information
+                            var selectedIonMz =
+                                SpectrumWriter.CalculateSelectedIonMz(reaction, monoisotopicMz, isolationWidth);
+                            proxiSpectrum.AddAttribute(accession: "MS:10000744", name: "selected ion m/z",
+                                value: selectedIonMz.ToString(CultureInfo.InvariantCulture));
+                            proxiSpectrum.AddAttribute(accession: "MS:1000827",
+                                name: "isolation window target m/z",
+                                value: selectedIonMz.ToString(CultureInfo.InvariantCulture));
+
+                            // Store the isolation window information
+                            var isolationHalfWidth = isolationWidth / 2;
+                            proxiSpectrum.AddAttribute(accession: "MS:1000828",
+                                name: "isolation window lower offset",
+                                value: isolationHalfWidth.ToString(CultureInfo.InvariantCulture));
+                            proxiSpectrum.AddAttribute(accession: "MS:1000829",
+                                name: "isolation window upper offset",
+                                value: isolationHalfWidth.ToString(CultureInfo.InvariantCulture));
+                        }
+
+                        // scan polarity
+                        if (scanFilter.Polarity == PolarityType.Positive)
+                        {
+                            proxiSpectrum.AddAttribute(accession: "MS:10000465", name: "scan polarity",
+                                value: "positive scan", valueAccession: "MS:1000130");
+                        }
+                        else
+                        {
+                            proxiSpectrum.AddAttribute(accession: "MS:10000465", name: "scan polarity",
+                                value: "negative scan", valueAccession: "MS:1000129");
+                        }
+
+                        // charge state
+                        proxiSpectrum.AddAttribute(accession: "MS:10000041", name: "charge state",
+                            value: charge.ToString(CultureInfo.InvariantCulture));
+
+                        // write the filter string
+                        proxiSpectrum.AddAttribute(accession: "MS:10000512", name: "filter string",
+                            value: scanEvent.ToString());
+
+                        // Check if the scan has a centroid stream
+                        if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||
+                                                       (scanEvent.ScanData == ScanDataType.Profile &&
+                                                        !queryParameters.noPeakPicking)))
+                        {
+                            var centroidStream = rawFile.GetCentroidStream(scanNumber, false);
+                            if (scan.CentroidScan.Length > 0)
+                            {
+                                proxiSpectrum.AddMz(centroidStream.Masses);
+                                proxiSpectrum.AddIntensities(centroidStream.Intensities);
+                            }
+                        }
+                        // Otherwise take the profile data
+                        else
+                        {
+                            // Get the scan statistics from the RAW file for this scan number
+                            var scanStatistics = rawFile.GetScanStatsForScanNumber(scanNumber);
+
+                            // Get the segmented (low res and profile) scan data
+                            var segmentedScan =
+                                rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
+                            proxiSpectrum.AddMz(segmentedScan.Positions);
+                            proxiSpectrum.AddIntensities(segmentedScan.Intensities);
+
+                            if (scanEvent.ScanData == ScanDataType.Profile)
+                            {
+                                isCentroid = false;
+                            }
+                        }
+
+                        if (isCentroid)
+                        {
+                            proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
+                                value: "centroid spectrum", valueAccession: "MS:1000127");
+                        }
+                        else
+                        {
+                            proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
+                                value: "profile spectrum", valueAccession: "MS:1000128");
+                        }
+
+                        resultList.Add(proxiSpectrum);
                     }
                     catch (Exception ex)
                     {

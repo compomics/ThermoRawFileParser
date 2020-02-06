@@ -47,17 +47,16 @@ namespace ThermoRawFileParser.Query
             }
         }
 
-
-        private static void OutputQueryData(List<PROXISpectrum> outputData, string outputFileName)
+        private static void OutputQueryData(List<ProxiSpectrum> outputData, string outputFileName)
         {
-            var outputString = JsonConvert.SerializeObject(outputData);
+            var outputString = JsonConvert.SerializeObject(outputData, Formatting.Indented);
             File.WriteAllText(outputFileName, outputString);
         }
 
 
-        private static void StdOutputQueryData(List<PROXISpectrum> outputData)
+        private static void StdOutputQueryData(List<ProxiSpectrum> outputData)
         {
-            var outputString = JsonConvert.SerializeObject(outputData);
+            var outputString = JsonConvert.SerializeObject(outputData, Formatting.Indented);
             Console.Write(outputString);
         }
 

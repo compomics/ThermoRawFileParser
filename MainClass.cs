@@ -107,7 +107,7 @@ namespace ThermoRawFileParser
 
                 if (parameters.help)
                 {
-                    ShowHelp("usage is (use -option=value for the optional arguments):", null,
+                    ShowHelp("usage is:", null,
                         optionSet);
                     return;
                 }
@@ -184,19 +184,19 @@ namespace ThermoRawFileParser
             }
             catch (OptionException optionException)
             {
-                ShowHelp("Error - usage is (use -option=value for the optional arguments):", optionException,
+                ShowHelp("Error - usage is:", optionException,
                     optionSet);
             }
             catch (ArgumentNullException)
             {
                 if (parameters.help)
                 {
-                    ShowHelp("usage is (use -option=value for the optional arguments):", null,
+                    ShowHelp("usage is:", null,
                         optionSet);
                 }
                 else
                 {
-                    ShowHelp("Error - usage is (use -option=value for the optional arguments):", null,
+                    ShowHelp("Error - usage is:", null,
                         optionSet);
                 }
             }
@@ -274,7 +274,7 @@ namespace ThermoRawFileParser
 
                 if (parameters.help)
                 {
-                    ShowHelp("usage is (use -option=value for the optional arguments):", null,
+                    ShowHelp("usage is:", null,
                         optionSet);
                     return;
                 }
@@ -302,19 +302,19 @@ namespace ThermoRawFileParser
             }
             catch (OptionException optionException)
             {
-                ShowHelp("Error - usage is (use -option=value for the optional arguments):", optionException,
+                ShowHelp("Error - usage is:", optionException,
                     optionSet);
             }
             catch (ArgumentNullException)
             {
                 if (parameters.help)
                 {
-                    ShowHelp("usage is (use -option=value for the optional arguments):", null,
+                    ShowHelp("usage is:", null,
                         optionSet);
                 }
                 else
                 {
-                    ShowHelp("Error - usage is (use -option=value for the optional arguments):", null,
+                    ShowHelp("Error - usage is:", null,
                         optionSet);
                 }
             }
@@ -451,10 +451,9 @@ namespace ThermoRawFileParser
 
                 if (help)
                 {
-                    string helpmessage = String.Format("usage is {0} [subcommand] [options]\nsubcommand is xic|query\n",
-                        Assembly.GetExecutingAssembly().GetName().Name);
-                    ShowHelp(helpmessage +
-                             "(use -option=value for the optional arguments):", null,
+                    var helpMessage =
+                        $"usage is {Assembly.GetExecutingAssembly().GetName().Name}.exe [subcommand] [options]\noptional subcommands are xic|query (use [subcommand] -h for more info]):";
+                    ShowHelp(helpMessage, null,
                         optionSet);
                     return;
                 }
@@ -660,19 +659,19 @@ namespace ThermoRawFileParser
             }
             catch (OptionException optionException)
             {
-                ShowHelp("Error - usage is (use -option=value for the optional arguments):", optionException,
+                ShowHelp("Error - usage is:", optionException,
                     optionSet);
             }
             catch (ArgumentNullException)
             {
                 if (help)
                 {
-                    ShowHelp("usage is (use -option=value for the optional arguments):", null,
+                    ShowHelp("usage is:", null,
                         optionSet);
                 }
                 else
                 {
-                    ShowHelp("Error - usage is (use -option=value for the optional arguments):", null,
+                    ShowHelp("Error - usage is:", null,
                         optionSet);
                 }
             }
