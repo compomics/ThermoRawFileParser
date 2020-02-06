@@ -535,7 +535,7 @@ namespace ThermoRawFileParser
                     }
                 }
 
-                if (parseInput.OutputDirectory != null && !Directory.Exists(parseInput.OutputDirectory))
+                if (!parseInput.OutputDirectory.IsNullOrEmpty() && !Directory.Exists(parseInput.OutputDirectory))
                 {
                     throw new OptionException(
                         "specify a valid output directory",
