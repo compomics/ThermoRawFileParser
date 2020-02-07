@@ -8,6 +8,7 @@ Wrapper around the .net (C#) ThermoFisher ThermoRawFileReader library for runnin
 As of version 1.2.0, 2 subcommands are available (see usage for examples):
 * query: returns one or more spectra in JSON PROXI by scan number(s)
 * xic: returns chromatogram data based on JSON filter input
+
 These features are still under development, remarks or suggestions are more than welcome.
 
 RawFileReader reading tool. Copyright © 2016 by Thermo Fisher Scientific, Inc. All rights reserved
