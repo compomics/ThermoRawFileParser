@@ -1,14 +1,25 @@
 # ThermoRawFileParser
 
-Wrapper around the .net (C#) ThermoFisher ThermoRawFileReader library for running on Linux with mono (works on Windows too). It takes a thermo RAW file as input and outputs a metadata file and the spectra in 3 possible formats
+Wrapper around the .net (C#) ThermoFisher ThermoRawFileReader library for running on Linux with mono (works on Windows too). It takes a thermo RAW file as input and outputs a metadata file and the spectra in 3 possible formats:
 * MGF: MS2 and MS3 spectra
 * mzML and indexed mzML: both MS1, MS2 and MS3 spectra
 * Apache Parquet: under development
+
+As of version 1.2.0, 2 subcommands are available (see usage for examples):
+* query: returns one or more spectra in JSON PROXI by scan number(s)
+* xic: returns chromatogram data based on JSON filter input
+These features are still under development, remarks or suggestions are more than welcome.
 
 RawFileReader reading tool. Copyright © 2016 by Thermo Fisher Scientific, Inc. All rights reserved
 
 ## (Linux) Requirements
 [Mono](https://www.mono-project.com/download/stable/#download-lin) (install mono-complete if you encounter "assembly not found" errors).
+
+## Download
+
+Click [here](https://github.com/compomics/ThermoRawFileParser/releases) to go to the release page (with [release notes](https://github.com/compomics/ThermoRawFileParser/wiki/ReleaseNotes) starting from v1.1.7).
+
+You can find the ThermoRawFileParserGUI [here](https://github.com/compomics/ThermoRawFileParserGUI).
 
 ## Usage
 ```
@@ -26,9 +37,8 @@ For running on Windows, omit `mono`. The optional parameters only work in the -o
 
 ```
 ThermoRawFileParser.exe --help
- usage is ThermoRawFileParser [subcommand] [option]
- subcommand is xic|query
- (use -option=value for the optional arguments):
+ usage is ThermoRawFileParser.exe [subcommand] [options]
+optional subcommands are xic|query (use [subcommand] -h for more info]):
   -h, --help                 Prints out the options.
       --version              Prints out the library version.
   -i, --input=VALUE          The raw file input (Required). Specify this or an
@@ -74,11 +84,83 @@ ThermoRawFileParser.exe --help
 
 A (java) graphical user interface is also available [here](https://github.com/compomics/ThermoRawFileParserGUI) that enables the selection of an input RAW directory or one ore more RAW files.
 
-## Download
+### query subcommand
+Enables the retrieval spectra by (a) scan number(s) in [PROXI format](https://github.com/HUPO-PSI/proxi-schemas).
+```
+mono ThermoRawFileParser.exe query -i=/home/user/data_input/raw_file.raw -o=/home/user/output.json n="1-5, 20, 25-30"
+```
+```
+ThermoRawFileParser.exe query --help
+usage is:
+  -h, --help                 Prints out the options.
+  -i, --input=VALUE          The raw file input (Required).
+  -n, --scans=VALUE          The scan numbers. e.g. "1-5, 20, 25-30"
+  -b, --output_file=VALUE    The output file. Specifying none writes the output
+                               file to the input file parent directory.
+  -p, --noPeakPicking        Don't use the peak picking provided by the native
+                               Thermo library. By default peak picking is
+                               enabled.
+  -s, --stdout               Pipes the output into standard output. Logging is
+                               being turned off
+```
+### xic subcommand
+Return one or more chromatograms based on query JSON input.
+```
+mono ThermoRawFileParser.exe xic -i=/home/user/data_input/raw_file.raw -j=/home/user/xic_input.json
+```
+```
+ThermoRawFileParser.exe query --help
+usage is:
+  -h, --help                 Prints out the options.
+  -i, --input=VALUE          The raw file input (Required). Specify this or an
+                               input directory -d
+  -d, --input_directory=VALUE
+                             The directory containing the raw files (Required).
+                               Specify this or an input file -i.
+  -j, --json=VALUE           The json input file (Required).
+  -p, --print_example        Show a json input file example.
+  -o, --output=VALUE         The output directory. If not specified, the output
+                               is written to the input directory
+  -b, --base64               Encodes the content of the xic vectors as base 64
+                               encoded string.
+  -s, --stdout               Pipes the output into standard output. Logging is
+                               being turned off.
+```
+Provide one of the following filters:
+ * M/Z and tolerance (tolerance unit optional, default `ppm`)
+ * M/Z start and end
+ * sequence and tolerance (tolerance unit optional, default `ppm`)
+ 
+with optional parameters start en end retention time and filter (thermo filter string, defaults to `ms`)
 
-Click [here](https://github.com/compomics/ThermoRawFileParser/releases) to go to the release page (with [release notes](https://github.com/compomics/ThermoRawFileParser/wiki/ReleaseNotes) starting from v1.1.7).
+An example input JSON file:
+```
+[
+        {
+            "mz":488.5384,
+            "tolerance":10,
+            "tolerance_unit":"ppm"           
+        },
+        {
+            "mz":575.2413,
+            "tolerance":10,
+            "rt_start":630,
+            "rt_end":660,
+            "scan_filter":"ms2"
+        },
+        {
+            "mz_start":749.7860,
+            "mz_end" : 750.4,            
+            "rt_start":630,
+            "rt_end":660
+        },
+        {
+            "sequence":"TRANNEL",
+            "tolerance":10
+        }
+]
 
-You can find the ThermoRawFileParserGUI [here](https://github.com/compomics/ThermoRawFileParserGUI).
+```
 
 ## Galaxy integration
 
