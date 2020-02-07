@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
+using log4net;
+using NUnit.Framework.Internal;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
@@ -9,6 +12,9 @@ namespace ThermoRawFileParser.XIC
 {
     public class XicReader
     {
+        private static readonly ILog Log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         private const string MsFilter = "ms";
 
         public static void ReadXic(string rawFilePath, bool base64, XicData xicData)
@@ -104,17 +110,30 @@ namespace ThermoRawFileParser.XIC
                         xicUnit.Meta.RtEnd = endTime;
                     }
 
+                    IChromatogramData data = null;
                     if (rtFilteredScans == null)
                     {
                         rtFilteredScans = rawFile.GetFilteredScansListByTimeRange(MsFilter,
                             xicUnit.Meta.RtStart.Value, xicUnit.Meta.RtEnd.Value);
-                    }
 
-                    IChromatogramData data;
-                    if (!rtFilteredScans.IsNullOrEmpty())
-                    {
-                        data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, rtFilteredScans[0],
-                            rtFilteredScans[rtFilteredScans.Count - 1]);
+                        if (rtFilteredScans.Count != 0)
+                        {
+                            data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings},
+                                rtFilteredScans[0],
+                                rtFilteredScans[rtFilteredScans.Count - 1]);
+                            if (data.PositionsArray.Length == 1 && data.PositionsArray[0].Length == 1 &&
+                                (Math.Abs(data.PositionsArray[0][0] - startTime) < 0.001 ||
+                                 Math.Abs(data.PositionsArray[0][0] - endTime) < 0.001))
+                            {
+                                Log.Warn(
+                                    $"Only the minimum or maximum retention time was returned. This is an indication that the provided retention time range [{xicUnit.Meta.RtStart}-{xicUnit.Meta.RtEnd}] lies outside the max. window [{startTime}-{endTime}]");
+                            }
+                        }
+                        else
+                        {
+                            Log.Warn(
+                                $"No scans found in retention time range [{xicUnit.Meta.RtStart}-{xicUnit.Meta.RtEnd}]. This is an indication that the provided retention time window lies outside the max. window [{startTime}-{endTime}]");
+                        }
                     }
                     else
                     {
@@ -122,18 +141,21 @@ namespace ThermoRawFileParser.XIC
                             lastScanNumber);
                     }
 
-                    var chromatogramTrace = ChromatogramSignal.FromChromatogramData(data);
-                    if (chromatogramTrace[0].Scans.Count != 0)
+                    if (data != null)
                     {
-                        if (!base64)
+                        var chromatogramTrace = ChromatogramSignal.FromChromatogramData(data);
+                        if (chromatogramTrace[0].Scans.Count != 0)
                         {
-                            xicUnit.RetentionTimes = chromatogramTrace[0].Times;
-                            xicUnit.Intensities = chromatogramTrace[0].Intensities;
-                        }
-                        else
-                        {
-                            xicUnit.RetentionTimes = GetBase64String(chromatogramTrace[0].Times);
-                            xicUnit.Intensities = GetBase64String(chromatogramTrace[0].Intensities);
+                            if (!base64)
+                            {
+                                xicUnit.RetentionTimes = chromatogramTrace[0].Times;
+                                xicUnit.Intensities = chromatogramTrace[0].Intensities;
+                            }
+                            else
+                            {
+                                xicUnit.RetentionTimes = GetBase64String(chromatogramTrace[0].Times);
+                                xicUnit.Intensities = GetBase64String(chromatogramTrace[0].Intensities);
+                            }
                         }
                     }
                 }

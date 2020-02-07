@@ -48,7 +48,7 @@ namespace ThermoRawFileParserTest
             var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data/small2.RAW");
             XicData xicData = new XicData
             {
-                // test the full range
+                // test the full retention time range
                 Content = new List<XicUnit>
                 {
                     new XicUnit()
@@ -71,6 +71,32 @@ namespace ThermoRawFileParserTest
             Assert.AreEqual(749.8093, xicUnit.Meta.MzEnd, 0.01);
             Assert.AreEqual(10, xicUnit.Meta.RtStart, 0.01);
             Assert.AreEqual(10.98, xicUnit.Meta.RtEnd, 0.01);
+            
+            xicData = new XicData
+            {
+                // test the nonsensical retention time range
+                Content = new List<XicUnit>
+                {
+                    new XicUnit()
+                    {
+                        Meta = new XicMeta()
+                        {
+                            MzStart = 749.786,
+                            MzEnd = 749.8093,
+                            RtStart = 300,
+                            RtEnd = 400
+                        }
+                    }
+                }
+            };
+            XicReader.ReadXic(testRawFile, false, xicData);
+            xicUnit = xicData.Content[0];
+            Assert.AreEqual(1, ((Array) xicUnit.RetentionTimes).Length);
+            Assert.AreEqual(1, ((Array) xicUnit.Intensities).Length);
+            Assert.AreEqual(749.786, xicUnit.Meta.MzStart, 0.01);
+            Assert.AreEqual(749.8093, xicUnit.Meta.MzEnd, 0.01);
+            Assert.AreEqual(300, xicUnit.Meta.RtStart, 0.01);
+            Assert.AreEqual(400, xicUnit.Meta.RtEnd, 0.01);
         }
 
         [Test]
