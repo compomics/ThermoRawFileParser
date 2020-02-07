@@ -118,10 +118,9 @@ namespace ThermoRawFileParser.XIC
 
                         if (rtFilteredScans.Count != 0)
                         {
-                            data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings},
-                                rtFilteredScans[0],
+                            data = GetChromatogramData(rawFile, settings, rtFilteredScans[0],
                                 rtFilteredScans[rtFilteredScans.Count - 1]);
-                            if (data.PositionsArray.Length == 1 && data.PositionsArray[0].Length == 1 &&
+                            if (data != null && data.PositionsArray.Length == 1 && data.PositionsArray[0].Length == 1 &&
                                 (Math.Abs(data.PositionsArray[0][0] - startTime) < 0.001 ||
                                  Math.Abs(data.PositionsArray[0][0] - endTime) < 0.001))
                             {
@@ -137,8 +136,7 @@ namespace ThermoRawFileParser.XIC
                     }
                     else
                     {
-                        data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, firstScanNumber,
-                            lastScanNumber);
+                        data = GetChromatogramData(rawFile, settings, firstScanNumber, lastScanNumber);
                     }
 
                     if (data != null)
@@ -160,6 +158,27 @@ namespace ThermoRawFileParser.XIC
                     }
                 }
             }
+        }
+
+        private static IChromatogramData GetChromatogramData(IRawDataPlus rawFile, IChromatogramSettings settings,
+            int firstScanNumber, int lastScanNumber)
+        {
+            IChromatogramData data = null;
+            try
+            {
+                data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, firstScanNumber,
+                    lastScanNumber);
+            }
+            catch (InvalidFilterFormatException ex)
+            {
+                Log.Warn($"Invalid filter string {settings.Filter}");
+            }
+            catch (InvalidFilterCriteriaException ex)
+            {
+                Log.Warn($"Invalid filter string {settings.Filter}");
+            }
+
+            return data;
         }
 
         /// <summary>
