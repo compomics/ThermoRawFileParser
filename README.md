@@ -5,13 +5,17 @@ Wrapper around the .net (C#) ThermoFisher ThermoRawFileReader library for runnin
 * mzML and indexed mzML: both MS1, MS2 and MS3 spectra
 * Apache Parquet: under development
 
-As of version 1.2.0, 2 subcommands are available (see usage for examples):
+As of version 1.2.0, 2 subcommands are available (shoutout to the [eubic 2020 developers meeting](https://eubic-ms.org/events/2020-developers-meeting/), see [usage](#usage) for examples):
 * query: returns one or more spectra in JSON PROXI by scan number(s)
 * xic: returns chromatogram data based on JSON filter input
 
 These features are still under development, remarks or suggestions are more than welcome.
 
 RawFileReader reading tool. Copyright © 2016 by Thermo Fisher Scientific, Inc. All rights reserved
+
+## ThermoRawFileParser Publication:
+  * Hulstaert N, Shofstahl J, Sachsenberg T, Walzer M, Barsnes H, Martens L, Perez-Riverol Y: _ThermoRawFileParser: Modular, Scalable, and Cross-Platform RAW File Conversion_ [[PMID 31755270](https://www.ncbi.nlm.nih.gov/pubmed/31755270)].
+  * If you use ThermoRawFileParser as part of a publication, please include this reference.
 
 ## (Linux) Requirements
 [Mono](https://www.mono-project.com/download/stable/#download-lin) (install mono-complete if you encounter "assembly not found" errors).
@@ -163,6 +167,8 @@ An example input JSON file:
 
 ```
 
+[Go to top of page](#thermorawfileparser)
+
 ## Galaxy integration
 
 ThermoRawFileParser is available in the Galaxy [ToolShed](https://toolshed.g2.bx.psu.edu/view/galaxyp/thermo_raw_file_converter/a3edda696e4d) and is deployed at the [European Galaxy Server](https://usegalaxy.eu/root?tool_id=toolshed.g2.bx.psu.edu/repos/galaxyp/thermo_raw_file_converter/thermo_raw_file_converter/).
@@ -238,3 +244,4 @@ or with the bash script (`ThermoRawFileParser.sh`):
 ```
 docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser /bin/bash /home/biodocker/bin/ThermoRawFileParser.sh -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0
 ```
+[Go to top of page](#thermorawfileparser)
