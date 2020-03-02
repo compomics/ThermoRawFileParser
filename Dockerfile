@@ -44,7 +44,7 @@ RUN git clone  -b master --single-branch https://github.com/compomics/ThermoRawF
 RUN msbuild
 RUN ls -l -R 
 
-COPY ThermoRawFileParser /home/biodocker/bin/bin/x64/Debug/
+RUN cp ThermoRawFileParser /home/biodocker/bin/bin/x64/Debug/
 
 USER root 
 RUN chown biodocker:biodocker /home/biodocker/bin/bin/x64/Debug/ThermoRawFileParser
