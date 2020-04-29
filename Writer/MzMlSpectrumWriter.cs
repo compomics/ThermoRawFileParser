@@ -162,7 +162,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteStartElement("sourceFile");
                 _writer.WriteAttributeString("id", SourceFileId);
                 _writer.WriteAttributeString("name", ParseInput.RawFileNameWithoutExtension);
-                _writer.WriteAttributeString("location", ParseInput.RawFilePath);
+                _writer.WriteAttributeString("location", "file:///"+ParseInput.RawFilePath);
                 SerializeCvParam(new CVParamType
                 {
                     accession = "MS:1000768",
