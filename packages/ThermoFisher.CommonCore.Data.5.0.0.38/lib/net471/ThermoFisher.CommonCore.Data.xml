@@ -35,6 +35,326 @@
             Gets or sets the tic.
             </summary>
         </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Business.DataFilter">
+            <summary>
+            Specifies how positive and negative values are handled
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.Data.Business.DataFilter.AllData">
+            <summary>
+            Return all data
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.Data.Business.DataFilter.PositiveOnly">
+            <summary>
+            Return strictly positive data (not zero)
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.Data.Business.DataFilter.PositiveAndZero">
+            <summary>
+            Return zero and above
+            </summary>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Business.Analytics">
+            <summary>
+            Class to get various statistics from raw data.
+            Intended to gather data for bar charts.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.Analytics.Filter">
+            <summary>
+            Gets or sets the scan filter string (sets "ScanFilter").
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.Analytics.CompoundNames">
+            <summary>
+            Gets or sets the compound names, for filtering chromatograms.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.Analytics.MaxTextCategories">
+            <summary>
+            Gets or sets the maximum number of unique strings which are shown as a bar categrory,
+            for "text string" diagnotic items.
+            Any additional strings are displayed as a bar labelled "Other".
+            Valid range: 3-1000
+            Default: 10
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.#ctor(ThermoFisher.CommonCore.Data.Interfaces.IRawDataPlus)">
+            <summary>
+            Create an analzer for raw data.
+            </summary>
+            <param name="file">the (open) raw file</param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.BandSize(System.Double[],System.Int32)">
+            <summary>
+            Calculate the band size (bin size) needed to divide all data values into a given number of bands.
+            The bands would usually represent "bars on a histogram".
+            </summary>
+            <param name="data">Data to analyze</param>
+            <param name="bands">Number of bands needed</param>
+            <returns>The width of each band</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.Average(System.Double[])">
+            <summary>
+            Gets the common average (mean) of a set of values, defined as 0 for "null or empty" data sets
+            </summary>
+            <param name="data">The data to analyze</param>
+            <returns>the average</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.Mode(System.Double[],System.Int32)">
+            <summary>
+            Gets the modal band of a set of data, by grouping into a fixed number of bands.
+            </summary>
+            <param name="data">data to analyze</param>
+            <param name="bands">The number of bands (groups) used to split the data</param>
+            <returns>the center of the modal band (from 0 to bands-1). 0 for null or empty data</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.AverageDeltaTime(System.Collections.Generic.IList{System.Double})">
+            <summary>
+            Find the average delta between values in an array.
+            </summary>
+            <param name="data">the data</param>
+            <returns>The average of the delta (d[x+1]-d[x])</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.DeltaTimes(System.Collections.Generic.IList{System.Double})">
+            <summary>
+            Find the deltas between values in an array.
+            </summary>
+            <param name="data">the data</param>
+            <returns>The average of the delta (d[x+1]-d[x])</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.AverageDeltaTime">
+            <summary>
+            Find the average delta between start times of scans matching a filter (minutes).
+            </summary>
+            <returns>The average of the delta (d[x+1]-d[x]) in the start times</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.DeltaTimes">
+            <summary>
+            Find the delta between start times of scans matching a filter (minutes).
+            </summary>
+            <returns>The the deltas (d[x+1]-d[x]) in the start times</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.FilteredScanTimes">
+            <summary>
+            Gets the scan number and start time of scans matching a filter
+            </summary>
+            <returns>All scans which match this filter and their times.</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.GetSignalForFilter">
+            <summary>
+            Get a chromatogram from a filter
+            </summary>
+            <returns>The chromatogram</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.CalculateAllScanTimes">
+            <summary>
+            Find the RT of all scans
+            </summary>
+            <returns>the RT of every scan in a raw file</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.ScanDurations">
+            <summary>
+            Find scan durations,in seconds.
+            </summary>
+            <returns>the set of durations, in seconds. returns "new double[0] if there is no MS data</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.ScanDurationsNoKey">
+            <summary>
+            Find scan durations, for files which do not have "ElapsedKey"
+            </summary>
+            <returns>the set of durations</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.ScanDurationsWithKey(System.String,System.Int32)">
+            <summary>
+            Find scan durations, for files which do have "ElapsedKey"
+            </summary>
+            <param name="filter">scan filter</param>
+            <param name="indexOfKey">index into trailer extra for time key</param>
+            <returns>the set of durations in seconds</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.IsLargeNumeric(ThermoFisher.CommonCore.Data.Business.GenericDataTypes)">
+            <summary>
+            Determine if this is a data type which needs banding.
+            Small types (such as byte) can be mapped to a small array of results.
+            For example: "unsigned byte" has only 256 states, so:
+            we can collect data about each state.
+            But: Float has infinite states, so must be banded.
+            Note that "int" sometimes can handle all states, depending on the
+            range of values, so is not considered "large" here
+            </summary>
+            <param name="dataType"></param>
+            <returns>true if this is a large numeric type</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.TrailerValueTrendFromKey(System.Int32,ThermoFisher.CommonCore.Data.Business.DataFilter)">
+            <summary>
+            Find a trend for the given trailer item
+            </summary>
+            <param name="indexOfKey">index into trailer extra for required item</param>
+            <param name="dataMode">Determines how positive, zero and negative data are handled.</param>
+            <returns>the set of values. Items which are (True, false) or (On,Off)or (yes,no) return 1 for true/on/yes and 0 for fasle/off/no</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.StatusValueTrendFromKey(System.Int32,ThermoFisher.CommonCore.Data.Business.DataFilter)">
+            <summary>
+            Find a trend for the given status item. Calling code should select a device with a status log first.
+            </summary>
+            <param name="indexOfKey">index into status log for required item</param>
+            <param name="dataMode">Determines how positive, zero and negative data are handled.</param>
+            <returns>the set of values. Items which are (True, false) or (On,Off)or (yes,no) return 1 for true/on/yes and 0 for fasle/off/no</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.TrailerValueSignalFromKey(System.Int32,ThermoFisher.CommonCore.Data.Business.DataFilter)">
+            <summary>
+            Find a trend for the given trailer item
+            </summary>
+            <param name="indexOfKey">index into trailer extra for required item</param>
+            <param name="dataMode">Determines how positive, zero and negative data are handled.</param>
+            <returns>the set of values. Items which are (True, false) or (On,Off)or (yes,no) return 1 for true/on/yes and 0 for fasle/off/no</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.StatusValueSignalFromKey(System.Int32,ThermoFisher.CommonCore.Data.Business.DataFilter)">
+            <summary>
+            Find a trend for the given status item. Calling code should select a device with a status log first.
+            </summary>
+            <param name="indexOfKey">index into trailer extra for required item</param>
+            <param name="dataMode">Determines how positive, zero and negative data are handled.</param>
+            <returns>the set of values. Items which are (True, false) or (On,Off)or (yes,no) return 1 for true/on/yes and 0 for fasle/off/no</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.GetStatusNumericValueFromLog(System.Int32,ThermoFisher.CommonCore.Data.Business.HeaderItem,System.Int32,System.Double@,System.Collections.Generic.Dictionary{System.String,ThermoFisher.CommonCore.Data.Business.Analytics.NameData},System.Int32)">
+            <summary>
+            Get a status numeric value from a status log
+            </summary>
+            <param name="indexOfKey">Index of the item in status log header</param>
+            <param name="recordFormat">status log format for this item</param>
+            <param name="log">stats log record index</param>
+            <param name="time">Time of this log entry</param>
+            <param name="foundNames">list of names for "string" items</param>
+            <param name="maxTextCategories">The max number of unique strings accepted</param>
+            <returns>The numeric value for this log entry</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.DecodeAllGenericNumerics(ThermoFisher.CommonCore.Data.Business.HeaderItem,System.Object,System.Collections.Generic.Dictionary{System.String,ThermoFisher.CommonCore.Data.Business.Analytics.NameData},System.Int32)">
+            <summary>
+            Return a numeric value from any generic data type.
+            Numeric types (double,int etc.) return the encoded number.
+            String types "count unique string states" and return a state number.
+            </summary>
+            <param name="recordFormat">generic record format</param>
+            <param name="val">data to decode</param>
+            <param name="foundNames">For string data: unique strings found so far</param>
+            <param name="maxTextCategories">Max unique strings to accept</param>
+            <returns>the value from this log entry</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.ValueForText(System.Object,System.Collections.Generic.Dictionary{System.String,ThermoFisher.CommonCore.Data.Business.Analytics.NameData},System.Int32)">
+            <summary>
+            Return a numeric value from any countable generic data type.
+            Numeric types (short, byte etc.) return the encoded number.
+            String types "count unique string states" and return a state number.
+            </summary>
+            <param name="val">data to decode</param>
+            <param name="foundNames">For string data: unique strings found so far</param>
+            <param name="maxTextCategories">Max unique strings to accept</param>
+            <returns>the value from this log entry</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.ValidateMaxTextcategories">
+            <summary>
+            Silenty ensure MaxTextCategories is in bounds, and fix if not
+            </summary>
+            <returns>the fixed max</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.GetSeriesNamesFromFormat(ThermoFisher.CommonCore.Data.Business.HeaderItem)">
+            <summary>
+            Get names for know "enum" formats.
+            </summary>
+            <param name="recordFormat">format of this field</param>
+            <returns>string version of values</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.SmallStatusValueTrendFromKey(System.Int32,ThermoFisher.CommonCore.Data.Business.DataFilter)">
+            <summary>
+            Find a trend for the given status log item. Calling code should select a device with a status log first.
+            </summary>
+            <param name="indexOfKey">index into trailer extra for required item</param>
+            <param name="dataMode">Determines how positive, zero and negative data are handled.</param>
+            <returns>the set of values. Items which are (True, false) or (On,Off)or (yes,no) return 1 for true/on/yes and 0 for fasle/off/no</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.SmallTrailerValueTrendFromKey(System.Int32,ThermoFisher.CommonCore.Data.Business.DataFilter)">
+            <summary>
+            Find a trend for the given trailer item
+            </summary>
+            <param name="indexOfKey">index into trailer extra for required item</param>
+            <param name="dataMode">Determines how positive, zero and negative data are handled.</param>
+            <returns>the set of values. Items which are (True, false) or (On,Off)or (yes,no) return 1 for true/on/yes and 0 for fasle/off/no</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.DecodeSmallValue(ThermoFisher.CommonCore.Data.Business.GenericDataTypes,System.Object,System.Collections.Generic.Dictionary{System.String,ThermoFisher.CommonCore.Data.Business.Analytics.NameData},System.Int32)">
+            <summary>
+            Decode only small (countable) values from logs.
+            </summary>
+            <param name="recordFormat">Format of this field</param>
+            <param name="val">Value to decode</param>
+            <param name="foundNames">Categories found so far</param>
+            <param name="maxTextCategories">maximum number of categories</param>
+            <returns>The log value</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.GetSmallStatusLogValueTrendFromKey(System.Int32,ThermoFisher.CommonCore.Data.Business.DataFilter,ThermoFisher.CommonCore.Data.Business.HeaderItem[])">
+            <summary>
+            Get a small (countable state) status log value trend, based on 
+            index into the status log fields.
+            </summary>
+            <param name="indexOfKey">Index of field to read</param>
+            <param name="dataMode">Filtering rule</param>
+            <param name="header">Format of the log</param>
+            <returns>The log value</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.CollateNames(System.Collections.Generic.Dictionary{System.String,ThermoFisher.CommonCore.Data.Business.Analytics.NameData},System.Collections.Generic.List{System.Int32},System.String[])">
+            <summary>
+            Ensure that all trend items have a valid value.
+            Assign values with "no saved name" as a category "other", valued 1 above the known names.
+            </summary>
+            <param name="foundNames">The set of names found (categories) in the log</param>
+            <param name="trend">The data for the trend plot</param>
+            <param name="names">The names for the numbered categories.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.GetScanDurationBands(System.Int32)">
+            <summary>
+            Find the durations of scans, and bin them into a number of "millisecond" bands, ready for a histogram plot.
+            </summary>
+            <param name="bands">number of bands</param>
+            <returns>analysis of scan times (milliseconds)</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.GetBandedData(System.Double[],System.Int32)">
+            <summary>
+            Get banded data for a bar chart.
+            </summary>
+            <param name="data">data to map into bands</param>
+            <param name="bands">requested number of bands</param>
+            <returns>banded data for a bar chart</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Analytics.GetBandedData(System.Int32[],System.Int32,System.Int32)">
+            <summary>
+            Get banded data for a chart (histogram). If the data has a small enough range of values,
+            then all values have their own bar.
+            Each bar represents "the count of values within a given band".
+            </summary>
+            <param name="data">Data to band</param>
+            <param name="defaultBands">If there are too many unique data values (> maxBands) then
+            the data becomes banded (grouped) into this many bands</param>
+            <param name="maxBands">The maximum number of unique categories before that data must be banded</param>
+            <returns>The banded data</returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Business.Analytics.NameData">
+            <summary>
+            Class to keep trace of numeric value (bar number) for each text string found in a log
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.Analytics.NameData.Name">
+            <summary>
+            Name found in the log
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.Analytics.NameData.Value">
+            <summary>
+            Assigned bar number
+            </summary>
+        </member>
         <member name="T:ThermoFisher.CommonCore.Data.Business.AutoSamplerInformation">
             <summary>
             The auto sampler information.
@@ -115,6 +435,48 @@
             </param>
             <exception cref="T:System.ArgumentNullException">
             </exception>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Business.BandedData">
+            <summary>
+            Results of banding algorithm.
+            Data for a bar chart
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.BandedData.Bands">
+            <summary>
+            Gets or sets the number of bands.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.BandedData.BandWidth">
+            <summary>
+            Gets or sets the width of a band.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.BandedData.BandRange(System.Int32)">
+            <summary>
+            Calculates the range of a given band
+            </summary>
+            <param name="band">band whose range is needed</param>
+            <returns>The range of value in this band</returns>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.BandedData.BandCenters">
+            <summary>
+            Gets or sets the center of each band
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.BandedData.BandData">
+            <summary>
+            Gets or sets the data (height of the bar) for each band
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.BandedData.Banded">
+            <summary>
+            Gets or sets a value indicating whether this data got banded.
+            For example: If a data set was integer, and contained "charges 1 to 7" then all 7 
+            original data categories can be returned.
+            If data is "double from 1..02-9000.6" then there are no fixed categories, and the data
+            will be "sampled" into bands.
+            </summary>
         </member>
         <member name="T:ThermoFisher.CommonCore.Data.Business.CachedScanProvider">
             <summary>
@@ -932,7 +1294,7 @@
             Find the most intense peak
             </summary>
         </member>
-        <member name="M:ThermoFisher.CommonCore.Data.Business.CentroidStream.GetBaseValue(ThermoFisher.CommonCore.Data.Business.Range,System.Double)">
+        <member name="M:ThermoFisher.CommonCore.Data.Business.CentroidStream.GetBaseValue(ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess,System.Double)">
             <summary>
             Find the largest value in a given mass range, and combine with the value passed in.
             </summary>
@@ -957,7 +1319,7 @@
             The <see cref="M:ThermoFisher.CommonCore.Data.Business.CentroidStream.LabelPeak(System.Int32)"/>.
             </returns>
         </member>
-        <member name="M:ThermoFisher.CommonCore.Data.Business.CentroidStream.SumMasses(System.Double,ThermoFisher.CommonCore.Data.Business.Range)">
+        <member name="M:ThermoFisher.CommonCore.Data.Business.CentroidStream.SumMasses(System.Double,ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess)">
             <summary>
             Calculate the sum of intensities, for peaks within a mass range, and add to previous sum
             </summary>
@@ -970,6 +1332,13 @@
             <returns>
             This sum passed in, plus the sum of intensities of all peaks in range.
             </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.CentroidStream.Slice(System.Collections.Generic.List{ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess})">
+            <summary>
+            slice the data, using a set of mass ranges.
+            </summary>
+            <param name="compactedRange">Ranges of data to include</param>
+            <returns>sA scan which only has data in the requested ranges</returns>
         </member>
         <member name="T:ThermoFisher.CommonCore.Data.Business.ChromatogramAggregator">
             <summary>
@@ -1631,6 +2000,7 @@
             Implementation of IChromatogramRequest,
             which can generate chromatogram points for mass ranges.
             Version which supports multiple mass ranges.
+            This version sums values for the listed ranges
             </summary>
         </member>
         <member name="P:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramPointBuilder.RequiresScanData">
@@ -1647,6 +2017,136 @@
             </summary>
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramPointBuilder.ValueForScan(ThermoFisher.CommonCore.Data.Interfaces.ISimpleScanWithHeader)">
+            <summary>
+            Gets the value for scan.
+            This function returns the chromatogram value for a scan.
+            For example: An XIC from the scan data.
+            </summary>
+            <param name="scan">
+            The scan.
+            </param>
+            <returns>
+            The chromatogram value of this scan.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.CreatePointBuilderMax(ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess,ThermoFisher.CommonCore.Data.Interfaces.IScanSelect,System.Collections.Generic.IList{ThermoFisher.CommonCore.Data.Interfaces.IChromatogramPointRequest})">
+            <summary>
+            create an object to efficiently generate chromatogram points.
+            This analyzes the given arguments, and returns an interface which can most efficiently
+            generate the chromatograms.
+            This version will find the "max value" from each of the supplied point requests (base peak)
+            </summary>
+            <param name="retentionTimeRange">Retention time range for this chromatogram</param>
+            <param name="scanSelector">Method of selecting scans to be included</param>
+            <param name="pointRequests">Methods to generate points from scans</param>
+            <returns>Object to make chromatogram points</returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramBasePeakMassRequest">
+            <summary>
+            This chromatogram request finds base peak mass and intensity data.
+            It can return data for the full file or a mass range
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramBasePeakMassRequest.AllData">
+            <summary>
+            Gets or sets a value indicating whether all data in the scan is used
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramBasePeakMassRequest.MassRange">
+            <summary>
+            Get os sets the mass range analyzed, when not "AllData"
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramBasePeakMassRequest.DataForPoint(ThermoFisher.CommonCore.Data.Interfaces.ISimpleScanWithHeader)">
+            <summary>
+            Finds the Mass and Intsenty of the base peak
+            </summary>
+            <param name="scanWithHeader"></param>
+            <returns>touple containin mass, intensity</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramBasePeakMassRequest.BasePeakMassOverMassRangeRequest(System.Double,System.Double)">
+            <summary>
+            Create a request to make an "base peak" mass chromatogram, based on a mass range.
+            That is: returns the mass of most intense peak over a given range.
+            </summary>
+            <param name="lowMass">
+            The low mass.
+            </param>
+            <param name="highMass">
+            The high mass.
+            </param>
+            <returns>
+            The <see cref="T:ThermoFisher.CommonCore.Data.Business.ChromatogramPointRequest"/>.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.CreatePointBuilderMassOfMax(ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess,ThermoFisher.CommonCore.Data.Interfaces.IScanSelect,System.Collections.Generic.IList{ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramBasePeakMassRequest})">
+            <summary>
+            create an object to efficiently generate chromatogram points.
+            This analyzes the given arguments, and returns an interface which can most efficiently
+            generate the chromatograms.
+            This version will find the "max value" from each of the supplied point requests (base peak)
+            </summary>
+            <param name="retentionTimeRange">Retention time range for this chromatogram</param>
+            <param name="scanSelector">Method of selecting scans to be included</param>
+            <param name="pointRequests">Methods to generate points from scans</param>
+            <returns>Object to make chromatogram points</returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramPointBuilderMax">
+            <summary>
+            Implementation of IChromatogramRequest,
+            which can generate chromatogram points for mass ranges.
+            Version which supports multiple mass ranges.
+            This version finds the Max of the values for all range (base peak)
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramPointBuilderMax.RequiresScanData">
+            <summary>
+            Gets a value indicating whether this point type needs "scan data".
+            Always true for this type.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramPointBuilderMax.PointRequests">
+            <summary>
+            Gets or sets the point requests.
+            These determine how chromatogram points are created from a scan,
+            by adding or subtracting data form multiple mass ranges.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramPointBuilderMax.ValueForScan(ThermoFisher.CommonCore.Data.Interfaces.ISimpleScanWithHeader)">
+            <summary>
+            Gets the value for scan.
+            This function returns the chromatogram value for a scan.
+            For example: An XIC from the scan data.
+            </summary>
+            <param name="scan">
+            The scan.
+            </param>
+            <returns>
+            The chromatogram value of this scan.
+            </returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramPointBuilderMassOfMax">
+            <summary>
+            Implementation of IChromatogramRequest,
+            which can generate chromatogram points for mass ranges.
+            Version which supports multiple mass ranges.
+            This version finds the Max of the values for all range (base peak)
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramPointBuilderMassOfMax.RequiresScanData">
+            <summary>
+            Gets a value indicating whether this point type needs "scan data".
+            Always true for this type.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramPointBuilderMassOfMax.PointRequests">
+            <summary>
+            Gets or sets the point requests.
+            These determine how chromatogram points are created from a scan,
+            by adding or subtracting data form multiple mass ranges.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ChromatogramPointBuilderFactory.ChromatogramPointBuilderMassOfMax.ValueForScan(ThermoFisher.CommonCore.Data.Interfaces.ISimpleScanWithHeader)">
             <summary>
             Gets the value for scan.
             This function returns the chromatogram value for a scan.
@@ -3047,6 +3547,14 @@
         <member name="P:ThermoFisher.CommonCore.Data.Business.ElementalCompositionResult.Composition">
             <summary>
             Gets or sets the Elemental composition formula, with subscript style digits for elemental quantities.
+            This formula defines the istope of the peak which was matched with the sample.
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.ElementalCompositionResult.FormulaAsSimulated">
+            <summary>
+            Gets or sets the Elemental composition formula, with subscript style digits for elemental quantities.
+            This is the formula which contains the peak from the sample as one of it's istopes.
+            It can be used to redraw the isotope plot.
             </summary>
         </member>
         <member name="P:ThermoFisher.CommonCore.Data.Business.ElementalCompositionResult.Mass">
@@ -3185,6 +3693,11 @@
         <member name="P:ThermoFisher.CommonCore.Data.Business.ElementalCompositionResult.IsotopePacket.IntensityMeasured">
             <summary>
             Gets or sets Intensity of measured centroid
+            </summary>
+        </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.ElementalCompositionResult.IsotopePacket.OriginalPeakIndex">
+            <summary>
+            Gets or sets the index into the original scan for the matched peak
             </summary>
         </member>
         <member name="P:ThermoFisher.CommonCore.Data.Business.ElementalCompositionResult.IsotopePacket.Matched">
@@ -3328,10 +3841,10 @@
             Sets IsotopesTested property
             </param>
             <param name="composition">
-            Sets Composition property
+            Sets Composition property. The is the isotope composition matched to the experminal peak
             </param>
         </member>
-        <member name="M:ThermoFisher.CommonCore.Data.Business.ElementalCompositionResult.AddIsotope(System.Double,System.Double,System.Double,System.Double,System.Boolean,ThermoFisher.CommonCore.Data.Business.PacketMatchMode)">
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ElementalCompositionResult.AddIsotope(System.Double,System.Double,System.Double,System.Double,System.Boolean,ThermoFisher.CommonCore.Data.Business.PacketMatchMode,System.Int32)">
             <summary>
             Add isotope packet into the ElementalCompositionResult
             </summary>
@@ -3351,6 +3864,7 @@
             The matched
             </param>
             <param name="matchMode">How the isotope was matched (within the mass and intensity limits)</param>
+            <param name="originalPeakIndex">Index of the matched peak in the original scan</param>
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Business.ElementalCompositionResult.Equals(ThermoFisher.CommonCore.Data.Business.ElementalCompositionResult)">
             <summary>
@@ -4463,6 +4977,13 @@
             These types define original compression formats from instruments.
             Note that most data values are returned as "double", when using IRawDataPlus
             regardless of the compressed file format used.
+            </summary>
+        </member>
+        <member name="F:ThermoFisher.CommonCore.Data.Business.SpectrumPacketType.NoPacketType">
+            <summary>
+            No packet type is being specified.
+            This can be used as a method parameter to mean "use default".
+            This value is not valid when in a data record within a raw file.
             </summary>
         </member>
         <member name="F:ThermoFisher.CommonCore.Data.Business.SpectrumPacketType.ProfileSpectrum">
@@ -7596,6 +8117,52 @@
             The chromatogram point value for this scan.
             </returns>
         </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Business.NewerFileFormatException">
+            <summary>
+            Exception for data reading. Thrown when a newer file format is detected.
+            This is usually because an appliction has been compiled against an older generation file reader DLL.
+            The application must be upgraded to use newer tools, which can decode this file.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.NewerFileFormatException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.Data.Business.NewerFileFormatException"/> class. 
+            Basic analysis exception, no specified reason.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.NewerFileFormatException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.Data.Business.NewerFileFormatException"/> class. 
+            Exception, with reason as text, which application can display or log
+            </summary>
+            <param name="message">
+            Reason for exception
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.NewerFileFormatException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.Data.Business.NewerFileFormatException"/> class. 
+            Exception, with reason as text, which application can display or log
+            </summary>
+            <param name="message">
+            Reason for exception
+            </param>
+            <param name="inner">
+            Trapped inner exception
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.NewerFileFormatException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.Data.Business.NewerFileFormatException"/> class. 
+            Construct an exception, with serialization.
+            </summary>
+            <param name="info">
+            Data to serialize this object
+            </param>
+            <param name="context">
+            Stream for serializing
+            </param>
+        </member>
         <member name="T:ThermoFisher.CommonCore.Data.Business.NoiseAndBaseline">
             <summary>
             Defines noise and baseline at a given mass
@@ -8681,7 +9248,7 @@
             High limit of range
             </param>
         </member>
-        <member name="M:ThermoFisher.CommonCore.Data.Business.Range.#ctor(ThermoFisher.CommonCore.Data.Business.Range,System.Double)">
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Range.#ctor(ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess,System.Double)">
             <summary>
             Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.Data.Business.Range"/> class. 
             Construct a range from another range, adding a tolerance if ends are the same
@@ -8694,7 +9261,7 @@
             this is subtracted from low and added to high of the new range
             </param>
         </member>
-        <member name="M:ThermoFisher.CommonCore.Data.Business.Range.#ctor(ThermoFisher.CommonCore.Data.Business.Range,ThermoFisher.CommonCore.Data.Business.MassOptions)">
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Range.#ctor(ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess,ThermoFisher.CommonCore.Data.Business.MassOptions)">
             <summary>
             Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.Data.Business.Range"/> class. 
             Construct a range from another range, adding a tolerance if ends are the same
@@ -8763,6 +9330,64 @@
             <returns>
             A 32-bit signed integer that is the hash code for this instance.
             </returns>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Business.RangeFactory">
+            <summary>
+            Factory to produce immutable ranges of double
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.RangeFactory.Create(System.Double,System.Double)">
+            <summary>
+            Create an immutable (constant) range from low and high.
+            </summary>
+            <param name="low">
+            The low.
+            </param>
+            <param name="high">
+            The high.
+            </param>
+            <returns>
+            The range.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.RangeFactory.CreateFromCenterAndDelta(System.Double,System.Double)">
+            <summary>
+            Create an immutable (constant) range from center and delta, such that the range is center +/- delta.
+            </summary>
+            <param name="center">
+            The center.
+            </param>
+            <param name="delta">
+            The delta.
+            </param>
+            <returns>
+            The <see cref="T:ThermoFisher.CommonCore.Data.Business.Range"/>.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.RangeFactory.CreateFromRangeAndTolerance(ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess,ThermoFisher.CommonCore.Data.Business.MassOptions)">
+            <summary>
+            Construct a range from another range, adding a tolerance if ends are the same
+            (within 1.0E-10).
+            </summary>
+            <param name="from">
+            range to copy
+            </param>
+            <param name="toleranceOptions">
+            If limits are same (within 1e-10)
+            the tolerance is subtracted from low and added to high of the new range
+            </param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.RangeFactory.CreateFromRangeAndTolerance(ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess,System.Double)">
+            <summary>
+            Construct a range from another range, adding a tolerance if ends are the same
+            </summary>
+            <param name="from">
+            range to copy
+            </param>
+            <param name="tolerance">
+            If limits are same (with 1e-10)
+            this is subtracted from low and added to high of the new range
+            </param>
         </member>
         <member name="T:ThermoFisher.CommonCore.Data.Business.RawFile">
             <summary>
@@ -9354,6 +9979,13 @@
             </summary>
             <returns>Interface to perform subtraction</returns>
         </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Business.Scan.ScanAdder">
+            <summary>
+            Gets or sets IScanAdd interface.
+            This delegates addition of FT profile scans.
+            </summary>
+            <returns>Interface to perform addition</returns>
+        </member>
         <member name="P:ThermoFisher.CommonCore.Data.Business.Scan.ToleranceUnit">
             <summary>
             Gets or sets the Tolerance value.
@@ -9475,6 +10107,30 @@
             <returns>
             An object containing all data in the input, and no shared references
             </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Scan.Slice(ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess[],System.Boolean,System.Boolean)">
+            <summary>
+            Return a slice of a scan which only contains data within the supplied mass Range or ranges.
+            For example: For a scan with data from m/z 200 to 700, and a single mass range of 300 to 400:
+            This returns a new scan containing all data with the range 300 to 400.
+            </summary>
+            <param name="massRanges">The mass ranges, where data should be retained. When multiple ranges are supplied,
+            all data which is in at least one range is included in the returned scan</param>
+            <param name="trimMassRange">If this is true, then the scan will reset the
+            scan's mass range to the bounds of the supplied mass ranges </param>
+            <param name="expandProfiles">This setting only applies when the scan has both profile and centroid data.
+            If true: When there isa centroid near the start or end of a range, and the first or
+            final "above zero" section of the profile includes that peak, then the profile is extended, to include the points
+            which contribute to that peak. A maximum of 10 points may be added</param>
+            <returns>A copy of the scan, with only the data in the supplied ranges</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Scan.OrderByLowest(ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess,ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess)">
+            <summary>
+            Order mass ranges by lowest mass.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <returns></returns>
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Business.Scan.GenerateFrequencyTable">
             <summary>
@@ -10226,6 +10882,19 @@
         <member name="M:ThermoFisher.CommonCore.Data.Business.Scan.SubFTProfileData(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Business.Scan)">
             <summary>
             Subtract FT Profile Data
+            </summary>
+            <param name="currentScan">
+            The object subtract from this
+            </param>
+            <param name="inputScan">
+            </param>
+            <returns>
+            The result of the subtraction of the two scans
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.Scan.AddFTProfileData(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Business.Scan)">
+            <summary>
+            Add FT Profile Data
             </summary>
             <param name="currentScan">
             The object subtract from this
@@ -12329,13 +12998,14 @@
             Summary information about a scan.
             </summary>
         </member>
-        <member name="M:ThermoFisher.CommonCore.Data.Business.ScanStatistics.#ctor(ThermoFisher.CommonCore.Data.Business.ScanStatistics)">
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ScanStatistics.#ctor(ThermoFisher.CommonCore.Data.Business.ScanStatistics,System.Boolean)">
             <summary>
             Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.Data.Business.ScanStatistics"/> class.
             </summary>
             <param name="source">
             The source to copy the values from.
             </param>
+            <param name="deep">If set, make a "deep copy" which will evaluate any lazy items and ensure no internal source references</param>
             <exception cref="T:System.ArgumentNullException">
             <c>source</c> is null.
             </exception>
@@ -12479,13 +13149,14 @@
             A new object that is a copy of this instance.
             </returns>
         </member>
-        <member name="M:ThermoFisher.CommonCore.Data.Business.ScanStatistics.CopyTo(ThermoFisher.CommonCore.Data.Business.ScanStatistics)">
+        <member name="M:ThermoFisher.CommonCore.Data.Business.ScanStatistics.CopyTo(ThermoFisher.CommonCore.Data.Business.ScanStatistics,System.Boolean)">
             <summary>
             Copy all fields
             </summary>
             <param name="stats">
             Copy into this object
             </param>
+            <param name="deep">If set, make a "deep copy" which will evaluate any lazy items and ensure no internal source references</param>
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Business.ScanStatistics.DeepClone">
             <summary>
@@ -12689,6 +13360,22 @@
             <returns>
             The <see cref="T:ThermoFisher.CommonCore.Data.Interfaces.ISimpleScanAccess"/>.
             </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Business.SegmentedScan.Slice(System.Collections.Generic.List{ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess},System.Boolean,System.Boolean,ThermoFisher.CommonCore.Data.Business.CentroidStream)">
+            <summary>
+            Return only data within the supplied ranges.
+            This internal method can assume that the ranges are in mass order, and do not overlap.
+            </summary>
+            <param name="compactedRange">ranges of data to include</param>
+            <param name="isProfile">if set, then this scan is profile data.
+            Zeros are added to terminate sliced profiles</param>
+            <param name="processCentroidStream">If this is set:
+            There must be a valid centroid stream.
+            Profile points near a centroid must be included, even if outside of the range.
+            </param>
+            <param name="centroids">Centroid data, which may be used to extend profiles so that
+            points which contribute to the centroid are shown</param>
+            <returns>A new scan, with data in the desired ranges only</returns>
         </member>
         <member name="T:ThermoFisher.CommonCore.Data.Business.SequenceFileReaderExtensions">
             <summary>
@@ -14940,7 +15627,7 @@
         </member>
         <member name="F:ThermoFisher.CommonCore.Data.NoiseClassification.Value">
             <summary>
-            Use SignalToNoise property get get the value
+            Use SignalToNoise property to get the value
             </summary>
         </member>
         <member name="T:ThermoFisher.CommonCore.Data.PeakMethod">
@@ -15328,7 +16015,43 @@
             or zero if there are no positive values within limits.
             </returns>
         </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.MassAndIntensityAtLargestIntensity(ThermoFisher.CommonCore.Data.Interfaces.ISimpleScanAccess,System.Double,System.Double)">
+            <summary>
+            Create the ion chromatogram value from a scan,
+            which is mass of the largest of the positive intensities of all masses between given limits.
+            These limits are typically calculated (elsewhere) based on a known mass +/- tolerance.
+            If there are no peaks in range, or all data in range has negative intensities, zero is returned.
+            </summary>
+            <param name="centroids">
+            The centroids.
+            </param>
+            <param name="lowMassLimit">
+            The low mass limit.
+            </param>
+            <param name="highMassLimit">
+            The high mass limit.
+            </param>
+            <returns>
+            The mass of the peak with the largest positive peak intensity within limits,
+            or zero if there are no positive values within limits.
+            </returns>
+        </member>
         <member name="M:ThermoFisher.CommonCore.Data.Extensions.MassAtLargestIntensity(ThermoFisher.CommonCore.Data.Interfaces.ISimpleScanAccess)">
+            <summary>
+            Create the ion chromatogram value from a scan,
+            which is mass of the largest of the positive intensities of all masses between given limits.
+            These limits are typically calculated (elsewhere) based on a known mass +/- tolerance.
+            If there are no peaks in range, or all data in range has negative intensities, zero is returned.
+            </summary>
+            <param name="centroids">
+            The centroids.
+            </param>
+            <returns>
+            The mass of the peak with the largest positive peak intensity within limits,
+            or zero if there are no positive values within limits.
+            </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Extensions.MassAndIntensityAtLargestIntensity(ThermoFisher.CommonCore.Data.Interfaces.ISimpleScanAccess)">
             <summary>
             Create the ion chromatogram value from a scan,
             which is mass of the largest of the positive intensities of all masses between given limits.
@@ -19407,6 +20130,7 @@
             <summary>
             Gets a value indicating whether this file has detected an error.
             If this is false: Other error properties in this interface have no meaning.
+            Applications should not continue with processing data from any file which indicates an error.
             </summary>
         </member>
         <member name="P:ThermoFisher.CommonCore.Data.Interfaces.IFileError.HasWarning">
@@ -19419,11 +20143,14 @@
             <summary>
             Gets the error code number.
             Typically this is a windows system error number.
+            The lowest valid windows error is: 0x00030200
+            Errors detected within our files will have codes below 100.
             </summary>
         </member>
         <member name="P:ThermoFisher.CommonCore.Data.Interfaces.IFileError.ErrorMessage">
             <summary>
             Gets the error message.
+            For "unknown exceptions" this may include a stack trace.
             </summary>
         </member>
         <member name="P:ThermoFisher.CommonCore.Data.Interfaces.IFileError.WarningMessage">
@@ -22117,6 +22844,13 @@
             Gets settings for creating the component chromatogram
             </summary>
         </member>
+        <member name="P:ThermoFisher.CommonCore.Data.Interfaces.IXcaliburComponentAccess.ScanFilter">
+            <summary>
+            Gets the filter for this component as an interface.
+            Note that a filter is also a property of IPeakChromatogramSettingsAccess,
+            available a string, formatted to the mass precision of the component.
+            </summary>
+        </member>
         <member name="P:ThermoFisher.CommonCore.Data.Interfaces.IXcaliburComponentAccess.CalibrationSettings">
             <summary>
             Gets component calibration settings (including level tables)
@@ -24230,6 +24964,19 @@
             Gets a value indicating whether the User Tolerance value is being used.
             </summary>
         </member>
+        <member name="T:ThermoFisher.CommonCore.Data.Interfaces.IScanAdd">
+            <summary>
+            Interface to provide algorithms to add scans.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IScanAdd.Add(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Business.Scan)">
+            <summary>
+            Creates a sum of two scans.
+            </summary>
+            <param name="firstScan">The first scan.</param>
+            <param name="secondScan">The second scan</param>
+            <returns>The sum"first+second"</returns>
+        </member>
         <member name="T:ThermoFisher.CommonCore.Data.Interfaces.IScanCache">
             <summary>
             Caching of scans, which may be provided by an averager
@@ -25835,7 +26582,7 @@
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Interfaces.IScanSubtract.Subtract(ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Business.Scan)">
             <summary>
-            Creates a difference of two raw scans.
+            Creates a difference of two scans.
             </summary>
             <param name="foregroundScan">The scan containing signal.</param>
             <param name="backgroundScan">The scan containing background</param>

@@ -126,12 +126,11 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="ThermoFisher.CommonCore.Data, Version=5.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
-      <HintPath>packages\ThermoFisher.CommonCore.Data.5.0.0.6\lib\net471\ThermoFisher.CommonCore.Data.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="ThermoFisher.CommonCore.Data, Version=5.0.0.38, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
+      <HintPath>packages\ThermoFisher.CommonCore.Data.5.0.0.38\lib\net471\ThermoFisher.CommonCore.Data.dll</HintPath>
     </Reference>
-    <Reference Include="ThermoFisher.CommonCore.RawFileReader, Version=5.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
-      <HintPath>packages\ThermoFisher.CommonCore.RawFileReader.5.0.0.6\lib\net471\ThermoFisher.CommonCore.RawFileReader.dll</HintPath>
+    <Reference Include="ThermoFisher.CommonCore.RawFileReader, Version=5.0.0.38, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
+      <HintPath>packages\ThermoFisher.CommonCore.RawFileReader.5.0.0.38\lib\net471\ThermoFisher.CommonCore.RawFileReader.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="zlib.net, Version=1.0.3.0, Culture=neutral, PublicKeyToken=47d7877cb3620160">

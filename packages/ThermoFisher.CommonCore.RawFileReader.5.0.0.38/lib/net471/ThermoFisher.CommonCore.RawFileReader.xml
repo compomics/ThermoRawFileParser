@@ -1276,10 +1276,11 @@
             <param name="storageDescriptions">The storage descriptions.</param>
             <returns>true if successful</returns>
         </member>
-        <member name="M:ThermoFisher.CommonCore.RawFileReader.DeviceStorage.OpenStorage">
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.DeviceStorage.OpenStorage(ThermoFisher.CommonCore.RawFileReader.StgMode)">
             <summary>
             Open a storage file
             </summary>
+            <param name="accessMode">The access mode.</param>
             <returns>
             The error message, or empty string if OK
             </returns>
@@ -2798,6 +2799,11 @@
             UVPD meta filter.
             </summary>
         </member>
+        <member name="F:ThermoFisher.CommonCore.RawFileReader.Facade.Constants.ScanFilterEnums.MetaFilterType.Msn">
+            <summary>
+            Msn meta filter.
+            </summary>
+        </member>
         <member name="T:ThermoFisher.CommonCore.RawFileReader.Facade.Constants.ScanFilterEnums.OffOnTypes">
             <summary>
                 For raw file types whose "Off" value is 0.
@@ -3999,6 +4005,14 @@
             <summary>
             Gets or sets a value indicating whether this was initialized when the file was in acquisition.
             </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.Facade.Interfaces.IDevice.Initialize">
+            <summary>
+            Support for lazy init of device.
+            Device construction does "some work" to validate a device.
+            Any "heavy data decoding" is delayed until the device is first used.
+            </summary>
+            <returns>The device</returns>
         </member>
         <member name="M:ThermoFisher.CommonCore.RawFileReader.Facade.Interfaces.IDevice.GetScanIndex(System.Int32)">
             <summary>
@@ -6324,13 +6338,14 @@
             The force overwrite.
             </param>
         </member>
-        <member name="M:ThermoFisher.CommonCore.RawFileReader.Facade.RawFileLoader.LoadRawFile(ThermoFisher.CommonCore.RawFileReader.Facade.Interfaces.IMemMapReader)">
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.Facade.RawFileLoader.LoadRawFile(ThermoFisher.CommonCore.RawFileReader.Facade.Interfaces.IMemMapReader,System.Boolean)">
             <summary>
             Load the raw file.
             </summary>
             <param name="viewer">
             The viewer.
             </param>
+            <param name="isCreateMutexFailed">Indicate whether the named mutex is successfully acquired or not</param>
             <exception cref="T:System.Exception">
             Thrown if the file is not a recognized format. The file is either not a THERMO Fisher
             Raw file or the version is less than the initial version of XCALIBUR files.
@@ -8931,7 +8946,7 @@
             Create chromatogram construction tool for one trace
             </summary>
         </member>
-        <member name="M:ThermoFisher.CommonCore.RawFileReader.MsChromatogramSettingsConverter.CalculateMassRange(ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Business.Range[],System.Int32,System.Boolean)">
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.MsChromatogramSettingsConverter.CalculateMassRange(ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess[],System.Int32,System.Boolean)">
             <summary>
             calculate (final) mass range for chromatogram, by adding tolerance for single ion mode.
             Single ion mode is detected as "high mass == 0.0" or "low and high are same".
@@ -8993,7 +9008,7 @@
             An object to create the desired chromatogram.
             </returns>
         </member>
-        <member name="M:ThermoFisher.CommonCore.RawFileReader.MsChromatogramSettingsConverter.CreateBasePeakMassOverMassRangeChromatogram(System.Double,System.Double,ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Interfaces.IChromatogramSettings,ThermoFisher.CommonCore.Data.Business.Range[],System.Int32)">
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.MsChromatogramSettingsConverter.CreateBasePeakMassOverMassRangeChromatogram(System.Double,System.Double,ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Interfaces.IChromatogramSettings,ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess[],System.Int32)">
             <summary>
             Create delivery, which will generate a chromatogram with the base peak mass over a Mass Range
             </summary>
@@ -9015,7 +9030,7 @@
             An object to create the desired chromatogram.
             </returns>
         </member>
-        <member name="M:ThermoFisher.CommonCore.RawFileReader.MsChromatogramSettingsConverter.CreateBasePeakOverMassRangeChromatogram(System.Double,System.Double,ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Interfaces.IChromatogramSettings,ThermoFisher.CommonCore.Data.Business.Range[],System.Int32)">
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.MsChromatogramSettingsConverter.CreateBasePeakOverMassRangeChromatogram(System.Double,System.Double,ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Interfaces.IChromatogramSettings,ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess[],System.Int32)">
             <summary>
             Create delivery, which will generate a chromatogram with base peak intensity over a Mass Range
             </summary>
@@ -9089,7 +9104,7 @@
             Tic chromatogram generator
             </returns>
         </member>
-        <member name="M:ThermoFisher.CommonCore.RawFileReader.MsChromatogramSettingsConverter.CreateMassRangeChromatogram(System.Double,System.Double,ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Interfaces.IChromatogramSettings,ThermoFisher.CommonCore.Data.Business.Range[],System.Int32)">
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.MsChromatogramSettingsConverter.CreateMassRangeChromatogram(System.Double,System.Double,ThermoFisher.CommonCore.Data.Business.MassOptions,ThermoFisher.CommonCore.Data.Interfaces.IChromatogramSettings,ThermoFisher.CommonCore.Data.Interfaces.IRangeAccess[],System.Int32)">
             <summary>
             Create delivery, which will generate a Mass Range Chromatogram (XIC)
             </summary>
@@ -13233,9 +13248,15 @@
         </member>
         <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.FileHeader.IsValidRevision">
             <summary>
-            Determines whether [is valid revision].
+            Determines whether this is a valid revision.
             </summary>
             <returns>True it's a valid file revision; false otherwise.</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.FileHeader.IsNewerRevision">
+            <summary>
+            Test if this may be a valid file but with a newer format.
+            </summary>
+            <returns>true: if the file version > the version complied into of the software that's running.</returns>
         </member>
         <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.FileHeader.ResetChecksum">
             <summary>
@@ -21165,6 +21186,20 @@
             Gets the total source values, which is all CID and CV.
             </summary>
         </member>
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.FilterScanEvent.CompareExact(ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.FilterScanEvent)">
+            <summary>
+            Compares the current object with another object of the same type.
+            Exact compare for specialized qsort. Standard CompareTo considers items within an "instrument tolerance" as the same.
+            This version uses 1.0E-6 for the tolerance.
+            </summary>
+            <param name="other">An object to compare with this object.</param>
+            <returns>
+            A value that indicates the relative order of the objects being compared. The return value has the following
+            meanings: Value Meaning Less than zero This object is less than the <paramref name="other" /> parameter.Zero This
+            object is equal to <paramref name="other" />. Greater than zero This object is greater than
+            <paramref name="other" />.
+            </returns>
+        </member>
         <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.FilterScanEvent.CompareTo(ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.FilterScanEvent)">
             <summary>
             Compares the current object with another object of the same type.
@@ -21211,6 +21246,13 @@
             <returns>the number of values</returns>
         </member>
         <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.FilterScanEvent.SameParentMass(ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.ScanEventDecorator)">
+            <summary>
+            Check if this object has the parent mass as another.
+            </summary>
+            <param name="other">The other.</param>
+            <returns>true if the same</returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.FilterScanEvent.SameFirstParentMass(ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.ScanEventDecorator)">
             <summary>
             Check if this object has the parent mass as another.
             </summary>
@@ -22356,6 +22398,43 @@
             <summary>
             Initializes static members of the <see cref="T:ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.FilterStringTokens"/> class.
             </summary>
+        </member>
+        <member name="T:ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.LegacyFilterSorter">
+            <summary>
+            Filter sorting, designed to match same ordering as previous Xcalibur code.
+            </summary>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.LegacyFilterSorter.Qsort(System.Collections.Generic.IList{ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.FilterScanEvent})">
+            <summary>
+            Sort a list of events, using the <c>qsort</c> algorithm.
+            This code is needed to precisely match results from legacy <c>fileio</c>.
+            </summary>
+            <param name="values">scan events to sort</param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.LegacyFilterSorter.QsortSlice(System.Collections.Generic.IList{ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.FilterScanEvent},System.Int32,System.Int32)">
+            <summary>
+            Sort a slice of a list of events, using the <c>qsort</c> algorithm.
+            This code is needed to precisely match results from legacy <c>fileio</c>.
+            </summary>
+            <param name="values">scan events to sort</param>
+            <param name="firstIndex">first element to sort</param>
+            <param name="lastIndex">last element to sort</param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.LegacyFilterSorter.ShortSort(System.Int32,System.Int32,System.Collections.Generic.IList{ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.FilterScanEvent})">
+            <summary>
+            Sort a small list of filters in a simple manner (about 8 items)
+            </summary>
+            <param name="low">Low index to sort from</param>
+            <param name="high">High index to sort to</param>
+            <param name="values">Data array to sort</param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.LegacyFilterSorter.Swap(System.Int32,System.Int32,System.Collections.Generic.IList{ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.FilterScanEvent})">
+            <summary>
+            Exchange two array elements
+            </summary>
+            <param name="a">First to exchange</param>
+            <param name="b">Second to exchange</param>
+            <param name="values">Array of data</param>
         </member>
         <member name="T:ThermoFisher.CommonCore.RawFileReader.StructWrappers.Scan.Reaction">
             <summary>
@@ -25689,6 +25768,13 @@
             If the scan number is not in range.
             </exception>
         </member>
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.VirtualDevices.DeviceBase.Initialize">
+            <summary>
+            Initalize device after construction, for use by Lazy pattern.
+            Must be implemented in derived devices.
+            </summary>
+            <returns>The initialized device</returns>
+        </member>
         <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.VirtualDevices.DeviceBase.GetSegmentPeaks(System.Int32,System.Int32@,System.Int32@,ThermoFisher.CommonCore.RawFileReader.StructWrappers.Packets.IPacket@,System.Boolean)">
             <summary>
             Gets the segment peaks.
@@ -25969,6 +26055,14 @@
             </param>
             <param name="isInAcquisition">Set if this file is being created</param>
             <param name="oldRev">Set if this file version is from a legacy data system</param>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.VirtualDevices.MassSpecDevice.Initialize">
+            <summary>
+            Initializer, desigened for use by Lazy load pattern.
+            Base object can be created to perform version checks.
+            When device needs to be used for the first time, Initialize is called.
+            </summary>
+            <returns>The initialized device</returns>
         </member>
         <member name="P:ThermoFisher.CommonCore.RawFileReader.StructWrappers.VirtualDevices.MassSpecDevice.NumScanEvents">
             <summary>
@@ -27088,10 +27182,11 @@
             </summary>
             <param name="runHeaderStruct">The run header structure.</param>
         </member>
-        <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.VirtualDevices.RunHeader.Initialize">
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.VirtualDevices.RunHeader.Initialize(System.Int16)">
             <summary>
             Initializes this instance.
             </summary>
+            <param name="revision">sets the revision of the device data format</param>
         </member>
         <member name="M:ThermoFisher.CommonCore.RawFileReader.StructWrappers.VirtualDevices.RunHeader.IncrementNumStatusLog">
             <summary>
@@ -27800,7 +27895,7 @@
             There are 3 types of generic header - Status log, Trailer extra and Tune
             </summary>
         </member>
-        <member name="M:ThermoFisher.CommonCore.RawFileReader.Writers.BaseDeviceWriter.#ctor(ThermoFisher.CommonCore.Data.Business.Device,System.Int32,System.String,System.Int32,System.Boolean)">
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.Writers.BaseDeviceWriter.#ctor(ThermoFisher.CommonCore.Data.Business.Device,System.Int32,System.String,System.Int32,System.Boolean,System.Int16)">
             <summary>
             Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.RawFileReader.Writers.BaseDeviceWriter"/> class.
             </summary>
@@ -27809,6 +27904,7 @@
             <param name="rawFileName">Name of the raw file.</param>
             <param name="fileRevision">The file revision.</param>
             <param name="inAcquisition">if set to <c>true</c> [in acquisition].</param>
+            <param name="runHeaderRevision">Revision code for the device (set in run header). Default 1</param>
         </member>
         <member name="M:ThermoFisher.CommonCore.RawFileReader.Writers.BaseDeviceWriter.WriteInstrumentInfo(ThermoFisher.CommonCore.Data.IInstrumentDataAccess)">
             <summary>
@@ -27907,12 +28003,14 @@
             <param name="inAcquisition">if set to <c>true</c> [in acquisition].</param>
             <returns>True obtained a validate control index; otherwise False.</returns>
         </member>
-        <member name="M:ThermoFisher.CommonCore.RawFileReader.Writers.BaseDeviceWriter.InitializeRunHeader(ThermoFisher.CommonCore.RawFileReader.StructWrappers.VirtualControllerInfo,System.Int32)">
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.Writers.BaseDeviceWriter.InitializeRunHeader(ThermoFisher.CommonCore.RawFileReader.StructWrappers.VirtualControllerInfo,System.Int32,System.Int16)">
             <summary>
             Initializes the run header.
             </summary>
             <param name="deviceInfo">The device information.</param>
             <param name="registeredDeviceIndex">Index of the registered device.</param>
+            <returns>true if OK</returns>
+            <param name="revision">Revision code</param>
             <returns>true if OK</returns>
         </member>
         <member name="M:ThermoFisher.CommonCore.RawFileReader.Writers.BaseDeviceWriter.WriteStatusLog(System.IO.BinaryWriter,System.Single,System.Byte[])">
@@ -28675,11 +28773,15 @@
             <param name="fileName">Connect to a "in-acquisition" raw file</param>
             <returns>A device writer to write PDA data to the disk file</returns>
         </member>
-        <member name="M:ThermoFisher.CommonCore.RawFileReader.Writers.DeviceWriterAdapter.CreateMassSpecDeviceWriter(System.String)">
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.Writers.DeviceWriterAdapter.CreateMassSpecDeviceWriter(System.String,ThermoFisher.CommonCore.Data.Business.SpectrumPacketType)">
             <summary>
             Creates the mass spec device writer.
             </summary>
             <param name="fileName">Name of the file.</param>
+            <param name="highestTypeUsed">If > 1: Defines the highest packet type that this device may use.
+            By default this is 1, as that was the value used in original "version 66" raw files.
+            All apps linked to any version of this dll can decode such files.
+            New devices may have new data types, which can only be decoded by (matching) newer versions of this code.</param>
             <returns>A device writer to write mass spec data to the disk file</returns>
         </member>
         <member name="M:ThermoFisher.CommonCore.RawFileReader.Writers.DeviceWriterAdapter.CreateOtherDeviceWriter(System.String)">
@@ -29014,7 +29116,7 @@
             Generic type headers.
             </summary>
         </member>
-        <member name="M:ThermoFisher.CommonCore.RawFileReader.Writers.MassSpecDeviceWriter.#ctor(ThermoFisher.CommonCore.Data.Business.Device,System.Int32,System.String,System.Boolean,System.Int32)">
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.Writers.MassSpecDeviceWriter.#ctor(ThermoFisher.CommonCore.Data.Business.Device,System.Int32,System.String,System.Boolean,System.Int32,ThermoFisher.CommonCore.Data.Business.SpectrumPacketType)">
             <summary>
             Initializes a new instance of the <see cref="T:ThermoFisher.CommonCore.RawFileReader.Writers.MassSpecDeviceWriter"/> class.
             </summary>
@@ -29023,6 +29125,13 @@
             <param name="rawFileName">Name of the raw file.</param>
             <param name="inAcquisition">if set to <c>true</c> [in acquisition].</param>
             <param name="fileRevision">The file revision.</param>
+            <param name="finalPacketType">The final known packet type (at the time of writing). 
+            For example: If the MS is compiled against a newer raw file DLL, needed for it's new format,
+            then the value saved in a file could be a higher value than that compiled into some data processing application
+            built 2 years earlier. On opening the MS data, the raw file reader returns an Error to that application.
+            The application should then issue a message telling the customer to upgrade.
+            An instrument may set this to a lower value (the highest format required for the current acquisition method),
+            to signal that older format data is in the file, even if the device was compiled against a newer DLL.</param>
         </member>
         <member name="P:ThermoFisher.CommonCore.RawFileReader.Writers.MassSpecDeviceWriter.IsPreparedForRun">
             <summary>
@@ -30275,6 +30384,16 @@
             <returns>
             true on success
             </returns>
+        </member>
+        <member name="M:ThermoFisher.CommonCore.RawFileReader.Writers.RawFileWriter.FinalizeRawFileSecurity(System.String,ThermoFisher.CommonCore.RawFileReader.Writers.DeviceErrors)">
+            <summary>
+            Finalizes the raw file security.
+            Begin create a temporary file to get its FileSecurity object instead of the one from the raw file.
+            Add an access rule to remove the WellKnownSidType.WorldSid into this FileSecurity object.
+            Apply the modified ACL to the raw file.
+            </summary>
+            <param name="rawFileName">Name of the raw file.</param>
+            <param name="errors">The errors.</param>
         </member>
         <member name="M:ThermoFisher.CommonCore.RawFileReader.Writers.RawFileWriter.MarkAcquisitionComplete">
             <summary>

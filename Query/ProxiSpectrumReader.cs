@@ -176,12 +176,9 @@ namespace ThermoRawFileParser.Query
                         // Otherwise take the profile data
                         else
                         {
-                            // Get the scan statistics from the RAW file for this scan number
-                            var scanStatistics = rawFile.GetScanStatsForScanNumber(scanNumber);
-
-                            // Get the segmented (low res and profile) scan data
-                            var segmentedScan =
-                                rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
+                            // centroid the profile data by default
+                            var segmentedScan = !queryParameters.noPeakPicking ? Scan.ToCentroid(scan).SegmentedScan : scan.SegmentedScan;
+                            
                             proxiSpectrum.AddMz(segmentedScan.Positions);
                             proxiSpectrum.AddIntensities(segmentedScan.Intensities);
 

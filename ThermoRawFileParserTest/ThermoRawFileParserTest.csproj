@@ -136,16 +136,16 @@
       <HintPath>..\packages\mzLib.1.0.450\lib\net471\ThermoFisher.CommonCore.BackgroundSubtraction.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ThermoFisher.CommonCore.Data, Version=5.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
-      <HintPath>..\packages\ThermoFisher.CommonCore.Data.5.0.0.6\lib\net471\ThermoFisher.CommonCore.Data.dll</HintPath>
+    <Reference Include="ThermoFisher.CommonCore.Data, Version=5.0.0.38, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
+      <HintPath>../packages/ThermoFisher.CommonCore.Data.5.0.0.38/lib/net471/ThermoFisher.CommonCore.Data.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ThermoFisher.CommonCore.MassPrecisionEstimator, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\mzLib.1.0.450\lib\net471\ThermoFisher.CommonCore.MassPrecisionEstimator.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ThermoFisher.CommonCore.RawFileReader, Version=5.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
-      <HintPath>..\packages\ThermoFisher.CommonCore.RawFileReader.5.0.0.6\lib\net471\ThermoFisher.CommonCore.RawFileReader.dll</HintPath>
+    <Reference Include="ThermoFisher.CommonCore.RawFileReader, Version=5.0.0.38, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
+      <HintPath>../packages/ThermoFisher.CommonCore.RawFileReader.5.0.0.38/lib/net471/ThermoFisher.CommonCore.RawFileReader.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ThermoRawFileReader, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">

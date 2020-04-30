@@ -145,12 +145,9 @@ namespace ThermoRawFileParser.Writer
                         // Otherwise take the profile data
                         else
                         {
-                            // Get the scan statistics from the RAW file for this scan number
-                            var scanStatistics = rawFile.GetScanStatsForScanNumber(scanNumber);
+                            // centroid the profile data by default
+                            var segmentedScan = !ParseInput.NoPeakPicking ? Scan.ToCentroid(scan).SegmentedScan : scan.SegmentedScan;
 
-                            // Get the segmented (low res and profile) scan data
-                            var segmentedScan =
-                                rawFile.GetSegmentedScanFromScanNumber(scanNumber, scanStatistics);
                             for (var i = 0; i < segmentedScan.Positions.Length; i++)
                             {
                                 Writer.WriteLine(
