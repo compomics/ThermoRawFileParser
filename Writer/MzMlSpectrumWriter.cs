@@ -692,7 +692,7 @@ namespace ThermoRawFileParser.Writer
                             };
                         timesBinaryData.encodedLength =
                             (4 * Math.Ceiling((double) timesBinaryData
-                                                  .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
+                                .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
                         var timesBinaryDataCvParams = new List<CVParamType>
                         {
                             new CVParamType
@@ -745,7 +745,7 @@ namespace ThermoRawFileParser.Writer
                             };
                         intensitiesBinaryData.encodedLength =
                             (4 * Math.Ceiling((double) intensitiesBinaryData
-                                                  .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
+                                .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
                         var intensitiesBinaryDataCvParams = new List<CVParamType>
                         {
                             new CVParamType
@@ -969,37 +969,57 @@ namespace ThermoRawFileParser.Writer
             double? highestObservedMz = null;
             double[] masses = null;
             double[] intensities = null;
-            if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||
-                                           (scanEvent.ScanData == ScanDataType.Profile &&
-                                            !ParseInput.NoPeakPicking)))
-            {
-                var centroidStream = _rawFile.GetCentroidStream(scanNumber, false);
-                if (scan.CentroidScan.Length > 0)
-                {
-                    spectrumCvParams.Add(new CVParamType
-                    {
-                        accession = "MS:1000127",
-                        cvRef = "MS",
-                        name = "centroid spectrum",
-                        value = ""
-                    });
 
-                    basePeakMass = centroidStream.BasePeakMass;
-                    basePeakIntensity = centroidStream.BasePeakIntensity;
-                    lowestObservedMz = centroidStream.Masses[0];
-                    highestObservedMz = centroidStream.Masses[centroidStream.Masses.Length - 1];
-                    masses = centroidStream.Masses;
-                    intensities = centroidStream.Intensities;
+            if (!ParseInput.NoPeakPicking)
+            {
+                spectrumCvParams.Add(new CVParamType
+                {
+                    accession = "MS:1000127",
+                    cvRef = "MS",
+                    name = "centroid spectrum",
+                    value = ""
+                });
+
+                // Check if the scan has a centroid stream
+                if (scan.HasCentroidStream)
+                {
+                    if (scan.CentroidScan.Length > 0)
+                    {
+                        basePeakMass = scan.CentroidScan.BasePeakMass;
+                        basePeakIntensity = scan.CentroidScan.BasePeakIntensity;
+                        lowestObservedMz = scan.CentroidScan.Masses[0];
+                        highestObservedMz = scan.CentroidScan.Masses[scan.CentroidScan.Masses.Length - 1];
+                        masses = scan.CentroidScan.Masses;
+                        intensities = scan.CentroidScan.Intensities;
+                    }
+                }
+                else // otherwise take the profile data
+                {
+                    basePeakMass = scan.ScanStatistics.BasePeakMass;
+                    basePeakIntensity = scan.ScanStatistics.BasePeakIntensity;
+
+                    // Get the segmented (low res and profile) scan data
+                    // if the spectrum is profile perform centroiding
+                    var segmentedScan = scanEvent.ScanData == ScanDataType.Profile
+                        ? Scan.ToCentroid(scan).SegmentedScan
+                        : scan.SegmentedScan;
+
+                    if (segmentedScan.PositionCount > 0)
+                    {
+                        lowestObservedMz = segmentedScan.Positions[0];
+                        highestObservedMz = segmentedScan.Positions[segmentedScan.PositionCount - 1];
+                        masses = segmentedScan.Positions;
+                        intensities = segmentedScan.Intensities;
+                    }
                 }
             }
-            else
+            else // use the profile data as is
             {
                 basePeakMass = scan.ScanStatistics.BasePeakMass;
                 basePeakIntensity = scan.ScanStatistics.BasePeakIntensity;
 
-                // centroid the profile data by default
-                var segmentedScan = !ParseInput.NoPeakPicking ? Scan.ToCentroid(scan).SegmentedScan : scan.SegmentedScan;
-                if (segmentedScan.Positions.Length > 0)
+                // Get the segmented (low res and profile) scan data
+                if (scan.SegmentedScan.Positions.Length > 0)
                 {
                     switch (scanEvent.ScanData)
                     {
@@ -1023,10 +1043,10 @@ namespace ThermoRawFileParser.Writer
                             break;
                     }
 
-                    lowestObservedMz = segmentedScan.Positions[0];
-                    highestObservedMz = segmentedScan.Positions[segmentedScan.Positions.Length - 1];
-                    masses = segmentedScan.Positions;
-                    intensities = segmentedScan.Intensities;
+                    lowestObservedMz = scan.SegmentedScan.Positions[0];
+                    highestObservedMz = scan.SegmentedScan.Positions[scan.SegmentedScan.Positions.Length - 1];
+                    masses = scan.SegmentedScan.Positions;
+                    intensities = scan.SegmentedScan.Intensities;
                 }
             }
 
@@ -1109,7 +1129,7 @@ namespace ThermoRawFileParser.Writer
                     };
                 massesBinaryData.encodedLength =
                     (4 * Math.Ceiling((double) massesBinaryData
-                                          .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
+                        .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
                 var massesBinaryDataCvParams = new List<CVParamType>
                 {
                     new CVParamType
@@ -1159,7 +1179,7 @@ namespace ThermoRawFileParser.Writer
                     };
                 intensitiesBinaryData.encodedLength =
                     (4 * Math.Ceiling((double) intensitiesBinaryData
-                                          .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
+                        .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
                 var intensitiesBinaryDataCvParams = new List<CVParamType>
                 {
                     new CVParamType

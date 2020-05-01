@@ -161,42 +161,40 @@ namespace ThermoRawFileParser.Query
                         proxiSpectrum.AddAttribute(accession: "MS:10000512", name: "filter string",
                             value: scanEvent.ToString());
 
-                        // Check if the scan has a centroid stream
-                        if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||
-                                                       (scanEvent.ScanData == ScanDataType.Profile &&
-                                                        !queryParameters.noPeakPicking)))
-                        {
-                            var centroidStream = rawFile.GetCentroidStream(scanNumber, false);
-                            if (scan.CentroidScan.Length > 0)
-                            {
-                                proxiSpectrum.AddMz(centroidStream.Masses);
-                                proxiSpectrum.AddIntensities(centroidStream.Intensities);
-                            }
-                        }
-                        // Otherwise take the profile data
-                        else
-                        {
-                            // centroid the profile data by default
-                            var segmentedScan = !queryParameters.noPeakPicking ? Scan.ToCentroid(scan).SegmentedScan : scan.SegmentedScan;
-                            
-                            proxiSpectrum.AddMz(segmentedScan.Positions);
-                            proxiSpectrum.AddIntensities(segmentedScan.Intensities);
-
-                            if (scanEvent.ScanData == ScanDataType.Profile)
-                            {
-                                isCentroid = false;
-                            }
-                        }
-
-                        if (isCentroid)
+                        if (!queryParameters.noPeakPicking)
                         {
                             proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
                                 value: "centroid spectrum", valueAccession: "MS:1000127");
+
+                            // Check if the scan has a centroid stream
+                            if (scan.HasCentroidStream)
+                            {
+                                if (scan.CentroidScan.Length > 0)
+                                {
+                                    proxiSpectrum.AddMz(scan.CentroidScan.Masses);
+                                    proxiSpectrum.AddIntensities(scan.CentroidScan.Intensities);
+                                }
+                            }
+                            else // otherwise take the profile data
+                            {
+                                // Get the segmented (low res and profile) scan data
+                                // if the spectrum is profile perform centroiding
+                                var segmentedScan = scanEvent.ScanData == ScanDataType.Profile
+                                    ? Scan.ToCentroid(scan).SegmentedScan
+                                    : scan.SegmentedScan;
+
+                                proxiSpectrum.AddMz(segmentedScan.Positions);
+                                proxiSpectrum.AddIntensities(segmentedScan.Intensities);
+                            }
                         }
-                        else
+                        else // use the profile data as is
                         {
                             proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
                                 value: "profile spectrum", valueAccession: "MS:1000128");
+
+                            // Get the segmented (low res and profile) scan data
+                            proxiSpectrum.AddMz(scan.SegmentedScan.Positions);
+                            proxiSpectrum.AddIntensities(scan.SegmentedScan.Intensities);
                         }
 
                         resultList.Add(proxiSpectrum);

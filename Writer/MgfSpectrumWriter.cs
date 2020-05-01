@@ -123,38 +123,53 @@ namespace ThermoRawFileParser.Writer
                         // write the filter string
                         //Writer.WriteLine($"SCANEVENT={scanEvent.ToString()}");
 
-                        // Check if the scan has a centroid stream
-                        if (scan.HasCentroidStream && (scanEvent.ScanData == ScanDataType.Centroid ||
-                                                       (scanEvent.ScanData == ScanDataType.Profile &&
-                                                        !ParseInput.NoPeakPicking)))
+                        if (!ParseInput.NoPeakPicking)
                         {
-                            var centroidStream = rawFile.GetCentroidStream(scanNumber, false);
-                            if (scan.CentroidScan.Length > 0)
+                            // Check if the scan has a centroid stream
+                            if (scan.HasCentroidStream)
                             {
-                                for (var i = 0; i < centroidStream.Length; i++)
+                                if (scan.CentroidScan.Length > 0)
+                                {
+                                    for (var i = 0; i < scan.CentroidScan.Length; i++)
+                                    {
+                                        Writer.WriteLine(
+                                            scan.CentroidScan.Masses[i].ToString("0.0000000",
+                                                CultureInfo.InvariantCulture)
+                                            + " "
+                                            + scan.CentroidScan.Intensities[i].ToString("0.0000000000",
+                                                CultureInfo.InvariantCulture));
+                                    }
+                                }
+                            }
+                            else // otherwise take the profile data
+                            {
+                                // Get the segmented (low res and profile) scan data
+                                // if the spectrum is profile perform centroiding
+                                var segmentedScan = scanEvent.ScanData == ScanDataType.Profile
+                                    ? Scan.ToCentroid(scan).SegmentedScan
+                                    : scan.SegmentedScan;
+
+                                for (var i = 0; i < segmentedScan.Positions.Length; i++)
                                 {
                                     Writer.WriteLine(
-                                        centroidStream.Masses[i].ToString("0.0000000",
+                                        segmentedScan.Positions[i].ToString("0.0000000",
                                             CultureInfo.InvariantCulture)
                                         + " "
-                                        + centroidStream.Intensities[i].ToString("0.0000000000",
+                                        + segmentedScan.Intensities[i].ToString("0.0000000000",
                                             CultureInfo.InvariantCulture));
                                 }
                             }
                         }
-                        // Otherwise take the profile data
-                        else
+                        else // use the profile data as is
                         {
-                            // centroid the profile data by default
-                            var segmentedScan = !ParseInput.NoPeakPicking ? Scan.ToCentroid(scan).SegmentedScan : scan.SegmentedScan;
-
-                            for (var i = 0; i < segmentedScan.Positions.Length; i++)
+                            // Get the segmented (low res and profile) scan data
+                            for (var i = 0; i < scan.SegmentedScan.Positions.Length; i++)
                             {
                                 Writer.WriteLine(
-                                    segmentedScan.Positions[i].ToString("0.0000000",
+                                    scan.SegmentedScan.Positions[i].ToString("0.0000000",
                                         CultureInfo.InvariantCulture)
                                     + " "
-                                    + segmentedScan.Intensities[i].ToString("0.0000000000",
+                                    + scan.SegmentedScan.Intensities[i].ToString("0.0000000000",
                                         CultureInfo.InvariantCulture));
                             }
                         }
