@@ -72,8 +72,6 @@ namespace ThermoRawFileParser.Query
                         // Get the scan event for this scan number
                         var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
 
-                        var isCentroid = true;
-
                         IReaction reaction = null;
                         if (scanEvent.MSOrder != MSOrderType.Ms)
                         {
@@ -161,7 +159,7 @@ namespace ThermoRawFileParser.Query
                         proxiSpectrum.AddAttribute(accession: "MS:10000512", name: "filter string",
                             value: scanEvent.ToString());
 
-                        if (!queryParameters.noPeakPicking)
+                        if (!queryParameters.noPeakPicking) //centroiding requested
                         {
                             proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
                                 value: "centroid spectrum", valueAccession: "MS:1000127");
@@ -175,9 +173,8 @@ namespace ThermoRawFileParser.Query
                                     proxiSpectrum.AddIntensities(scan.CentroidScan.Intensities);
                                 }
                             }
-                            else // otherwise take the profile data
+                            else // otherwise take the low res segmented data
                             {
-                                // Get the segmented (low res and profile) scan data
                                 // if the spectrum is profile perform centroiding
                                 var segmentedScan = scanEvent.ScanData == ScanDataType.Profile
                                     ? Scan.ToCentroid(scan).SegmentedScan
@@ -187,11 +184,21 @@ namespace ThermoRawFileParser.Query
                                 proxiSpectrum.AddIntensities(segmentedScan.Intensities);
                             }
                         }
-                        else // use the profile data as is
+                        else // use the segmented data as is
                         {
-                            proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
-                                value: "profile spectrum", valueAccession: "MS:1000128");
+                            switch (scanEvent.ScanData) //check if the data is centroided already
+                            {
+                                case ScanDataType.Centroid:
+                                    proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
+                                        value: "centroid spectrum", valueAccession: "MS:1000127");
+                                    break;
 
+                                case ScanDataType.Profile:
+                                    proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
+                                        value: "profile spectrum", valueAccession: "MS:1000128");
+                                    break;
+                            }
+                            
                             // Get the segmented (low res and profile) scan data
                             proxiSpectrum.AddMz(scan.SegmentedScan.Positions);
                             proxiSpectrum.AddIntensities(scan.SegmentedScan.Intensities);

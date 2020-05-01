@@ -993,12 +993,11 @@ namespace ThermoRawFileParser.Writer
                         intensities = scan.CentroidScan.Intensities;
                     }
                 }
-                else // otherwise take the profile data
+                else // otherwise take the segmented (low res) scan
                 {
                     basePeakMass = scan.ScanStatistics.BasePeakMass;
                     basePeakIntensity = scan.ScanStatistics.BasePeakIntensity;
 
-                    // Get the segmented (low res and profile) scan data
                     // if the spectrum is profile perform centroiding
                     var segmentedScan = scanEvent.ScanData == ScanDataType.Profile
                         ? Scan.ToCentroid(scan).SegmentedScan
@@ -1013,15 +1012,15 @@ namespace ThermoRawFileParser.Writer
                     }
                 }
             }
-            else // use the profile data as is
+            else // use the segmented data as is
             {
                 basePeakMass = scan.ScanStatistics.BasePeakMass;
                 basePeakIntensity = scan.ScanStatistics.BasePeakIntensity;
 
-                // Get the segmented (low res and profile) scan data
+                // Get the segmented scan data
                 if (scan.SegmentedScan.Positions.Length > 0)
                 {
-                    switch (scanEvent.ScanData)
+                    switch (scanEvent.ScanData) //check if the data centroided already
                     {
                         case ScanDataType.Centroid:
                             spectrumCvParams.Add(new CVParamType
