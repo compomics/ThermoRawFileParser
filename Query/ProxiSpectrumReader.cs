@@ -159,16 +159,16 @@ namespace ThermoRawFileParser.Query
                         proxiSpectrum.AddAttribute(accession: "MS:10000512", name: "filter string",
                             value: scanEvent.ToString());
 
-                        if (!queryParameters.noPeakPicking) //centroiding requested
+                        if (!queryParameters.noPeakPicking) // centroiding requested
                         {
-                            proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
-                                value: "centroid spectrum", valueAccession: "MS:1000127");
-
-                            // Check if the scan has a centroid stream
+                            // check if the scan has a centroid stream
                             if (scan.HasCentroidStream)
                             {
                                 if (scan.CentroidScan.Length > 0)
                                 {
+                                    proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
+                                        value: "centroid spectrum", valueAccession: "MS:1000127");
+
                                     proxiSpectrum.AddMz(scan.CentroidScan.Masses);
                                     proxiSpectrum.AddIntensities(scan.CentroidScan.Intensities);
                                 }
@@ -180,28 +180,38 @@ namespace ThermoRawFileParser.Query
                                     ? Scan.ToCentroid(scan).SegmentedScan
                                     : scan.SegmentedScan;
 
-                                proxiSpectrum.AddMz(segmentedScan.Positions);
-                                proxiSpectrum.AddIntensities(segmentedScan.Intensities);
+                                if (segmentedScan.PositionCount > 0)
+                                {
+                                    proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
+                                        value: "centroid spectrum", valueAccession: "MS:1000127");
+
+                                    proxiSpectrum.AddMz(segmentedScan.Positions);
+                                    proxiSpectrum.AddIntensities(segmentedScan.Intensities);
+                                }
                             }
                         }
                         else // use the segmented data as is
                         {
-                            switch (scanEvent.ScanData) //check if the data is centroided already
+                            if (scan.SegmentedScan.Positions.Length > 0)
                             {
-                                case ScanDataType.Centroid:
-                                    proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
-                                        value: "centroid spectrum", valueAccession: "MS:1000127");
-                                    break;
+                                switch (scanEvent.ScanData) //check if the data is centroided already
+                                {
+                                    case ScanDataType.Centroid:
+                                        proxiSpectrum.AddAttribute(accession: "MS:1000525",
+                                            name: "spectrum representation",
+                                            value: "centroid spectrum", valueAccession: "MS:1000127");
+                                        break;
 
-                                case ScanDataType.Profile:
-                                    proxiSpectrum.AddAttribute(accession: "MS:1000525", name: "spectrum representation",
-                                        value: "profile spectrum", valueAccession: "MS:1000128");
-                                    break;
+                                    case ScanDataType.Profile:
+                                        proxiSpectrum.AddAttribute(accession: "MS:1000525",
+                                            name: "spectrum representation",
+                                            value: "profile spectrum", valueAccession: "MS:1000128");
+                                        break;
+                                }
+
+                                proxiSpectrum.AddMz(scan.SegmentedScan.Positions);
+                                proxiSpectrum.AddIntensities(scan.SegmentedScan.Intensities);
                             }
-                            
-                            // Get the segmented (low res and profile) scan data
-                            proxiSpectrum.AddMz(scan.SegmentedScan.Positions);
-                            proxiSpectrum.AddIntensities(scan.SegmentedScan.Intensities);
                         }
 
                         resultList.Add(proxiSpectrum);

@@ -972,19 +972,19 @@ namespace ThermoRawFileParser.Writer
 
             if (!ParseInput.NoPeakPicking)
             {
-                spectrumCvParams.Add(new CVParamType
-                {
-                    accession = "MS:1000127",
-                    cvRef = "MS",
-                    name = "centroid spectrum",
-                    value = ""
-                });
-
                 // Check if the scan has a centroid stream
                 if (scan.HasCentroidStream)
                 {
                     if (scan.CentroidScan.Length > 0)
                     {
+                        spectrumCvParams.Add(new CVParamType
+                        {
+                            accession = "MS:1000127",
+                            cvRef = "MS",
+                            name = "centroid spectrum",
+                            value = ""
+                        });
+
                         basePeakMass = scan.CentroidScan.BasePeakMass;
                         basePeakIntensity = scan.CentroidScan.BasePeakIntensity;
                         lowestObservedMz = scan.CentroidScan.Masses[0];
@@ -1005,6 +1005,14 @@ namespace ThermoRawFileParser.Writer
 
                     if (segmentedScan.PositionCount > 0)
                     {
+                        spectrumCvParams.Add(new CVParamType
+                        {
+                            accession = "MS:1000127",
+                            cvRef = "MS",
+                            name = "centroid spectrum",
+                            value = ""
+                        });
+
                         lowestObservedMz = segmentedScan.Positions[0];
                         highestObservedMz = segmentedScan.Positions[segmentedScan.PositionCount - 1];
                         masses = segmentedScan.Positions;
@@ -1017,7 +1025,6 @@ namespace ThermoRawFileParser.Writer
                 basePeakMass = scan.ScanStatistics.BasePeakMass;
                 basePeakIntensity = scan.ScanStatistics.BasePeakIntensity;
 
-                // Get the segmented scan data
                 if (scan.SegmentedScan.Positions.Length > 0)
                 {
                     switch (scanEvent.ScanData) //check if the data centroided already

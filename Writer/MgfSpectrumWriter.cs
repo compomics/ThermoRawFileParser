@@ -125,7 +125,7 @@ namespace ThermoRawFileParser.Writer
 
                         if (!ParseInput.NoPeakPicking)
                         {
-                            // Check if the scan has a centroid stream
+                            // check if the scan has a centroid stream
                             if (scan.HasCentroidStream)
                             {
                                 if (scan.CentroidScan.Length > 0)
@@ -161,7 +161,6 @@ namespace ThermoRawFileParser.Writer
                         }
                         else // use the segmented data as is
                         {
-                            // Get the segmented (low res and profile) scan data
                             for (var i = 0; i < scan.SegmentedScan.Positions.Length; i++)
                             {
                                 Writer.WriteLine(
