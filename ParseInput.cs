@@ -65,6 +65,8 @@ namespace ThermoRawFileParser
 
         public bool NoZlibCompression { get; set; }
 
+        public bool AllDetectors { get; set; }
+
         public LogFormat LogFormat { get; set; }
 
         public bool IgnoreInstrumentErrors { get; set; }
@@ -98,6 +100,7 @@ namespace ThermoRawFileParser
             NoZlibCompression = false;
             LogFormat = LogFormat.DEFAULT;
             IgnoreInstrumentErrors = false;
+            AllDetectors = false;
         }
 
         public ParseInput(string rawFilePath, string rawDirectoryPath, string outputDirectory, OutputFormat outputFormat

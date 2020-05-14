@@ -410,6 +410,11 @@ namespace ThermoRawFileParser
                     v => parseInput.NoZlibCompression = v != null
                 },
                 {
+                    "a|allDetectors",
+                    "Extract additonal detector data: UV/PDA etc",
+                    v => parseInput.AllDetectors = v != null
+                },
+                {
                     "l=|logging=", "Optional logging level: 0 for silent, 1 for verbose.",
                     v => logFormatString = v
                 },
