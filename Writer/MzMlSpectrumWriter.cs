@@ -645,8 +645,7 @@ namespace ThermoRawFileParser.Writer
             var settings = new ChromatogramTraceSettings(TraceType.BasePeak);
 
             // Get the chromatogram from the RAW file. 
-            var data = _rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, firstScanNumber,
-                lastScanNumber);
+            var data = _rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, -1, -1);
 
             // Split the data into the chromatograms
             var trace = ChromatogramSignal.FromChromatogramData(data);
@@ -655,22 +654,8 @@ namespace ThermoRawFileParser.Writer
             {
                 if (trace[i].Length > 0)
                 {
-                    // Binary data array list
-                    var binaryData = new List<BinaryDataArrayType>();
-
-                    var chromatogram = new ChromatogramType
-                    {
-                        index = i.ToString(),
-                        id = "base_peak_" + i,
-                        defaultArrayLength = 0,
-                        binaryDataArrayList = new BinaryDataArrayListType
-                        {
-                            count = "2",
-                            binaryDataArray = new BinaryDataArrayType[2]
-                        },
-                        cvParam = new CVParamType[1]
-                    };
-                    chromatogram.cvParam[0] = new CVParamType
+                    // CV Data for Base Peak Chromatogram
+                    var chroType = new CVParamType
                     {
                         accession = "MS:1000628",
                         name = "basepeak chromatogram",
@@ -678,117 +663,18 @@ namespace ThermoRawFileParser.Writer
                         value = ""
                     };
 
-                    // Chromatogram times
-                    if (!trace[i].Times.IsNullOrEmpty())
+                    var intensType = new CVParamType
                     {
-                        // Set the chromatogram default array length
-                        chromatogram.defaultArrayLength = trace[i].Times.Count;
+                        accession = "MS:1000515",
+                        name = "intensity array",
+                        cvRef = "MS",
+                        unitName = "number of counts",
+                        value = "",
+                        unitCvRef = "MS",
+                        unitAccession = "MS:1000131"
+                    };
 
-                        var timesBinaryData =
-                            new BinaryDataArrayType
-                            {
-                                binary = ParseInput.NoZlibCompression
-                                    ? Get64BitArray(trace[i].Times)
-                                    : GetZLib64BitArray(trace[i].Times)
-                            };
-                        timesBinaryData.encodedLength =
-                            (4 * Math.Ceiling((double) timesBinaryData
-                                .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-                        var timesBinaryDataCvParams = new List<CVParamType>
-                        {
-                            new CVParamType
-                            {
-                                accession = "MS:1000595",
-                                name = "time array",
-                                cvRef = "MS",
-                                unitName = "minute",
-                                value = "",
-                                unitCvRef = "UO",
-                                unitAccession = "UO:0000031"
-                            },
-                            new CVParamType
-                            {
-                                accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""
-                            }
-                        };
-                        if (!ParseInput.NoZlibCompression)
-                        {
-                            timesBinaryDataCvParams.Add(
-                                new CVParamType
-                                {
-                                    accession = "MS:1000574",
-                                    name = "zlib compression",
-                                    cvRef = "MS",
-                                    value = ""
-                                });
-                        }
-
-                        timesBinaryData.cvParam = timesBinaryDataCvParams.ToArray();
-
-                        binaryData.Add(timesBinaryData);
-                    }
-
-                    // Chromatogram intensities                    
-                    if (!trace[i].Times.IsNullOrEmpty())
-                    {
-                        // Set the spectrum default array length if necessary
-                        if (chromatogram.defaultArrayLength == 0)
-                        {
-                            chromatogram.defaultArrayLength = trace[i].Intensities.Count;
-                        }
-
-                        var intensitiesBinaryData =
-                            new BinaryDataArrayType
-                            {
-                                binary = ParseInput.NoZlibCompression
-                                    ? Get64BitArray(trace[i].Intensities)
-                                    : GetZLib64BitArray(trace[i].Intensities)
-                            };
-                        intensitiesBinaryData.encodedLength =
-                            (4 * Math.Ceiling((double) intensitiesBinaryData
-                                .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-                        var intensitiesBinaryDataCvParams = new List<CVParamType>
-                        {
-                            new CVParamType
-                            {
-                                accession = "MS:1000515",
-                                name = "intensity array",
-                                cvRef = "MS",
-                                unitName = "number of counts",
-                                value = "",
-                                unitCvRef = "MS",
-                                unitAccession = "MS:1000131"
-                            },
-                            new CVParamType
-                            {
-                                accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""
-                            }
-                        };
-                        if (!ParseInput.NoZlibCompression)
-                        {
-                            intensitiesBinaryDataCvParams.Add(
-                                new CVParamType
-                                {
-                                    accession = "MS:1000574",
-                                    name = "zlib compression",
-                                    cvRef = "MS",
-                                    value = ""
-                                });
-                        }
-
-                        intensitiesBinaryData.cvParam = intensitiesBinaryDataCvParams.ToArray();
-
-                        binaryData.Add(intensitiesBinaryData);
-                    }
-
-                    if (!binaryData.IsNullOrEmpty())
-                    {
-                        chromatogram.binaryDataArrayList = new BinaryDataArrayListType
-                        {
-                            count = binaryData.Count.ToString(),
-                            binaryDataArray = binaryData.ToArray()
-                        };
-                    }
+                    var chromatogram = TraceToChromatogram(trace[i], "BasePeak_" + i.ToString(), chroType, intensType);
 
                     chromatograms.Add(chromatogram);
                 }
@@ -805,54 +691,80 @@ namespace ThermoRawFileParser.Writer
                     var settingsPDA = new ChromatogramTraceSettings(TraceType.TotalAbsorbance);
 
                     var dataPDA = _rawFile.GetChromatogramData(new IChromatogramSettings[] { settingsPDA },
-                        firstScanNumber, lastScanNumber);
+                        -1, -1);
 
                     var tracePDA = ChromatogramSignal.FromChromatogramData(dataPDA);
 
                     for (var i = 0; i < tracePDA.Length; i++)
                     {
-                        if (tracePDA[i].Length > 0)
+                        // CV Data for Total Absorbance Chromatogram
+                        var chroType = new CVParamType
                         {
-                            // Binary data array list
-                            var binaryData = new List<BinaryDataArrayType>();
+                            accession = "MS:1000812",
+                            name = "absorption chromatogram",
+                            cvRef = "MS",
+                            value = ""
+                        };
 
-                            var chromatogram = new ChromatogramType
-                            {
-                                index = i.ToString(),
-                                id = String.Format("PDA_{0}_TotalAbsorbance_{1}", nrI, i),
-                                defaultArrayLength = 0,
-                                binaryDataArrayList = new BinaryDataArrayListType
-                                {
-                                    count = "2",
-                                    binaryDataArray = new BinaryDataArrayType[2]
-                                },
-                                cvParam = new CVParamType[1]
-                            };
-                            chromatogram.cvParam[0] = new CVParamType
-                            {
-                                accession = "MS:1000812",
-                                name = "absorption chromatogram",
-                                cvRef = "MS",
-                                value = ""
-                            };
+                        var intensType = new CVParamType
+                        {
+                            accession = "MS:1000515",
+                            name = "intensity array",
+                            cvRef = "MS",
+                            unitName = "absorbance unit",
+                            value = "",
+                            unitCvRef = "UO",
+                            unitAccession = "UO:0000269"
+                        };
 
-                            // Chromatogram times
-                            if (!trace[i].Times.IsNullOrEmpty())
-                            {
-                                // Set the chromatogram default array length
-                                chromatogram.defaultArrayLength = trace[i].Times.Count;
+                        var chromatogram = TraceToChromatogram(trace[i], String.Format("PDA{0}_{1}", nrI, i.ToString()),
+                                                                chroType, intensType);
 
-                                var timesBinaryData =
-                                    new BinaryDataArrayType
-                                    {
-                                        binary = ParseInput.NoZlibCompression
-                                            ? Get64BitArray(trace[i].Times)
-                                            : GetZLib64BitArray(trace[i].Times)
-                                    };
-                                timesBinaryData.encodedLength =
-                                    (4 * Math.Ceiling((double)timesBinaryData
-                                        .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-                                var timesBinaryDataCvParams = new List<CVParamType>
+                        chromatograms.Add(chromatogram);
+                    }
+                }
+            }
+
+            return chromatograms;
+        }
+
+        private ChromatogramType TraceToChromatogram(ChromatogramSignal trace, string chromatogramId,
+            CVParamType chromatogramType, CVParamType intensityType)
+        {
+            var binaryData = new List<BinaryDataArrayType>();
+
+            var chromatogram = new ChromatogramType
+            {
+                index = String.Empty, //index will be overwritten during serialization
+                id = chromatogramId,
+                defaultArrayLength = 0,
+                binaryDataArrayList = new BinaryDataArrayListType
+                {
+                    count = "2",
+                    binaryDataArray = new BinaryDataArrayType[2]
+                },
+                cvParam = new CVParamType[1]
+            };
+
+            chromatogram.cvParam[0] = chromatogramType;
+
+            // Chromatogram times
+            if (!trace.Times.IsNullOrEmpty())
+            {
+                // Set the chromatogram default array length
+                chromatogram.defaultArrayLength = trace.Times.Count;
+
+                var timesBinaryData =
+                    new BinaryDataArrayType
+                    {
+                        binary = ParseInput.NoZlibCompression
+                            ? Get64BitArray(trace.Times)
+                            : GetZLib64BitArray(trace.Times)
+                    };
+                timesBinaryData.encodedLength =
+                    (4 * Math.Ceiling((double)timesBinaryData
+                        .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
+                var timesBinaryDataCvParams = new List<CVParamType>
                         {
                             new CVParamType
                             {
@@ -869,91 +781,78 @@ namespace ThermoRawFileParser.Writer
                                 accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""
                             }
                         };
-                                if (!ParseInput.NoZlibCompression)
-                                {
-                                    timesBinaryDataCvParams.Add(
-                                        new CVParamType
-                                        {
-                                            accession = "MS:1000574",
-                                            name = "zlib compression",
-                                            cvRef = "MS",
-                                            value = ""
-                                        });
-                                }
-
-                                timesBinaryData.cvParam = timesBinaryDataCvParams.ToArray();
-
-                                binaryData.Add(timesBinaryData);
-                            }
-
-                            // Chromatogram intensities                    
-                            if (!trace[i].Times.IsNullOrEmpty())
-                            {
-                                // Set the spectrum default array length if necessary
-                                if (chromatogram.defaultArrayLength == 0)
-                                {
-                                    chromatogram.defaultArrayLength = trace[i].Intensities.Count;
-                                }
-
-                                var intensitiesBinaryData =
-                                    new BinaryDataArrayType
-                                    {
-                                        binary = ParseInput.NoZlibCompression
-                                            ? Get64BitArray(trace[i].Intensities)
-                                            : GetZLib64BitArray(trace[i].Intensities)
-                                    };
-                                intensitiesBinaryData.encodedLength =
-                                    (4 * Math.Ceiling((double)intensitiesBinaryData
-                                        .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-                                var intensitiesBinaryDataCvParams = new List<CVParamType>
+                if (!ParseInput.NoZlibCompression)
+                {
+                    timesBinaryDataCvParams.Add(
+                        new CVParamType
                         {
-                            new CVParamType
-                            {
-                                accession = "MS:1000515",
-                                name = "intensity array",
-                                cvRef = "MS",
-                                unitName = "absorbance unit",
-                                value = "",
-                                unitCvRef = "UO",
-                                unitAccession = "UO:0000269"
-                            },
+                            accession = "MS:1000574",
+                            name = "zlib compression",
+                            cvRef = "MS",
+                            value = ""
+                        });
+                }
+
+                timesBinaryData.cvParam = timesBinaryDataCvParams.ToArray();
+
+                binaryData.Add(timesBinaryData);
+            }
+
+            // Chromatogram intensities                    
+            if (!trace.Intensities.IsNullOrEmpty())
+            {
+                // Set the spectrum default array length if necessary
+                //Is it necessary?
+                if (chromatogram.defaultArrayLength == 0)
+                {
+                    chromatogram.defaultArrayLength = trace.Intensities.Count;
+                }
+
+                var intensitiesBinaryData =
+                    new BinaryDataArrayType
+                    {
+                        binary = ParseInput.NoZlibCompression
+                            ? Get64BitArray(trace.Intensities)
+                            : GetZLib64BitArray(trace.Intensities)
+                    };
+                intensitiesBinaryData.encodedLength =
+                    (4 * Math.Ceiling((double)intensitiesBinaryData
+                        .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
+                var intensitiesBinaryDataCvParams = new List<CVParamType>
+                        {
+                            intensityType,
                             new CVParamType
                             {
                                 accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""
                             }
                         };
-                                if (!ParseInput.NoZlibCompression)
-                                {
-                                    intensitiesBinaryDataCvParams.Add(
-                                        new CVParamType
-                                        {
-                                            accession = "MS:1000574",
-                                            name = "zlib compression",
-                                            cvRef = "MS",
-                                            value = ""
-                                        });
-                                }
-
-                                intensitiesBinaryData.cvParam = intensitiesBinaryDataCvParams.ToArray();
-
-                                binaryData.Add(intensitiesBinaryData);
-                            }
-
-                            if (!binaryData.IsNullOrEmpty())
-                            {
-                                chromatogram.binaryDataArrayList = new BinaryDataArrayListType
-                                {
-                                    count = binaryData.Count.ToString(),
-                                    binaryDataArray = binaryData.ToArray()
-                                };
-                            }
-
-                            chromatograms.Add(chromatogram);
-                        }
-                    }
+                if (!ParseInput.NoZlibCompression)
+                {
+                    intensitiesBinaryDataCvParams.Add(
+                        new CVParamType
+                        {
+                            accession = "MS:1000574",
+                            name = "zlib compression",
+                            cvRef = "MS",
+                            value = ""
+                        });
                 }
+
+                intensitiesBinaryData.cvParam = intensitiesBinaryDataCvParams.ToArray();
+
+                binaryData.Add(intensitiesBinaryData);
             }
-            return chromatograms;
+
+            if (!binaryData.IsNullOrEmpty())
+            {
+                chromatogram.binaryDataArrayList = new BinaryDataArrayListType
+                {
+                    count = binaryData.Count.ToString(),
+                    binaryDataArray = binaryData.ToArray()
+                };
+            }
+
+            return chromatogram;
         }
 
         /// <summary>
