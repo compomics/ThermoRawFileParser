@@ -65,7 +65,7 @@ namespace ThermoRawFileParser.Writer
                         IReaction reaction = GetReaction(scanEvent, scanNumber);
 
                         Writer.WriteLine("BEGIN IONS");
-                        Writer.WriteLine($"TITLE={ConstructSpectrumTitle(scanNumber)}");
+                        Writer.WriteLine($"TITLE={ConstructSpectrumTitle((int)Device.MS, 1, scanNumber)}");
                         Writer.WriteLine($"SCANS={scanNumber}");
                         Writer.WriteLine(
                             $"RTINSECONDS={(time * 60).ToString(CultureInfo.InvariantCulture)}");

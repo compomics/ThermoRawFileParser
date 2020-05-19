@@ -97,9 +97,9 @@ namespace ThermoRawFileParser.Writer
         /// Construct the spectrum title.
         /// </summary>
         /// <param name="scanNumber">the spectrum scan number</param>
-        protected static string ConstructSpectrumTitle(int scanNumber)
+        protected static string ConstructSpectrumTitle(int instrumentType, int instrumentNumber, int scanNumber)
         {
-            return "controllerType=0 controllerNumber=1 scan=" + scanNumber;
+            return String.Format("controllerType={0} controllerNumber={1} scan={2}", instrumentType, instrumentNumber, scanNumber);
         }
 
         /// <summary>
