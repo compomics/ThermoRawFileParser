@@ -91,8 +91,6 @@ namespace ThermoRawFileParser.Writer
 
             try
             {
-                Log.Info("Processing " + (lastScanNumber - firstScanNumber) + " scans");
-
                 _writer.WriteStartDocument();
 
                 if (_doIndexing)
@@ -267,6 +265,9 @@ namespace ThermoRawFileParser.Writer
                 //MS Spectra
                 var index = 0;
                 var lastScanProgress = 0;
+
+                Log.Info("Processing " + (lastScanNumber - firstScanNumber) + " MS scans");
+
                 for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
                 {
                     if (ParseInput.LogFormat == LogFormat.DEFAULT)
@@ -309,6 +310,11 @@ namespace ThermoRawFileParser.Writer
                     }
                 }
 
+                if (ParseInput.LogFormat == LogFormat.DEFAULT)
+                {
+                    Console.WriteLine();
+                }
+
                 // PDA spectra
                 if (ParseInput.AllDetectors && _rawFile.GetInstrumentCountOfType(Device.Pda) > 0)
                 {
@@ -318,6 +324,8 @@ namespace ThermoRawFileParser.Writer
                         firstScanNumber = _rawFile.RunHeader.FirstSpectrum;
                         lastScanNumber = _rawFile.RunHeader.LastSpectrum;
                         lastScanProgress = 0;
+
+                        Log.Info("Processing " + (lastScanNumber - firstScanNumber) + " PDA scans from Device #" + (nrI + 1));
 
                         for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
                         {
@@ -362,6 +370,7 @@ namespace ThermoRawFileParser.Writer
                         }
                     }
                 }
+
                 if (ParseInput.LogFormat == LogFormat.DEFAULT)
                 {
                     Console.WriteLine();
@@ -373,7 +382,7 @@ namespace ThermoRawFileParser.Writer
                 var chromatograms = ConstructChromatograms(firstScanNumber, lastScanNumber);
                 if (!chromatograms.IsNullOrEmpty())
                 {
-                    //    chromatogramList
+                    //chromatogramList
                     _writer.WriteStartElement("chromatogramList");
                     _writer.WriteAttributeString("count", chromatograms.Count.ToString());
                     _writer.WriteAttributeString("defaultDataProcessingRef", "ThermoRawFileParserProcessing");
@@ -1380,34 +1389,34 @@ namespace ThermoRawFileParser.Writer
             });
 
             //Scan data
-            double? basePeakMass = null;
+            double? basePeakPosition = null;
             double? basePeakIntensity = null;
-            double? lowestObservedMz = null;
-            double? highestObservedMz = null;
-            double[] masses = null;
+            double? lowestPosition = null;
+            double? highestPosition = null;
+            double[] positions = null;
             double[] intensities = null;
 
             
-            basePeakMass = scan.ScanStatistics.BasePeakMass;
+            basePeakPosition = scan.ScanStatistics.BasePeakMass;
             basePeakIntensity = scan.ScanStatistics.BasePeakIntensity;
 
             if (scan.SegmentedScan.Positions.Length > 0)
             {
-                lowestObservedMz = scan.SegmentedScan.Positions[0];
-                highestObservedMz = scan.SegmentedScan.Positions[scan.SegmentedScan.Positions.Length - 1];
-                masses = scan.SegmentedScan.Positions;
+                lowestPosition = scan.SegmentedScan.Positions[0];
+                highestPosition = scan.SegmentedScan.Positions[scan.SegmentedScan.Positions.Length - 1];
+                positions = scan.SegmentedScan.Positions;
                 intensities = scan.SegmentedScan.Intensities;
             }
             
 
             // Base peak m/z
-            if (basePeakMass != null)
+            if (basePeakPosition != null)
             {
                 spectrumCvParams.Add(new CVParamType
                 {
                     name = "base peak m/z",
                     accession = "MS:1000504",
-                    value = basePeakMass.Value.ToString(CultureInfo.InvariantCulture),
+                    value = basePeakPosition.Value.ToString(CultureInfo.InvariantCulture),
                     unitCvRef = "MS",
                     unitName = "m/z",
                     unitAccession = "MS:1000040",
@@ -1430,32 +1439,32 @@ namespace ThermoRawFileParser.Writer
                 });
             }
 
-            // Lowest observed mz
-            if (lowestObservedMz != null)
+            // Lowest observed wavelength
+            if (lowestPosition != null)
             {
                 spectrumCvParams.Add(new CVParamType
                 {
-                    name = "lowest observed m/z",
-                    accession = "MS:1000528",
-                    value = lowestObservedMz.Value.ToString(CultureInfo.InvariantCulture),
+                    name = "lowest observed wavelength",
+                    accession = "MS:1000619",
+                    value = lowestPosition.Value.ToString(CultureInfo.InvariantCulture),
                     unitCvRef = "MS",
-                    unitAccession = "MS:1000040",
-                    unitName = "m/z",
-                    cvRef = "MS"
+                    unitAccession = "UO:0000018",
+                    unitName = "nanometer",
+                    cvRef = "UO"
                 });
             }
 
-            // Highest observed mz
-            if (highestObservedMz != null)
+            // Highest observed wavelength
+            if (highestPosition != null)
             {
                 spectrumCvParams.Add(new CVParamType
                 {
-                    name = "highest observed m/z",
-                    accession = "MS:1000527",
-                    value = highestObservedMz.Value.ToString(CultureInfo.InvariantCulture),
-                    unitAccession = "MS:1000040",
-                    unitName = "m/z",
-                    unitCvRef = "MS",
+                    name = "highest observed wavelength",
+                    accession = "MS:1000618",
+                    value = highestPosition.Value.ToString(CultureInfo.InvariantCulture),
+                    unitAccession = "UO:0000018",
+                    unitName = "nanometer",
+                    unitCvRef = "UO",
                     cvRef = "MS"
                 });
             }
@@ -1466,37 +1475,37 @@ namespace ThermoRawFileParser.Writer
             // Binary data array list
             var binaryData = new List<BinaryDataArrayType>();
 
-            // M/Z Data
-            if (!masses.IsNullOrEmpty())
+            // Spectral data
+            if (!positions.IsNullOrEmpty())
             {
                 // Set the spectrum default array length
-                spectrum.defaultArrayLength = masses.Length;
+                spectrum.defaultArrayLength = positions.Length;
 
-                var massesBinaryData =
+                var positionsBinaryData =
                     new BinaryDataArrayType
                     {
-                        binary = ParseInput.NoZlibCompression ? Get64BitArray(masses) : GetZLib64BitArray(masses)
+                        binary = ParseInput.NoZlibCompression ? Get64BitArray(positions) : GetZLib64BitArray(positions)
                     };
-                massesBinaryData.encodedLength =
-                    (4 * Math.Ceiling((double)massesBinaryData
+                positionsBinaryData.encodedLength =
+                    (4 * Math.Ceiling((double)positionsBinaryData
                         .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-                var massesBinaryDataCvParams = new List<CVParamType>
+                var positionsBinaryDataCvParams = new List<CVParamType>
                 {
                     new CVParamType
                     {
-                        accession = "MS:1000514",
-                        name = "m/z array",
+                        accession = "MS:1000617",
+                        name = "wavelength array",
                         cvRef = "MS",
-                        unitName = "m/z",
+                        unitName = "nanometer",
                         value = "",
-                        unitCvRef = "MS",
-                        unitAccession = "MS:1000040"
+                        unitCvRef = "UO",
+                        unitAccession = "UO:0000018"
                     },
                     new CVParamType {accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""}
                 };
                 if (!ParseInput.NoZlibCompression)
                 {
-                    massesBinaryDataCvParams.Add(
+                    positionsBinaryDataCvParams.Add(
                         new CVParamType
                         {
                             accession = "MS:1000574",
@@ -1506,9 +1515,9 @@ namespace ThermoRawFileParser.Writer
                         });
                 }
 
-                massesBinaryData.cvParam = massesBinaryDataCvParams.ToArray();
+                positionsBinaryData.cvParam = positionsBinaryDataCvParams.ToArray();
 
-                binaryData.Add(massesBinaryData);
+                binaryData.Add(positionsBinaryData);
             }
 
             // Intensity Data
@@ -1517,7 +1526,7 @@ namespace ThermoRawFileParser.Writer
                 // Set the spectrum default array length if necessary
                 if (spectrum.defaultArrayLength == 0)
                 {
-                    spectrum.defaultArrayLength = masses.Length;
+                    spectrum.defaultArrayLength = intensities.Length;
                 }
 
                 var intensitiesBinaryData =
@@ -1537,9 +1546,9 @@ namespace ThermoRawFileParser.Writer
                         accession = "MS:1000515",
                         name = "intensity array",
                         cvRef = "MS",
-                        unitCvRef = "MS",
-                        unitAccession = "MS:1000131",
-                        unitName = "number of counts",
+                        unitCvRef = "UO",
+                        unitAccession = "UO:0000269",
+                        unitName = "absorbance unit",
                         value = ""
                     },
                     new CVParamType {accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""}
@@ -1668,6 +1677,21 @@ namespace ThermoRawFileParser.Writer
                     value = charge.ToString(),
                     accession = "MS:1000041",
                     cvRef = "MS"
+                });
+            }
+ 
+            if (selectedIonMz > ZeroDelta)
+            {
+                var selectedIonIntensity = CalculatePrecursorPeakIntensity(_rawFile, precursorScanNumber, selectedIonMz);
+                ionCvParams.Add(new CVParamType
+                {
+                    name = "peak intensity",
+                    value = selectedIonIntensity.ToString(),
+                    accession = "MS:1000042",
+                    cvRef = "MS",
+                    unitAccession = "MS:1000131",
+                    unitCvRef = "MS",
+                    unitName = "number of detector counts"
                 });
             }
 
@@ -1964,6 +1988,7 @@ namespace ThermoRawFileParser.Writer
                 value = ""
             };
 
+            //scan start time
             var scanTypeCvParams = new List<CVParamType>
             {
                 new CVParamType
@@ -1978,10 +2003,6 @@ namespace ThermoRawFileParser.Writer
                     cvRef = "MS"
                 }
             };
-
-            // Scan start time
-
-            // Scan filter string
 
             var scanType = new ScanType
             {
@@ -2003,21 +2024,21 @@ namespace ThermoRawFileParser.Writer
             {
                 name = "scan window lower limit",
                 accession = "MS:1000501",
-                value = scan.ScanStatistics.LowMass.ToString(CultureInfo.InvariantCulture),
+                value = scan.ScanStatistics.ShortWavelength.ToString(CultureInfo.InvariantCulture),
                 cvRef = "MS",
-                unitAccession = "MS:1000040",
-                unitCvRef = "MS",
-                unitName = "m/z"
+                unitAccession = "UO:0000018",
+                unitCvRef = "UO",
+                unitName = "nanometer"
             };
             scanWindow.cvParam[1] = new CVParamType
             {
                 name = "scan window upper limit",
                 accession = "MS:1000500",
-                value = scan.ScanStatistics.HighMass.ToString(CultureInfo.InvariantCulture),
+                value = scan.ScanStatistics.LongWavelength.ToString(CultureInfo.InvariantCulture),
                 cvRef = "MS",
-                unitAccession = "MS:1000040",
-                unitCvRef = "MS",
-                unitName = "m/z"
+                unitAccession = "UO:0000018",
+                unitCvRef = "UO",
+                unitName = "nanometer"
             };
 
             scanType.scanWindowList.scanWindow[0] = scanWindow;

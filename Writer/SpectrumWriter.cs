@@ -179,51 +179,36 @@ namespace ThermoRawFileParser.Writer
         {
             double? precursorIntensity = null;
 
-            // Get the scan from the RAW file
+            // Get the precursor scan from the RAW file
             var scan = Scan.FromFile(rawFile, precursorScanNumber);
 
-            // Check if the scan has a centroid stream
+            //Select centroid stream if it exists, otherwise use profile one
+            double[] masses;
+            double[] intensities;
+
             if (scan.HasCentroidStream)
             {
-                var centroidStream = rawFile.GetCentroidStream(precursorScanNumber, false);
-                if (scan.CentroidScan.Length > 0)
-                {
-                    for (var i = 0; i < centroidStream.Length; i++)
-                    {
-                        if (Math.Abs(precursorMass - centroidStream.Masses[i]) < Tolerance)
-                        {
-                            //Console.WriteLine(Math.Abs(precursorMass - centroidStream.Masses[i]));
-                            //Console.WriteLine(precursorMass + " - " + centroidStream.Masses[i] + " - " +
-                            //                  centroidStream.Intensities[i]);
-                            precursorIntensity = centroidStream.Intensities[i];
-                            break;
-                        }
-                    }
-                }
+                masses = scan.CentroidScan.Masses;
+                intensities = scan.CentroidScan.Intensities;
             }
             else
             {
-                rawFile.SelectInstrument(Device.MS, 1);
+                masses = scan.SegmentedScan.Positions;
+                intensities = scan.SegmentedScan.Intensities;
+            }
 
-                IChromatogramSettings[] allSettings =
+            //find closest peak in a stream
+            var bestDelta = Tolerance;
+            for (var i = 0; i < masses.Length; i++)
+            {
+                var delta = precursorMass - masses[i];
+                if (Math.Abs(delta) < bestDelta)
                 {
-                    new ChromatogramTraceSettings(TraceType.BasePeak)
-                    {
-                        Filter = MsFilter,
-                        MassRanges = new[]
-                        {
-                            new Range(precursorMass, precursorMass)
-                        }
-                    }
-                };
-
-                var data = rawFile.GetChromatogramData(allSettings, precursorScanNumber,
-                    precursorScanNumber);
-                var chromatogramTrace = ChromatogramSignal.FromChromatogramData(data);
-                if (!chromatogramTrace.IsNullOrEmpty())
-                {
-                    precursorIntensity = chromatogramTrace[0].Intensities[0];
+                    bestDelta = delta;
+                    precursorIntensity = intensities[i];
                 }
+
+                if (delta < -1 * Tolerance) break;
             }
 
             return precursorIntensity;
