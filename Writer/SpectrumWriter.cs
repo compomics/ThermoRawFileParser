@@ -178,6 +178,7 @@ namespace ThermoRawFileParser.Writer
             double precursorMass)
         {
             double? precursorIntensity = null;
+            double tolerance;
 
             // Get the precursor scan from the RAW file
             var scan = Scan.FromFile(rawFile, precursorScanNumber);
@@ -190,15 +191,17 @@ namespace ThermoRawFileParser.Writer
             {
                 masses = scan.CentroidScan.Masses;
                 intensities = scan.CentroidScan.Intensities;
+                tolerance = 0.01; //high resolution scan
             }
             else
             {
                 masses = scan.SegmentedScan.Positions;
                 intensities = scan.SegmentedScan.Intensities;
+                tolerance = 0.5; //low resolution scan
             }
 
             //find closest peak in a stream
-            var bestDelta = Tolerance;
+            var bestDelta = tolerance;
             for (var i = 0; i < masses.Length; i++)
             {
                 var delta = precursorMass - masses[i];
@@ -208,7 +211,7 @@ namespace ThermoRawFileParser.Writer
                     precursorIntensity = intensities[i];
                 }
 
-                if (delta < -1 * Tolerance) break;
+                if (delta < -1 * tolerance) break;
             }
 
             return precursorIntensity;
