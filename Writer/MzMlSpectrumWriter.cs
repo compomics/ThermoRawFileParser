@@ -2184,7 +2184,6 @@ namespace ThermoRawFileParser.Writer
 
             var scanType = new ScanType
             {
-                instrumentConfigurationRef = "null",
                 cvParam = scanTypeCvParams.ToArray()
             };
 
