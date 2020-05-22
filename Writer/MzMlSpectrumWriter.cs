@@ -280,6 +280,7 @@ namespace ThermoRawFileParser.Writer
                     name = "Conversion to mzML",
                     value = ""
                 });
+                _writer.WriteEndElement(); // processingMethod  
                 if (!ParseInput.NoPeakPicking)
                 {
                     _writer.WriteStartElement("processingMethod");
