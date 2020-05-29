@@ -504,7 +504,7 @@ namespace ThermoRawFileParser
                 {
                     if (parseInput.RawFilePath != null)
                     {
-                        parseInput.OutputDirectory = Path.GetDirectoryName(parseInput.RawFilePath);
+                        parseInput.OutputDirectory = Path.GetDirectoryName(Path.GetFullPath(parseInput.RawFilePath));
                     }
                     else if (parseInput.RawDirectoryPath != null)
                     {
