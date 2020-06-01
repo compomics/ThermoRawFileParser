@@ -139,6 +139,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataObjects\MSSpectrum.cs" />
+    <Compile Include="DataObjects\PDASpectrum.cs" />
+    <Compile Include="DataObjects\ScanData.cs" />
+    <Compile Include="DataObjects\Spectrum.cs" />
     <Compile Include="LogFormat.cs" />
     <Compile Include="OutputFormat.cs" />
     <Compile Include="ParseInput.cs" />
