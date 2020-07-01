@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using ThermoFisher.CommonCore.Data;
+using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
 using ThermoRawFileParser.Writer.MzML;
 using zlib;
@@ -24,9 +25,9 @@ namespace ThermoRawFileParser.DataObjects
         
         protected CVParamType spectrumType;
 
+        protected Device deviceType;
+        protected int instrumentNumber;
         protected int scanNumber;
-
-        protected bool centroided;
 
         protected double[] x;
         protected double[] y;
@@ -54,8 +55,9 @@ namespace ThermoRawFileParser.DataObjects
             }
         }
 
+        public bool Centroided { get; set; }
+
         public int dataArrayLength;
-        public string spectrumId;
 
         public ScanData ScanInfo { get; set; }
 
@@ -121,55 +123,55 @@ namespace ThermoRawFileParser.DataObjects
             // X Data
             if (!x.IsNullOrEmpty())
             {
-                var massesBinaryData =
+                var xBinaryData =
                     new BinaryDataArrayType
                     {
                         binary = zLibCompression ? GetZLib64BitArray(x) : Get64BitArray(x)
                     };
 
-                massesBinaryData.encodedLength =
-                    (4 * Math.Ceiling((double)massesBinaryData.binary.Length / 3)).ToString();
+                xBinaryData.encodedLength =
+                    (4 * Math.Ceiling((double)xBinaryData.binary.Length / 3)).ToString();
 
-                var massesBinaryDataCvParams = new List<CVParamType>
+                var xDataCvParams = new List<CVParamType>
                 {
                     dataTermX,
                     encodingTerm
                 };
                 if (zLibCompression)
                 {
-                    massesBinaryDataCvParams.Add(zLibTerm);
+                    xDataCvParams.Add(zLibTerm);
                 }
 
-                massesBinaryData.cvParam = massesBinaryDataCvParams.ToArray();
+                xBinaryData.cvParam = xDataCvParams.ToArray();
 
-                binaryData.Add(massesBinaryData);
+                binaryData.Add(xBinaryData);
             }
 
-            // Intensity Data
+            // Y Data
             if (!y.IsNullOrEmpty())
             {
-                var intensitiesBinaryData =
+                var yBinaryData =
                     new BinaryDataArrayType
                     {
                         binary = zLibCompression ? GetZLib64BitArray(y) : Get64BitArray(y)
                     };
 
-                intensitiesBinaryData.encodedLength =
-                    (4 * Math.Ceiling((double)intensitiesBinaryData.binary.Length / 3)).ToString();
+                yBinaryData.encodedLength =
+                    (4 * Math.Ceiling((double)yBinaryData.binary.Length / 3)).ToString();
 
-                var intensitiesBinaryDataCvParams = new List<CVParamType>
+                var yBinaryDataCvParams = new List<CVParamType>
                 {
                     dataTermY,
                     encodingTerm
                 };
                 if (zLibCompression)
                 {
-                    intensitiesBinaryDataCvParams.Add(zLibTerm);
+                    yBinaryDataCvParams.Add(zLibTerm);
                 }
 
-                intensitiesBinaryData.cvParam = intensitiesBinaryDataCvParams.ToArray();
+                yBinaryData.cvParam = yBinaryDataCvParams.ToArray();
 
-                binaryData.Add(intensitiesBinaryData);
+                binaryData.Add(yBinaryData);
             }
 
             return (!binaryData.IsNullOrEmpty()) ?
@@ -189,23 +191,9 @@ namespace ThermoRawFileParser.DataObjects
         protected string CreateNativeID()
         {
             return String.Format("controllerType={0} controllerNumber={1} scan={2}", 
-                (int)rawFileRef.SelectedInstrument.DeviceType,
-                rawFileRef.SelectedInstrument.InstrumentIndex,
+                (int)deviceType,
+                instrumentNumber,
                 scanNumber);
-        }
-
-        public CVParamType CopyCVParamType(CVParamType old)
-        {
-            return new CVParamType
-            {
-                accession = old.accession,
-                cvRef = old.cvRef,
-                name = old.name,
-                unitAccession = old.unitAccession,
-                unitCvRef = old.unitCvRef,
-                unitName = old.unitName,
-                value = old.value
-            };
         }
 
         /// <summary>
@@ -213,7 +201,7 @@ namespace ThermoRawFileParser.DataObjects
         /// </summary>
         public CVParamType GetScanTypeTerm()
         {
-            return centroided ?
+            return Centroided ?
                 new CVParamType { accession = "MS:1000127", cvRef = "MS", name = "centroid spectrum", value = "" }
                 :
                 new CVParamType { accession = "MS:1000128", cvRef = "MS", name = "profile spectrum", value = "" };

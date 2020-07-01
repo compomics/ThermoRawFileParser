@@ -3,6 +3,7 @@ using ThermoFisher.CommonCore.Data.Interfaces;
 using ThermoFisher.CommonCore.Data.Business;
 using MathNet.Numerics.Optimization;
 using System.Collections.Generic;
+using ThermoRawFileParser.Util;
 
 namespace ThermoRawFileParser.DataObjects
 {
@@ -80,25 +81,29 @@ namespace ThermoRawFileParser.DataObjects
         public PDASpectrum(IRawDataPlus rawFile, int instrumentNr, int scanNr) : this()
         {
             rawFileRef = rawFile;
+            deviceType = rawFile.SelectedInstrument.DeviceType;
+            instrumentNumber = instrumentNr;
             scanNumber = scanNr;
 
-            spectrumId = CreateNativeID();
-            centroided = false; //PDA spectra are profile
+            Centroided = false; //PDA spectra are profile
 
             // Get scan from the RAW file
             var scan = Scan.FromFile(rawFileRef, scanNr);
 
+            // Fill ScanInformation
             ScanInfo = new ScanData
             {
-                RetentionTime = rawFile.RetentionTimeFromScanNumber(scanNr),
+                RetentionTime = rawFileRef.RetentionTimeFromScanNumber(scanNr),
                 LowerLimit = scan.ScanStatistics.ShortWavelength,
-                HigherLimit = scan.ScanStatistics.LongWavelength
+                HigherLimit = scan.ScanStatistics.LongWavelength,
+                unit = CVHelpers.nanometerUnit
             };
 
             BasePeakPosition = scan.ScanStatistics.BasePeakMass;
             BasePeakIntensity = scan.ScanStatistics.BasePeakIntensity;
             dataArrayLength = scan.SegmentedScan.PositionCount;
 
+            //Spectrum Data
             if(dataArrayLength > 0)
             {
                 x = scan.SegmentedScan.Positions;
@@ -124,36 +129,23 @@ namespace ThermoRawFileParser.DataObjects
             // Lowest observed wavelength
             if (LowestPosition != null)
             {
-                spectrumCvParams.Add(new CVParamType
-                {
-                    name = "lowest observed wavelength",
-                    accession = "MS:1000619",
-                    value = LowestPosition.Value.ToString(),
-                    unitCvRef = "MS",
-                    unitAccession = "UO:0000018",
-                    unitName = "nanometer",
-                    cvRef = "UO"
-                });
+                spectrumCvParams.Add(
+                    CVHelpers.Copy(CVHelpers.nanometerUnit, name: "lowest observed wavelength",
+                    accession: "MS:1000619", value: LowestPosition.Value.ToString(), cvRef: "MS"));
             }
 
             // Highest observed wavelength
             if (HighestPosition != null)
             {
-                spectrumCvParams.Add(new CVParamType
-                {
-                    name = "highest observed wavelength",
-                    accession = "MS:1000618",
-                    value = HighestPosition.Value.ToString(),
-                    unitAccession = "UO:0000018",
-                    unitName = "nanometer",
-                    unitCvRef = "UO",
-                    cvRef = "MS"
-                });
+                spectrumCvParams.Add(
+                    CVHelpers.Copy(CVHelpers.nanometerUnit, name: "highest observed wavelength",
+                    accession: "MS:1000618", value: HighestPosition.Value.ToString(), cvRef: "MS"));
             }
 
+            //Fill all necessary fields of spectrum object
             var spectrum = new SpectrumType
             {
-                id = spectrumId,
+                id = CreateNativeID(),
                 defaultArrayLength = dataArrayLength,
                 scanList = ScanInfo.ToScanList(),
                 cvParam = spectrumCvParams.ToArray(),

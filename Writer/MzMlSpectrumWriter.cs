@@ -1103,6 +1103,7 @@ namespace ThermoRawFileParser.Writer
         /// <returns>The SpectrumType object</returns>
         private SpectrumType ConstructMSSpectrum(int scanNumber)
         {
+            var s = new MassSpectrum(_rawFile, scanNumber, !ParseInput.NoPeakPicking);
             // Get each scan from the RAW file
             var scan = Scan.FromFile(_rawFile, scanNumber);
 

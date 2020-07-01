@@ -139,8 +139,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataObjects\MSSpectrum.cs" />
+    <Compile Include="DataObjects\MassSpectrum.cs" />
     <Compile Include="DataObjects\PDASpectrum.cs" />
+    <Compile Include="DataObjects\PrecursorData.cs" />
     <Compile Include="DataObjects\ScanData.cs" />
     <Compile Include="DataObjects\Spectrum.cs" />
     <Compile Include="LogFormat.cs" />
@@ -154,6 +155,7 @@
     <Compile Include="Query\ProxiSpectrumReader.cs" />
     <Compile Include="RawFileParserException.cs" />
     <Compile Include="RawFileParser.cs" />
+    <Compile Include="Util\CVHelpers.cs" />
     <Compile Include="Util\LimitedSizeDictionary.cs" />
     <Compile Include="Util\Peptide.cs" />
     <Compile Include="XIC\JSONInputUnit.cs" />
