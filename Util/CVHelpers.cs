@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ThermoRawFileParser.Writer.MzML;
+﻿using ThermoRawFileParser.Writer.MzML;
 
 namespace ThermoRawFileParser.Util
 {
@@ -33,7 +28,6 @@ namespace ThermoRawFileParser.Util
         /// Create copy of a CVParamType object with optional substitution of fields
         /// </summary>
         /// <param name="old">CVParamType object to copy from</param>
-        /// <param name="accession"></param>
         /// <returns></returns>
         public static CVParamType Copy(CVParamType old, string accession=null, string cvRef=null,
             string name=null, string unitAccession=null, string unitCvRef=null,

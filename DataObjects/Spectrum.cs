@@ -188,7 +188,7 @@ namespace ThermoRawFileParser.DataObjects
         /// Create native spectrum ID
         /// </summary>
         /// <returns>Native spectrum ID of a spectrum</returns>
-        protected string CreateNativeID()
+        public string CreateNativeID()
         {
             return String.Format("controllerType={0} controllerNumber={1} scan={2}", 
                 (int)deviceType,

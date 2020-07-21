@@ -1,8 +1,4 @@
-﻿using Namotion.Reflection;
-using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using ThermoFisher.CommonCore.Data;
+﻿using System.Collections.Generic;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
@@ -92,17 +88,21 @@ namespace ThermoRawFileParser.DataObjects
             // Get the scan event for this scan number
             var scanEvent = rawFileRef.GetScanEventForScanNumber(scanNumber);
 
+            //Get trailer data
+            var trailer = new TrailerData(rawFileRef.GetTrailerExtraInformation(scanNumber));
+
             Polarity = scanEvent.Polarity;
             MsOrder = (int)scanEvent.MSOrder;
-            
-            var trailer = rawFileRef.GetTrailerExtraInformation(scanNumber);
-            var trailer2 = rawFileRef.GetTrailerExtraHeaderInformation().
-                Where( h => h.Label == "Ion Injection Time(ms):" || h.Label == "Monoisotopic M/Z:").ToArray();
-            var tr = rawFileRef.GetTrailerExtraDataForScanWithValidation(scanNumber, trailer2);
+
+            TIC = scan.ScanStatistics.TIC;
+
+            //Get monoisotopic mass and injection time from trailer
             double injectionTime;
-            double.TryParse(trailer.TryGetPropertyValue<string>("Ion Injection Time(ms):"), out injectionTime);
+            trailer.TryGetDoubleValue("Ion Injection Time (ms)", out injectionTime);
             double monoisotopicMass;
-            double.TryParse(trailer.TryGetPropertyValue<string>("Monoisotopic M/Z:"), out monoisotopicMass);
+            trailer.TryGetDoubleValue("Monoisotopic M/Z", out monoisotopicMass);
+
+            //ScanWindow data
             ScanInfo = new ScanData
             {
                 Filter = scanEvent.ToString(),
@@ -114,7 +114,9 @@ namespace ThermoRawFileParser.DataObjects
                 unit = CVHelpers.massUnit
             };
 
-            PrecursorInfo = new PrecursorData(rawFileRef, scanNumber);
+            //precursor data
+            if(MsOrder > 1)
+                PrecursorInfo = new PrecursorData(rawFileRef, scanNumber, MsOrder, trailer);
 
             //Spectrum Data
             if (doCentroiding)
@@ -124,7 +126,7 @@ namespace ThermoRawFileParser.DataObjects
                 if (scan.HasCentroidStream)
                 {
                     BasePeakPosition = scan.CentroidScan.BasePeakMass;
-                    BasePeakPosition = scan.CentroidScan.BasePeakIntensity;
+                    BasePeakIntensity = scan.CentroidScan.BasePeakIntensity;
                     dataArrayLength = scan.CentroidScan.Length;
                     if (dataArrayLength > 0)
                     {
@@ -182,6 +184,18 @@ namespace ThermoRawFileParser.DataObjects
         public SpectrumType ToSpectrumType(bool zLibCompression)
         {
             var spectrumCvParams = new List<CVParamType>();
+
+            spectrumCvParams.Add(GetSpectrumType());
+            spectrumCvParams.Add(GetScanTypeTerm());
+            spectrumCvParams.Add(GetPolarityTerm());
+
+            spectrumCvParams.Add(new CVParamType
+            {
+                accession = "MS:1000511",
+                cvRef = "MS",
+                name = "ms level",
+                value = MsOrder.ToString()
+            });
 
             // Total ion current
             spectrumCvParams.Add(new CVParamType
@@ -257,10 +271,31 @@ namespace ThermoRawFileParser.DataObjects
                 id = CreateNativeID(),
                 defaultArrayLength = dataArrayLength,
                 cvParam = spectrumCvParams.ToArray(),
+                scanList = ScanInfo.ToScanList(),
                 binaryDataArrayList = GetBinaryDataArray(zLibCompression)
             };
 
+            if (PrecursorInfo != null)
+                spectrum.precursorList = PrecursorInfo.ToPrecursorList();
+
             return spectrum;
+        }
+        public CVParamType GetPolarityTerm()
+        {
+            if (Polarity == PolarityType.Positive)
+                return new CVParamType { accession = "MS:1000130", cvRef = "MS", name = "positive scan", value = "" };
+            else if (Polarity == PolarityType.Negative)
+                return new CVParamType { accession = "MS:1000129", cvRef = "MS", name = "negative scan", value = "" };
+            else
+                return new CVParamType();
+        }
+
+        public CVParamType GetSpectrumType()
+        {
+            if (MsOrder == 1)
+                return new CVParamType { accession = "MS:1000579", cvRef = "MS", name = "MS1 spectrum", value = "" };
+            else
+                return new CVParamType { accession = "MS:1000580", cvRef = "MS", name = "MSn spectrum", value = "" };
         }
     }
 }

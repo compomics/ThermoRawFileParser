@@ -77,7 +77,7 @@ namespace ThermoRawFileParser.Writer
             ConfigureWriter(".mzML");
 
             XmlSerializer serializer;
-            var settings = new XmlWriterSettings {Indent = true, Encoding = Encoding.UTF8};
+            var settings = new XmlWriterSettings { Indent = true, Encoding = Encoding.UTF8 };
             var sha1 = SHA1.Create();
             CryptoStream cryptoStream = null;
             if (_doIndexing)
@@ -162,10 +162,10 @@ namespace ThermoRawFileParser.Writer
                 });
 
                 //other detector data
-                if(ParseInput.AllDetectors)
+                if (ParseInput.AllDetectors)
                 {
                     //PDA spectrum
-                    if(_rawFile.GetInstrumentCountOfType(Device.Pda) > 0)
+                    if (_rawFile.GetInstrumentCountOfType(Device.Pda) > 0)
                     {
                         SerializeCvParam(new CVParamType
                         {
@@ -197,7 +197,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteStartElement("sourceFile");
                 _writer.WriteAttributeString("id", SourceFileId);
                 _writer.WriteAttributeString("name", ParseInput.RawFileNameWithoutExtension);
-                _writer.WriteAttributeString("location", "file:///"+ParseInput.RawFilePath);
+                _writer.WriteAttributeString("location", "file:///" + ParseInput.RawFilePath);
                 SerializeCvParam(new CVParamType
                 {
                     accession = "MS:1000768",
@@ -317,13 +317,13 @@ namespace ThermoRawFileParser.Writer
                 var index = 0;
                 var lastScanProgress = 0;
 
-                Log.Info(String.Format("Processing {0} MS scans", + (1 + lastScanNumber - firstScanNumber)));
+                Log.Info(String.Format("Processing {0} MS scans", +(1 + lastScanNumber - firstScanNumber)));
 
                 for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
                 {
                     if (ParseInput.LogFormat == LogFormat.DEFAULT)
                     {
-                        var scanProgress = (int) ((double) scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
+                        var scanProgress = (int)((double)scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
                         if (scanProgress % ProgressPercentageStep == 0)
                         {
                             if (scanProgress != lastScanProgress)
@@ -586,7 +586,7 @@ namespace ThermoRawFileParser.Writer
         private string GetTotalScanNumber()
         {
             //save instrument that was selected last time
-            var lastSelectedInstrument =_rawFile.SelectedInstrument;
+            var lastSelectedInstrument = _rawFile.SelectedInstrument;
             var numScans = 0;
 
             _rawFile.SelectInstrument(Device.MS, 1);
@@ -787,7 +787,7 @@ namespace ThermoRawFileParser.Writer
             var settings = new ChromatogramTraceSettings(TraceType.BasePeak);
 
             // Get the chromatogram from the RAW file. 
-            var data = _rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, -1, -1);
+            var data = _rawFile.GetChromatogramData(new IChromatogramSettings[] { settings }, -1, -1);
 
             // Split the data into the chromatograms
             var trace = ChromatogramSignal.FromChromatogramData(data);
@@ -1103,7 +1103,12 @@ namespace ThermoRawFileParser.Writer
         /// <returns>The SpectrumType object</returns>
         private SpectrumType ConstructMSSpectrum(int scanNumber)
         {
-            var s = new MassSpectrum(_rawFile, scanNumber, !ParseInput.NoPeakPicking);
+            var spectrum = new MassSpectrum(_rawFile, scanNumber, !ParseInput.NoPeakPicking);
+
+            return spectrum.ToSpectrumType(!ParseInput.NoZlibCompression);
+        } 
+        private SpectrumType ConstructMSSpectrum2(int scanNumber)
+        {
             // Get each scan from the RAW file
             var scan = Scan.FromFile(_rawFile, scanNumber);
 
