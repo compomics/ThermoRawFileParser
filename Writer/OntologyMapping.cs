@@ -523,6 +523,15 @@ namespace ThermoRawFileParser.Writer
                         cvRef = "MS",
                         value = ""
                     }
+                },
+                {
+                    "ORBITRAP ID-X", new CVParamType
+                    {
+                        accession = "MS:1003112",
+                        name = "Orbitrap ID-X",
+                        cvRef = "MS",
+                        value = ""
+                    }
                 }
             };
 
