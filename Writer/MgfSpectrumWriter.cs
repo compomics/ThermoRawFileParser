@@ -20,6 +20,7 @@ namespace ThermoRawFileParser.Writer
 
         public MgfSpectrumWriter(ParseInput parseInput) : base(parseInput)
         {
+            ParseInput.MsLevel.Remove(1); //MS1 spectra are not supposed to be in MGF
         }
 
         /// <inheritdoc />       
@@ -60,7 +61,7 @@ namespace ThermoRawFileParser.Writer
                     var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
 
                     // don't include MS1 spectra
-                    if (scanFilter.MSOrder != MSOrderType.Ms)
+                    if (ParseInput.MsLevel.Contains((int)scanFilter.MSOrder))
                     {
                         IReaction reaction = GetReaction(scanEvent, scanNumber);
 

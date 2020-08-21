@@ -334,7 +334,8 @@ namespace ThermoRawFileParser.Writer
                     }
 
                     var spectrum = ConstructMSSpectrum(scanNumber);
-                    if (spectrum != null)
+                    var level = int.Parse(spectrum.cvParam.Where(p => p.accession == "MS:1000511").First().value);
+                    if (spectrum != null && ParseInput.MsLevel.Contains(level))
                     {
                         spectrum.index = index.ToString();
                         if (_doIndexing)

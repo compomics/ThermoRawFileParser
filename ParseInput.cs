@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using ThermoRawFileParser.Writer;
 
@@ -6,6 +7,9 @@ namespace ThermoRawFileParser
 {
     public class ParseInput
     {
+        //all ms levels
+        private readonly HashSet<int> allLevels = new HashSet<int>(new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+
         /// <summary>
         /// The RAW file path.
         /// </summary>
@@ -71,6 +75,8 @@ namespace ThermoRawFileParser
 
         public bool IgnoreInstrumentErrors { get; set; }
 
+        public HashSet<int> MsLevel { get; set; }
+
         private S3Loader S3Loader { get; set; }
 
         public string S3AccessKeyId { get; set; }
@@ -101,6 +107,7 @@ namespace ThermoRawFileParser
             LogFormat = LogFormat.DEFAULT;
             IgnoreInstrumentErrors = false;
             AllDetectors = false;
+            MsLevel = allLevels;
         }
 
         public ParseInput(string rawFilePath, string rawDirectoryPath, string outputDirectory, OutputFormat outputFormat
