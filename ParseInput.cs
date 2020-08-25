@@ -77,6 +77,8 @@ namespace ThermoRawFileParser
 
         public HashSet<int> MsLevel { get; set; }
 
+        public bool MGFPrecursor { get; set; }
+
         private S3Loader S3Loader { get; set; }
 
         public string S3AccessKeyId { get; set; }

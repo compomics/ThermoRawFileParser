@@ -430,6 +430,11 @@ namespace ThermoRawFileParser
                     v => parseInput.MsLevel = ParseMsLevel(v)
                 },
                 {
+                    "P|mgfPrecursor",
+                    "Write precursor scan in MGF file",
+                    v => parseInput.MGFPrecursor = v != null
+                },
+                {
                     "u:|s3_url:",
                     "Optional property to write directly the data into S3 Storage.",
                     v => parseInput.S3Url = v
