@@ -125,7 +125,10 @@ namespace ThermoRawFileParser.Writer
                         IReaction reaction = GetReaction(scanEvent, scanNumber);
 
                         Writer.WriteLine("BEGIN IONS");
-                        Writer.WriteLine($"TITLE={ConstructSpectrumTitle((int)Device.MS, 1, scanNumber)}");
+                        if
+                            (ParseInput.MGFPrecursor) Writer.WriteLine($"TITLE={ConstructSpectrumTitle((int)Device.MS, 1, scanNumber)} [PRECURSOR={spectrumRef}]");
+                        else
+                            Writer.WriteLine($"TITLE={ConstructSpectrumTitle((int)Device.MS, 1, scanNumber)}");
                         Writer.WriteLine($"SCANS={scanNumber}");
                         Writer.WriteLine(
                             $"RTINSECONDS={(time * 60).ToString(CultureInfo.InvariantCulture)}");
@@ -178,8 +181,6 @@ namespace ThermoRawFileParser.Writer
 
                             Writer.WriteLine($"CHARGE={charge}{polarity}");
                         }
-
-                        if(ParseInput.MGFPrecursor) Writer.WriteLine($"PRECURSORTITLE={spectrumRef}");
 
                         // write the filter string
                         //Writer.WriteLine($"SCANEVENT={scanEvent.ToString()}");
