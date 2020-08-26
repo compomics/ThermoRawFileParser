@@ -1,7 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Net.PeerToPeer.Collaboration;
 using System.Xml.Serialization;
 using IO.Mgf;
+using MzLibUtil;
 using NUnit.Framework;
 using ThermoRawFileParser;
 using ThermoRawFileParser.Writer.MzML;
@@ -66,6 +69,8 @@ namespace ThermoRawFileParserTest
 
             Assert.AreEqual("1", testMzMl.run.chromatogramList.count);
             Assert.AreEqual(1, testMzMl.run.chromatogramList.chromatogram.Length);
+
+            Assert.AreEqual(48, testMzMl.run.chromatogramList.chromatogram[0].defaultArrayLength);
         }
 
         [Test]
@@ -97,6 +102,37 @@ namespace ThermoRawFileParserTest
             Assert.AreEqual(48, testMzMl.indexList.index[0].offset.Length);
             Assert.AreEqual("chromatogram", testMzMl.indexList.index[1].name.ToString());
             Assert.AreEqual(1, testMzMl.indexList.index[1].offset.Length);
+        }
+
+        [Test]
+        public void TestMzML_MS2()
+        {
+            // Get temp path for writing the test mzML
+            var tempFilePath = Path.GetTempPath();
+
+            var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data/small2.RAW");
+            var parseInput = new ParseInput(testRawFile, null, tempFilePath, OutputFormat.MzML);
+
+            RawFileParser.Parse(parseInput);
+
+            // Deserialize the mzML file
+            var xmlSerializer = new XmlSerializer(typeof(mzMLType));
+            var testMzMl = (mzMLType)xmlSerializer.Deserialize(new FileStream(
+                Path.Combine(tempFilePath, "small2.mzML"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+
+            Assert.AreEqual(95, testMzMl.run.spectrumList.spectrum.Length);
+
+            var precursor = testMzMl.run.spectrumList.spectrum[16].precursorList.precursor[0].selectedIonList.selectedIon[0];
+            var selectedMz = Double.Parse(precursor.cvParam.Where(cv => cv.accession == "MS:1000744").First().value);
+            Assert.IsTrue(selectedMz - 604.7592 < 0.001);
+
+            var selectedZ = int.Parse(precursor.cvParam.Where(cv => cv.accession == "MS:1000041").First().value);
+            Assert.AreEqual(selectedZ , 2);
+
+            //var selectedI = Double.Parse(precursor.cvParam.Where(cv => cv.accession == "MS:1000042").First().value);
+            //Assert.IsTrue(selectedI - 10073 < 1);
+
+            Assert.AreEqual(95, testMzMl.run.chromatogramList.chromatogram[0].defaultArrayLength);
         }
     }
 }

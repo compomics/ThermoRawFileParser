@@ -97,9 +97,9 @@ namespace ThermoRawFileParser.Writer
         /// Construct the spectrum title.
         /// </summary>
         /// <param name="scanNumber">the spectrum scan number</param>
-        protected static string ConstructSpectrumTitle(int scanNumber)
+        protected static string ConstructSpectrumTitle(int instrumentType, int instrumentNumber, int scanNumber)
         {
-            return "controllerType=0 controllerNumber=1 scan=" + scanNumber;
+            return String.Format("controllerType={0} controllerNumber={1} scan={2}", instrumentType, instrumentNumber, scanNumber);
         }
 
         /// <summary>
@@ -178,52 +178,40 @@ namespace ThermoRawFileParser.Writer
             double precursorMass)
         {
             double? precursorIntensity = null;
+            double tolerance;
 
-            // Get the scan from the RAW file
+            // Get the precursor scan from the RAW file
             var scan = Scan.FromFile(rawFile, precursorScanNumber);
 
-            // Check if the scan has a centroid stream
+            //Select centroid stream if it exists, otherwise use profile one
+            double[] masses;
+            double[] intensities;
+
             if (scan.HasCentroidStream)
             {
-                var centroidStream = rawFile.GetCentroidStream(precursorScanNumber, false);
-                if (scan.CentroidScan.Length > 0)
-                {
-                    for (var i = 0; i < centroidStream.Length; i++)
-                    {
-                        if (Math.Abs(precursorMass - centroidStream.Masses[i]) < Tolerance)
-                        {
-                            //Console.WriteLine(Math.Abs(precursorMass - centroidStream.Masses[i]));
-                            //Console.WriteLine(precursorMass + " - " + centroidStream.Masses[i] + " - " +
-                            //                  centroidStream.Intensities[i]);
-                            precursorIntensity = centroidStream.Intensities[i];
-                            break;
-                        }
-                    }
-                }
+                masses = scan.CentroidScan.Masses;
+                intensities = scan.CentroidScan.Intensities;
+                tolerance = 0.01; //high resolution scan
             }
             else
             {
-                rawFile.SelectInstrument(Device.MS, 1);
+                masses = scan.SegmentedScan.Positions;
+                intensities = scan.SegmentedScan.Intensities;
+                tolerance = 0.5; //low resolution scan
+            }
 
-                IChromatogramSettings[] allSettings =
+            //find closest peak in a stream
+            var bestDelta = tolerance;
+            for (var i = 0; i < masses.Length; i++)
+            {
+                var delta = precursorMass - masses[i];
+                if (Math.Abs(delta) < bestDelta)
                 {
-                    new ChromatogramTraceSettings(TraceType.BasePeak)
-                    {
-                        Filter = MsFilter,
-                        MassRanges = new[]
-                        {
-                            new Range(precursorMass, precursorMass)
-                        }
-                    }
-                };
-
-                var data = rawFile.GetChromatogramData(allSettings, precursorScanNumber,
-                    precursorScanNumber);
-                var chromatogramTrace = ChromatogramSignal.FromChromatogramData(data);
-                if (!chromatogramTrace.IsNullOrEmpty())
-                {
-                    precursorIntensity = chromatogramTrace[0].Intensities[0];
+                    bestDelta = delta;
+                    precursorIntensity = intensities[i];
                 }
+
+                if (delta < -1 * tolerance) break;
             }
 
             return precursorIntensity;

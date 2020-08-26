@@ -228,6 +228,15 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
+                    "LTQ ORBITRAP CLASSIC", new CVParamType
+                    {
+                        accession = "MS:1002835",
+                        name = "LTQ Orbitrap Classic",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
                     "LTQ ORBITRAP DISCOVERY", new CVParamType
                     {
                         accession = "MS:1000555",
@@ -273,7 +282,43 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
+                    "ORBITRAP VELOS", new CVParamType
+                    {
+                        accession = "MS:1001742",
+                        name = "LTQ Orbitrap Velos",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "LTQ ORBITRAP VELOS PRO", new CVParamType
+                    {
+                        accession = "MS:1003096",
+                        name = "LTQ Orbitrap Velos Pro",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "ORBITRAP VELOS PRO", new CVParamType
+                    {
+                        accession = "MS:1003096",
+                        name = "LTQ Orbitrap Velos Pro",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
                     "LTQ ORBITRAP ELITE", new CVParamType
+                    {
+                        accession = "MS:1001910",
+                        name = "LTQ Orbitrap Elite",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "ORBITRAP ELITE", new CVParamType
                     {
                         accession = "MS:1001910",
                         name = "LTQ Orbitrap Elite",
@@ -295,6 +340,15 @@ namespace ThermoRawFileParser.Writer
                     {
                         accession = "MS:1000450",
                         name = "LXQ",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "LTQ XL", new CVParamType
+                    {
+                        accession = "MS:1000854",
+                        name = "LTQ XL",
                         cvRef = "MS",
                         value = ""
                     }
@@ -327,6 +381,15 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
+                    "LTQ VELOS ETD", new CVParamType
+                    {
+                        accession = "MS:1000856",
+                        name = "LTQ Velos ETD",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
                     "ORBITRAP FUSION", new CVParamType
                     {
                         accession = "MS:1002416",
@@ -354,6 +417,33 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
+                    "ORBITRAP ECLIPSE", new CVParamType
+                    {
+                        accession = "MS:1003029",
+                        name = "Orbitrap Eclipse",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "ORBITRAP EXPLORIS 120", new CVParamType
+                    {
+                        accession = "MS:1003095",
+                        name = "Orbitrap Exploris 120",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                                {
+                    "ORBITRAP EXPLORIS 240", new CVParamType
+                    {
+                        accession = "MS:1003094",
+                        name = "Orbitrap Exploris 240",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
                     "ORBITRAP EXPLORIS 480", new CVParamType
                     {
                         accession = "MS:1003028",
@@ -367,6 +457,15 @@ namespace ThermoRawFileParser.Writer
                     {
                         accession = "MS:1000649",
                         name = "Exactive",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "EXACTIVE PLUS", new CVParamType
+                    {
+                        accession = "MS:1002526",
+                        name = "Exactive Plus",
                         cvRef = "MS",
                         value = ""
                     }
@@ -392,8 +491,8 @@ namespace ThermoRawFileParser.Writer
                 {
                     "Q EXACTIVE PLUS ORBITRAP", new CVParamType
                     {
-                        accession = "MS:1001911",
-                        name = "Q Exactive",
+                        accession = "MS:1002634",
+                        name = "Q Exactive Plus",
                         cvRef = "MS",
                         value = ""
                     }
@@ -424,6 +523,15 @@ namespace ThermoRawFileParser.Writer
                         cvRef = "MS",
                         value = ""
                     }
+                },
+                {
+                    "ORBITRAP ID-X", new CVParamType
+                    {
+                        accession = "MS:1003112",
+                        name = "Orbitrap ID-X",
+                        cvRef = "MS",
+                        value = ""
+                    }
                 }
             };
 
@@ -435,13 +543,14 @@ namespace ThermoRawFileParser.Writer
         public static CVParamType getInstrumentModel(string instrumentName)
         {
             CVParamType instrumentModel;
+            instrumentName = instrumentName.ToUpper();
             if (OntologyMapping.InstrumentModels.ContainsKey(instrumentName))
             {
-                instrumentModel = OntologyMapping.InstrumentModels[instrumentName.ToUpper()];
+                instrumentModel = OntologyMapping.InstrumentModels[instrumentName];
             }
             else
             {
-                var longestMatch = InstrumentModels.Where(pair => instrumentName.ToUpper().Contains(pair.Key))
+                var longestMatch = InstrumentModels.Where(pair => instrumentName.Contains(pair.Key))
                     .Select(pair => pair.Key)
                     .Aggregate("", (max, current) => max.Length > current.Length ? max : current);
                 if (!longestMatch.IsNullOrEmpty())
@@ -477,8 +586,10 @@ namespace ThermoRawFileParser.Writer
                 case "MS:1000448":
                 // LTQ FT ULTRA    
                 case "MS:1000557":
-                // LTQ ORBITRAP    
+                // LTQ ORBITRAP 
                 case "MS:1000449":
+                // LTQ ORBITRAP CLASSIC
+                case "MS:1002835":
                 // LTQ ORBITRAP DISCOVERY   
                 case "MS:1000555":
                 // LTQ ORBITRAP XL   
@@ -489,6 +600,8 @@ namespace ThermoRawFileParser.Writer
                 case "MS:1000643":
                 // LTQ ORBITRAP VELOS    
                 case "MS:1001742":
+                // LTQ ORBITRAP VELOS PRO
+                case "MS:1003096":
                 // LTQ ORBITRAP ELITE    
                 case "MS:1001910":
                 // ORBITRAP FUSION
@@ -497,7 +610,13 @@ namespace ThermoRawFileParser.Writer
                 case "MS:1002417":
                 // ORBITRAP FUSION LUMOS
                 case "MS:1002732":
-                // ORBITRAP EXPLORIS 480    
+                // ORBITRAP ECLIPSE    
+                case "MS:1003029":
+                // ORBITRAP EXPLORIS 120
+                case "MS:1003095":
+                // ORBITRAP EXPLORIS 240
+                case "MS:1003094":
+                // ORBITRAP EXPLORIS 480
                 case "MS:1003028":
                     detectors = new List<CVParamType>
                     {
@@ -519,6 +638,8 @@ namespace ThermoRawFileParser.Writer
                     break;
                 // EXACTIVE
                 case "MS:1000649":
+                // EXACTIVE PLUS
+                case "MS:1002526":
                 // Q EXACTIVE
                 case "MS:1001911":
                 // Q EXACTIVE HF    
@@ -540,9 +661,15 @@ namespace ThermoRawFileParser.Writer
                     break;
                 // LTQ
                 case "MS:1000447":
+                // LTQ VELOS
+                case "MS:1000855":
+                // LTQ VELOS ETD
+                case "MS:1000856":
                 // LXQ    
                 case "MS:1000450":
-                // LTQ XL ETD    
+                // LTQ XL
+                case "MS:1000854":
+                // LTQ XL ETD
                 case "MS:1000638":
                 // MALDI LTQ XL    
                 case "MS:1000642":

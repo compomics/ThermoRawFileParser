@@ -2,6 +2,6 @@
 bin/
 obj/
 *.log
-ThermoRawFileParser.sln.DotSettings.user
+*.sln.DotSettings.user
 .vs/
-
+*.csproj.user

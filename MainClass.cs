@@ -17,7 +17,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.2.3";
+        public const string Version = "1.3.0";
 
         public static void Main(string[] args)
         {
@@ -410,6 +410,11 @@ namespace ThermoRawFileParser
                     v => parseInput.NoZlibCompression = v != null
                 },
                 {
+                    "a|allDetectors",
+                    "Extract additonal detector data: UV/PDA etc",
+                    v => parseInput.AllDetectors = v != null
+                },
+                {
                     "l=|logging=", "Optional logging level: 0 for silent, 1 for verbose.",
                     v => logFormatString = v
                 },
@@ -499,7 +504,7 @@ namespace ThermoRawFileParser
                 {
                     if (parseInput.RawFilePath != null)
                     {
-                        parseInput.OutputDirectory = Path.GetDirectoryName(parseInput.RawFilePath);
+                        parseInput.OutputDirectory = Path.GetDirectoryName(Path.GetFullPath(parseInput.RawFilePath));
                     }
                     else if (parseInput.RawDirectoryPath != null)
                     {
