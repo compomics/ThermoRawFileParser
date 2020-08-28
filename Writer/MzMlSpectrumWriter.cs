@@ -593,7 +593,17 @@ namespace ThermoRawFileParser.Writer
 
             _rawFile.SelectInstrument(Device.MS, 1);
 
-            numScans += 1 + _rawFile.RunHeader.LastSpectrum - _rawFile.RunHeader.FirstSpectrum;
+            var levelFilter = _rawFile.GetFilterFromString("");
+
+            foreach (var level in ParseInput.MsLevel)
+            {
+                levelFilter.MSOrder = (MSOrderType)level;
+
+                var filteredScans = _rawFile.GetFilteredScansListByScanRange(levelFilter, _rawFile.RunHeader.FirstSpectrum, _rawFile.RunHeader.LastSpectrum);
+
+                numScans += filteredScans.Count;
+            }
+            
 
             if (ParseInput.AllDetectors)
             {
