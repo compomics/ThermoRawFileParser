@@ -71,7 +71,7 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
   -z, --noZlibCompression    Don't use zlib compression for the m/z ratios and
                                intensities. By default zlib compression is
                                enabled.
-  -a, --allDetectors         Extract additonal detector data: UV/PDA etc
+  -a, --allDetectors         Extract additional detector data: UV/PDA etc
   -l, --logging=VALUE        Optional logging level: 0 for silent, 1 for
                                verbose.
   -e, --ignoreInstrumentErrors
