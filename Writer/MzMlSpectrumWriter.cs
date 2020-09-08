@@ -334,7 +334,10 @@ namespace ThermoRawFileParser.Writer
                     }
 
                     var spectrum = ConstructMSSpectrum(scanNumber);
-                    if (spectrum != null)
+                    
+                    var level = int.Parse(spectrum.cvParam.Where(p => p.accession == "MS:1000511").First().value);
+                    
+                    if (spectrum != null && ParseInput.MsLevel.Contains(level)) //applying MS level filter
                     {
                         spectrum.index = index.ToString();
                         if (_doIndexing)
@@ -590,7 +593,17 @@ namespace ThermoRawFileParser.Writer
 
             _rawFile.SelectInstrument(Device.MS, 1);
 
-            numScans += 1 + _rawFile.RunHeader.LastSpectrum - _rawFile.RunHeader.FirstSpectrum;
+            var levelFilter = _rawFile.GetFilterFromString("");
+
+            foreach (var level in ParseInput.MsLevel)
+            {
+                levelFilter.MSOrder = (MSOrderType)level;
+
+                var filteredScans = _rawFile.GetFilteredScansListByScanRange(levelFilter, _rawFile.RunHeader.FirstSpectrum, _rawFile.RunHeader.LastSpectrum);
+
+                numScans += filteredScans.Count;
+            }
+            
 
             if (ParseInput.AllDetectors)
             {

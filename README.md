@@ -76,6 +76,11 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
                                verbose.
   -e, --ignoreInstrumentErrors
                              Ignore missing properties by the instrument.
+  -L, --msLevel=VALUE        Select MS levels (MS1, MS2, etc) included in the
+                               output, should be a comma-separated list of
+                               integers ( 1,2,3 ) and/or intervals ( 1-3 ),
+                               open-end intervals ( 1- ) are allowed
+  -P, --mgfPrecursor         Include precursor scan number in MGF file TITLE
   -u, --s3_url[=VALUE]       Optional property to write directly the data into
                                S3 Storage.
   -k, --s3_accesskeyid[=VALUE]

@@ -9,6 +9,8 @@ using System.Linq;
 using ThermoRawFileParser.Query;
 using ThermoRawFileParser.XIC;
 using System.Globalization;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace ThermoRawFileParser
 {
@@ -17,7 +19,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.3.0";
+        public const string Version = "1.3.1";
 
         public static void Main(string[] args)
         {
@@ -411,7 +413,7 @@ namespace ThermoRawFileParser
                 },
                 {
                     "a|allDetectors",
-                    "Extract additonal detector data: UV/PDA etc",
+                    "Extract additional detector data: UV/PDA etc",
                     v => parseInput.AllDetectors = v != null
                 },
                 {
@@ -421,6 +423,16 @@ namespace ThermoRawFileParser
                 {
                     "e|ignoreInstrumentErrors", "Ignore missing properties by the instrument.",
                     v => parseInput.IgnoreInstrumentErrors = v != null
+                },
+                {
+                    "L=|msLevel=",
+                    "Select MS levels (MS1, MS2, etc) included in the output, should be a comma-separated list of integers ( 1,2,3 ) and/or intervals ( 1-3 ), open-end intervals ( 1- ) are allowed",
+                    v => parseInput.MsLevel = ParseMsLevel(v)
+                },
+                {
+                    "P|mgfPrecursor",
+                    "Include precursor scan number in MGF file TITLE",
+                    v => parseInput.MGFPrecursor = v != null
                 },
                 {
                     "u:|s3_url:",
@@ -755,6 +767,65 @@ namespace ThermoRawFileParser
             Console.Error.WriteLine(message);
             optionSet.WriteOptionDescriptions(Console.Error);
             Environment.Exit(-1);
+        }
+
+        private static HashSet<int> ParseMsLevel(string inputString)
+        {
+            HashSet<int> result = new HashSet<int>();
+            Regex valid = new Regex(@"^[\d,\-\s]+$");
+            Regex interval = new Regex(@"^\s*(\d+)?\s*(-)?\s*(\d+)?\s*$");
+
+            if (!valid.IsMatch(inputString))
+                throw new OptionException("Invalid characters in msLevel key", "msLevel");
+
+            foreach (var piece in inputString.Split(new char[] { ',' }))
+            {
+                try
+                {
+                    int start;
+                    int end;
+
+                    var intervalMatch = interval.Match(piece);
+
+                    if (!intervalMatch.Success)
+                        throw new OptionException();
+
+                    if (intervalMatch.Groups[2].Success) //it is interval
+                    {
+                        if (intervalMatch.Groups[1].Success)
+                            start = Math.Max(1, int.Parse(intervalMatch.Groups[1].Value));
+                        else
+                            start = 1;
+
+                        if (intervalMatch.Groups[3].Success)
+                            end = Math.Min(10, int.Parse(intervalMatch.Groups[3].Value));
+                        else
+                            end = 10;
+                    }
+                    else
+                    {
+                        if (intervalMatch.Groups[1].Success)
+                            end = start = int.Parse(intervalMatch.Groups[1].Value);
+                        else
+                            throw new OptionException();
+
+                        if (intervalMatch.Groups[3].Success)
+                            throw new OptionException();
+                    }
+
+                    for (int l = start; l <= end; l++)
+                    {
+                        result.Add(l);
+                    }
+                }
+
+                catch (Exception ex)
+                {
+                    throw new OptionException(String.Format("Cannot parse part of msLevel input: '{0}'", piece), "msLevel", ex);
+                }
+            }
+
+            return result;
         }
     }
 }
