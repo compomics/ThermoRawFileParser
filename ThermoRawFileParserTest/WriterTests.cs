@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.PeerToPeer.Collaboration;
@@ -69,6 +70,57 @@ namespace ThermoRawFileParserTest
 
             Assert.AreEqual("1", testMzMl.run.chromatogramList.count);
             Assert.AreEqual(1, testMzMl.run.chromatogramList.chromatogram.Length);
+
+            Assert.AreEqual(48, testMzMl.run.chromatogramList.chromatogram[0].defaultArrayLength);
+        }
+
+        [Test]
+        public void TestProfileMzml()
+        {
+            // Get temp path for writing the test mzML
+            var tempFilePath = Path.GetTempPath();
+
+            var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data/small.RAW");
+            var parseInput = new ParseInput(testRawFile, null, tempFilePath, OutputFormat.MzML);
+
+            parseInput.NoPeakPicking = true;
+
+            RawFileParser.Parse(parseInput);
+
+            // Deserialize the mzML file
+            var xmlSerializer = new XmlSerializer(typeof(mzMLType));
+            var testMzMl = (mzMLType)xmlSerializer.Deserialize(new FileStream(
+                Path.Combine(tempFilePath, "small.mzML"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+
+            Assert.AreEqual("48", testMzMl.run.spectrumList.count);
+            Assert.AreEqual(48, testMzMl.run.spectrumList.spectrum.Length);
+
+            Assert.AreEqual("1", testMzMl.run.chromatogramList.count);
+            Assert.AreEqual(1, testMzMl.run.chromatogramList.chromatogram.Length);
+
+            Assert.AreEqual(48, testMzMl.run.chromatogramList.chromatogram[0].defaultArrayLength);
+        }
+
+        [Test]
+        public void TestMSLevels()
+        {
+            // Get temp path for writing the test mzML
+            var tempFilePath = Path.GetTempPath();
+
+            var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data/small.RAW");
+            var parseInput = new ParseInput(testRawFile, null, tempFilePath, OutputFormat.MzML);
+
+            parseInput.MsLevel = new HashSet<int> { 1 };
+
+            RawFileParser.Parse(parseInput);
+
+            // Deserialize the mzML file
+            var xmlSerializer = new XmlSerializer(typeof(mzMLType));
+            var testMzMl = (mzMLType)xmlSerializer.Deserialize(new FileStream(
+                Path.Combine(tempFilePath, "small.mzML"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+
+            Assert.AreEqual("14", testMzMl.run.spectrumList.count);
+            Assert.AreEqual(14, testMzMl.run.spectrumList.spectrum.Length);
 
             Assert.AreEqual(48, testMzMl.run.chromatogramList.chromatogram[0].defaultArrayLength);
         }

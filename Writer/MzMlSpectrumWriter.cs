@@ -293,10 +293,10 @@ namespace ThermoRawFileParser.Writer
                         name = "peak picking",
                         value = ""
                     });
+                    _writer.WriteEndElement(); // processingMethod
                 }
-                _writer.WriteEndElement(); // processingMethod                
-                _writer.WriteEndElement(); // dataProcessing                
-                _writer.WriteEndElement(); // dataProcessingList                
+                _writer.WriteEndElement(); // dataProcessing
+                _writer.WriteEndElement(); // dataProcessingList
 
                 // run
                 _writer.WriteStartElement("run");
