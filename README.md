@@ -76,6 +76,7 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
                                verbose.
   -e, --ignoreInstrumentErrors
                              Ignore missing properties by the instrument.
+  -x, --includeExceptionData Include reference and exception data
   -L, --msLevel=VALUE        Select MS levels (MS1, MS2, etc) included in the
                                output, should be a comma-separated list of
                                integers ( 1,2,3 ) and/or intervals ( 1-3 ),

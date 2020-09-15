@@ -19,7 +19,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.3.1";
+        public const string Version = "1.3.2";
 
         public static void Main(string[] args)
         {
@@ -423,6 +423,10 @@ namespace ThermoRawFileParser
                 {
                     "e|ignoreInstrumentErrors", "Ignore missing properties by the instrument.",
                     v => parseInput.IgnoreInstrumentErrors = v != null
+                },
+                {
+                    "x|includeExceptionData", "Include reference and exception data",
+                    v => parseInput.ExData = v != null
                 },
                 {
                     "L=|msLevel=",
