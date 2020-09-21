@@ -612,12 +612,8 @@ namespace ThermoRawFileParser.Writer
                 case "MS:1002732":
                 // ORBITRAP ECLIPSE    
                 case "MS:1003029":
-                // ORBITRAP EXPLORIS 120
-                case "MS:1003095":
-                // ORBITRAP EXPLORIS 240
-                case "MS:1003094":
-                // ORBITRAP EXPLORIS 480
-                case "MS:1003028":
+                // ORBITRAP ID-X
+                case "MS:1003112":
                     detectors = new List<CVParamType>
                     {
                         new CVParamType
@@ -648,6 +644,12 @@ namespace ThermoRawFileParser.Writer
                 case "MS:1002877":
                 // Q EXACTIVE PLUS    
                 case "MS:1002634":
+                // ORBITRAP EXPLORIS 120
+                case "MS:1003095":
+                // ORBITRAP EXPLORIS 240
+                case "MS:1003094":
+                // ORBITRAP EXPLORIS 480
+                case "MS:1003028":
                     detectors = new List<CVParamType>
                     {
                         new CVParamType
