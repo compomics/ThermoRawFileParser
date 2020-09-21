@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
@@ -23,9 +24,10 @@ namespace ThermoRawFileParser
             {
                 Log.Info("Started analyzing folder " + parseInput.RawDirectoryPath);
 
-                var rawFilesPath =
-                    Directory.EnumerateFiles(parseInput.RawDirectoryPath);
-                if (Directory.GetFiles(parseInput.RawDirectoryPath, "*", SearchOption.TopDirectoryOnly).Length == 0)
+                var rawFilesPath = Directory.EnumerateFiles(parseInput.RawDirectoryPath, "*", SearchOption.TopDirectoryOnly).Where(s => s.ToLower().EndsWith("raw")).ToArray();
+                Log.Info(String.Format("The folder contains {0} RAW files", rawFilesPath.Length));
+
+                if (rawFilesPath.Length == 0)
                 {
                     Log.Debug("No raw files found in folder");
                     throw new RawFileParserException("No raw files found in folder!");

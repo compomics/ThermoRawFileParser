@@ -56,6 +56,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>ThermoRawFileParser.MainClass</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="AWS.Logger.Core, Version=1.4.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604">
       <HintPath>packages\AWS.Logger.Core.1.4.0\lib\net45\AWS.Logger.Core.dll</HintPath>
