@@ -1177,7 +1177,7 @@ namespace ThermoRawFileParser.Writer
                 //tune version < 3 produced trailer entry like "SPS Mass #", one entry per mass
                 if (SPSentry.IsMatch(trailerData.Labels[i]))
                 {
-                    var mass = Double.Parse(trailerData.Values[i]);
+                    var mass = double.Parse(trailerData.Values[i]);
                     if (mass > 0)  SPSMasses.Add(mass); //zero means mass does not exist
                 }
 
@@ -1186,7 +1186,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     foreach (var mass in trailerData.Values[i].Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                     {
-                        SPSMasses.Add(Double.Parse(mass));
+                        SPSMasses.Add(double.Parse(mass));
                     }
                     
                 }

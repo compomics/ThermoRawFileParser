@@ -782,7 +782,7 @@ namespace ThermoRawFileParser
             if (!valid.IsMatch(inputString))
                 throw new OptionException("Invalid characters in msLevel key", "msLevel");
 
-            foreach (var piece in inputString.Split(new char[] { ',' }))
+            foreach (var piece in inputString.Split(new char[] {','}))
             {
                 try
                 {
@@ -825,7 +825,8 @@ namespace ThermoRawFileParser
 
                 catch (Exception ex)
                 {
-                    throw new OptionException(String.Format("Cannot parse part of msLevel input: '{0}'", piece), "msLevel", ex);
+                    throw new OptionException(String.Format("Cannot parse part of msLevel input: '{0}'", piece),
+                        "msLevel", ex);
                 }
             }
 

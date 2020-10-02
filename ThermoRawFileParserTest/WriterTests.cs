@@ -44,8 +44,8 @@ namespace ThermoRawFileParserTest
 
             RawFileParser.Parse(parseInput);
 
-            var numfiles = Directory.GetFiles(tempFilePath, "*.mgf");
-            Assert.AreEqual(numfiles.Length, 2);
+            var numFiles = Directory.GetFiles(tempFilePath, "*.mgf");
+            Assert.AreEqual(numFiles.Length, 2);
 
             var mgfData = Mgf.LoadAllStaticData(Path.Combine(tempFilePath, "small1.mgf"));
             Assert.AreEqual(34, mgfData.NumSpectra);

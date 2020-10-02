@@ -24,7 +24,9 @@ namespace ThermoRawFileParser
             {
                 Log.Info("Started analyzing folder " + parseInput.RawDirectoryPath);
 
-                var rawFilesPath = Directory.EnumerateFiles(parseInput.RawDirectoryPath, "*", SearchOption.TopDirectoryOnly).Where(s => s.ToLower().EndsWith("raw")).ToArray();
+                var rawFilesPath = Directory
+                    .EnumerateFiles(parseInput.RawDirectoryPath, "*", SearchOption.TopDirectoryOnly)
+                    .Where(s => s.ToLower().EndsWith("raw")).ToArray();
                 Log.Info(String.Format("The folder contains {0} RAW files", rawFilesPath.Length));
 
                 if (rawFilesPath.Length == 0)

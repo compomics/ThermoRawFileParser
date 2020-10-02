@@ -2,7 +2,7 @@
 
 Wrapper around the .net (C#) ThermoFisher ThermoRawFileReader library for running on Linux with mono (works on Windows too). It takes a thermo RAW file as input and outputs a metadata file and the spectra in 3 possible formats:
 * MGF: MS2 and MS3 spectra
-* mzML and indexed mzML: both MS1, MS2 and MS3 spectra
+* mzML and indexed mzML: MS1, MS2 and MS3 spectra
 * Apache Parquet: under development
 
 As of version 1.2.0, 2 subcommands are available (shoutout to the [eubic 2020 developers meeting](https://eubic-ms.org/events/2020-developers-meeting/), see [usage](#usage) for examples):
@@ -113,7 +113,7 @@ usage is:
                                Thermo library. By default peak picking is
                                enabled.
   -s, --stdout               Pipes the output into standard output. Logging is
-                               being turned off
+                               being turned off.
 ```
 ### xic subcommand
 Return one or more chromatograms based on query JSON input.
