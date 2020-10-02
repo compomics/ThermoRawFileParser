@@ -75,6 +75,8 @@ namespace ThermoRawFileParser
 
         public bool IgnoreInstrumentErrors { get; set; }
 
+        public bool ExData { get; set; }
+
         public HashSet<int> MsLevel { get; set; }
 
         public bool MGFPrecursor { get; set; }

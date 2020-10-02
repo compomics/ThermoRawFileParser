@@ -35,18 +35,25 @@ namespace ThermoRawFileParserTest
         public void TestFolderMgfs()
         {
             // Get temp path for writing the test MGF
-            var tempFilePath = Path.GetTempPath();
+            var tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+            Directory.CreateDirectory(tempFilePath);
 
             var testRawFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data/TestFolderMgfs");
             var parseInput = new ParseInput(null, testRawFolder, tempFilePath, OutputFormat.MGF);
 
             RawFileParser.Parse(parseInput);
 
+            var numFiles = Directory.GetFiles(tempFilePath, "*.mgf");
+            Assert.AreEqual(numFiles.Length, 2);
+
             var mgfData = Mgf.LoadAllStaticData(Path.Combine(tempFilePath, "small1.mgf"));
             Assert.AreEqual(34, mgfData.NumSpectra);
 
             var mgfData2 = Mgf.LoadAllStaticData(Path.Combine(tempFilePath, "small2.mgf"));
             Assert.AreEqual(34, mgfData2.NumSpectra);
+
+            Directory.Delete(tempFilePath, true);
         }
 
         [Test]

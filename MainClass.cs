@@ -19,7 +19,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.3.1";
+        public const string Version = "1.3.2";
 
         public static void Main(string[] args)
         {
@@ -425,6 +425,10 @@ namespace ThermoRawFileParser
                     v => parseInput.IgnoreInstrumentErrors = v != null
                 },
                 {
+                    "x|includeExceptionData", "Include reference and exception data",
+                    v => parseInput.ExData = v != null
+                },
+                {
                     "L=|msLevel=",
                     "Select MS levels (MS1, MS2, etc) included in the output, should be a comma-separated list of integers ( 1,2,3 ) and/or intervals ( 1-3 ), open-end intervals ( 1- ) are allowed",
                     v => parseInput.MsLevel = ParseMsLevel(v)
@@ -778,7 +782,7 @@ namespace ThermoRawFileParser
             if (!valid.IsMatch(inputString))
                 throw new OptionException("Invalid characters in msLevel key", "msLevel");
 
-            foreach (var piece in inputString.Split(new char[] { ',' }))
+            foreach (var piece in inputString.Split(new char[] {','}))
             {
                 try
                 {
@@ -821,7 +825,8 @@ namespace ThermoRawFileParser
 
                 catch (Exception ex)
                 {
-                    throw new OptionException(String.Format("Cannot parse part of msLevel input: '{0}'", piece), "msLevel", ex);
+                    throw new OptionException(String.Format("Cannot parse part of msLevel input: '{0}'", piece),
+                        "msLevel", ex);
                 }
             }
 
