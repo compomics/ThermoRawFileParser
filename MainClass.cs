@@ -430,13 +430,13 @@ namespace ThermoRawFileParser
                 },
                 {
                     "L=|msLevel=",
-                    "Select MS levels (MS1, MS2, etc) included in the output, should be a comma-separated list of integers ( 1,2,3 ) and/or intervals ( 1-3 ), open-end intervals ( 1- ) are allowed",
+                    "Select MS levels (MS1, MS2, etc) included in the output, should be a comma-separated list of integers (1,2,3) and/or intervals (1-3), open-end intervals (1-) are allowed",
                     v => parseInput.MsLevel = ParseMsLevel(v)
                 },
                 {
                     "P|mgfPrecursor",
                     "Include precursor scan number in MGF file TITLE",
-                    v => parseInput.MGFPrecursor = v != null
+                    v => parseInput.MgfPrecursor = v != null
                 },
                 {
                     "u:|s3_url:",
