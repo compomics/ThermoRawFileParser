@@ -79,7 +79,7 @@ namespace ThermoRawFileParser.Writer
             var chromatogramOffSets = new OrderedDictionary();
 
             ConfigureWriter(".mzML");
-
+            
             XmlSerializer serializer;
             var settings = new XmlWriterSettings {Indent = true, Encoding = Encoding.UTF8};
             var sha1 = SHA1.Create();
@@ -1290,34 +1290,36 @@ namespace ThermoRawFileParser.Writer
                 cvRef = "MS"
             });
 
-            double? basePeakMass = null;
-            double? basePeakIntensity = null;
+            double? basePeakMass;
+            double? basePeakIntensity;
             double? lowestObservedMz = null;
             double? highestObservedMz = null;
-            double[] masses = null;
-            double[] intensities = null;
+            double[] masses;
+            double[] intensities;
 
             if (!ParseInput.NoPeakPicking)
             {
+                //Spectrum will be centroided
+                spectrumCvParams.Add(new CVParamType
+                {
+                    accession = "MS:1000127",
+                    cvRef = "MS",
+                    name = "centroid spectrum",
+                    value = ""
+                });
+
                 // Check if the scan has a centroid stream
                 if (scan.HasCentroidStream)
                 {
+                    basePeakMass = scan.CentroidScan.BasePeakMass;
+                    basePeakIntensity = scan.CentroidScan.BasePeakIntensity;
+                    masses = scan.CentroidScan.Masses;
+                    intensities = scan.CentroidScan.Intensities;
+
                     if (scan.CentroidScan.Length > 0)
                     {
-                        spectrumCvParams.Add(new CVParamType
-                        {
-                            accession = "MS:1000127",
-                            cvRef = "MS",
-                            name = "centroid spectrum",
-                            value = ""
-                        });
-
-                        basePeakMass = scan.CentroidScan.BasePeakMass;
-                        basePeakIntensity = scan.CentroidScan.BasePeakIntensity;
                         lowestObservedMz = scan.CentroidScan.Masses[0];
                         highestObservedMz = scan.CentroidScan.Masses[scan.CentroidScan.Masses.Length - 1];
-                        masses = scan.CentroidScan.Masses;
-                        intensities = scan.CentroidScan.Intensities;
                     }
                 }
                 else // otherwise take the segmented (low res) scan
@@ -1330,8 +1332,21 @@ namespace ThermoRawFileParser.Writer
                         ? Scan.ToCentroid(scan).SegmentedScan
                         : scan.SegmentedScan;
 
+                    masses = segmentedScan.Positions;
+                    intensities = segmentedScan.Intensities;
+
                     if (segmentedScan.PositionCount > 0)
                     {
+                        lowestObservedMz = segmentedScan.Positions[0];
+                        highestObservedMz = segmentedScan.Positions[segmentedScan.PositionCount - 1];
+                    }
+                }
+            }
+            else // use the segmented data as is
+            {
+                switch (scanEvent.ScanData) //check if the data centroided already
+                {
+                    case ScanDataType.Centroid:
                         spectrumCvParams.Add(new CVParamType
                         {
                             accession = "MS:1000127",
@@ -1339,47 +1354,28 @@ namespace ThermoRawFileParser.Writer
                             name = "centroid spectrum",
                             value = ""
                         });
-
-                        lowestObservedMz = segmentedScan.Positions[0];
-                        highestObservedMz = segmentedScan.Positions[segmentedScan.PositionCount - 1];
-                        masses = segmentedScan.Positions;
-                        intensities = segmentedScan.Intensities;
-                    }
+                        break;
+                    case ScanDataType.Profile:
+                        spectrumCvParams.Add(new CVParamType
+                        {
+                            accession = "MS:1000128",
+                            cvRef = "MS",
+                            name = "profile spectrum",
+                            value = ""
+                        });
+                        break;
                 }
-            }
-            else // use the segmented data as is
-            {
+
                 basePeakMass = scan.ScanStatistics.BasePeakMass;
                 basePeakIntensity = scan.ScanStatistics.BasePeakIntensity;
+                masses = scan.SegmentedScan.Positions;
+                intensities = scan.SegmentedScan.Intensities;
+
 
                 if (scan.SegmentedScan.Positions.Length > 0)
                 {
-                    switch (scanEvent.ScanData) //check if the data centroided already
-                    {
-                        case ScanDataType.Centroid:
-                            spectrumCvParams.Add(new CVParamType
-                            {
-                                accession = "MS:1000127",
-                                cvRef = "MS",
-                                name = "centroid spectrum",
-                                value = ""
-                            });
-                            break;
-                        case ScanDataType.Profile:
-                            spectrumCvParams.Add(new CVParamType
-                            {
-                                accession = "MS:1000128",
-                                cvRef = "MS",
-                                name = "profile spectrum",
-                                value = ""
-                            });
-                            break;
-                    }
-
                     lowestObservedMz = scan.SegmentedScan.Positions[0];
                     highestObservedMz = scan.SegmentedScan.Positions[scan.SegmentedScan.Positions.Length - 1];
-                    masses = scan.SegmentedScan.Positions;
-                    intensities = scan.SegmentedScan.Intensities;
                 }
             }
 
@@ -1450,7 +1446,7 @@ namespace ThermoRawFileParser.Writer
             var binaryData = new List<BinaryDataArrayType>();
 
             // M/Z Data
-            if (!masses.IsNullOrEmpty())
+            if (masses != null)
             {
                 // Set the spectrum default array length
                 spectrum.defaultArrayLength = masses.Length;
@@ -1458,7 +1454,9 @@ namespace ThermoRawFileParser.Writer
                 var massesBinaryData =
                     new BinaryDataArrayType
                     {
-                        binary = ParseInput.NoZlibCompression ? Get64BitArray(masses) : GetZLib64BitArray(masses)
+                        binary = masses.Length > 0
+                        ? ParseInput.NoZlibCompression ? Get64BitArray(masses) : GetZLib64BitArray(masses)
+                        : new byte[0] // zero length array encoded by GZip produces non-zero length array; some downstream tools do not like it
                     };
                 massesBinaryData.encodedLength =
                     (4 * Math.Ceiling((double) massesBinaryData
@@ -1495,7 +1493,7 @@ namespace ThermoRawFileParser.Writer
             }
 
             // Intensity Data
-            if (!intensities.IsNullOrEmpty())
+            if (intensities != null)
             {
                 // Set the spectrum default array length if necessary
                 if (spectrum.defaultArrayLength == 0)
@@ -1506,9 +1504,9 @@ namespace ThermoRawFileParser.Writer
                 var intensitiesBinaryData =
                     new BinaryDataArrayType
                     {
-                        binary = ParseInput.NoZlibCompression
-                            ? Get64BitArray(intensities)
-                            : GetZLib64BitArray(intensities)
+                        binary = intensities.Length > 0
+                        ? ParseInput.NoZlibCompression ? Get64BitArray(intensities) : GetZLib64BitArray(intensities)
+                        : new byte[0] // zero length array encoded by GZip produces non-zero length array; some downstream tools do not like it
                     };
                 intensitiesBinaryData.encodedLength =
                     (4 * Math.Ceiling((double) intensitiesBinaryData
