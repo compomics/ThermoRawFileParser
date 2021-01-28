@@ -361,7 +361,7 @@ namespace ThermoRawFileParser
                     h => help = h != null
                 },
                 {
-                    "version", "Prints out the library version.",
+                    "version", "Prints out the version of the executable.",
                     v => version = v != null
                 },
                 {
@@ -382,6 +382,11 @@ namespace ThermoRawFileParser
                     "b=|output_file",
                     "The output file. Specify this or an output directory -o. Specifying neither writes to the input directory.",
                     v => parseInput.OutputFile = v
+                },
+                {
+                    "s|stdout",
+                    "Write to standard output. Cannot be combined with file or directory output. Implies silent logging, i.e. logging level 0",
+                    v => parseInput.StdOut = v != null
                 },
                 {
                     "f=|format=",
@@ -474,8 +479,7 @@ namespace ThermoRawFileParser
                 {
                     var helpMessage =
                         $"usage is {Assembly.GetExecutingAssembly().GetName().Name}.exe [subcommand] [options]\noptional subcommands are xic|query (use [subcommand] -h for more info]):";
-                    ShowHelp(helpMessage, null,
-                        optionSet);
+                    ShowHelp(helpMessage, null, optionSet);
                     return;
                 }
 
@@ -514,6 +518,13 @@ namespace ThermoRawFileParser
                     throw new OptionException(
                         "specify a valid input directory",
                         "-d, --input_directory");
+                }
+
+                if (parseInput.StdOut && (parseInput.OutputFile != null || parseInput.OutputDirectory != null))
+                {
+                    throw new OptionException(
+                        "standard output cannot be combined with file or directory output",
+                        "-s, --stdout");
                 }
 
                 if (parseInput.OutputFile == null && parseInput.OutputDirectory == null)
@@ -665,6 +676,11 @@ namespace ThermoRawFileParser
                         throw new OptionException("unknown log format value (0 for silent, 1 for verbose)",
                             "-l, --logging");
                     }
+                }
+
+                if (parseInput.StdOut)
+                {
+                    parseInput.LogFormat = LogFormat.SILENT;
                 }
 
                 if (parseInput.S3Url != null && parseInput.S3AccessKeyId != null &&

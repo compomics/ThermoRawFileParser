@@ -81,6 +81,8 @@ namespace ThermoRawFileParser
 
         public bool MGFPrecursor { get; set; }
 
+        public bool StdOut { get; set; }
+
         private S3Loader S3Loader { get; set; }
 
         public string S3AccessKeyId { get; set; }
@@ -112,6 +114,7 @@ namespace ThermoRawFileParser
             IgnoreInstrumentErrors = false;
             AllDetectors = false;
             MsLevel = allLevels;
+            StdOut = false;
         }
 
         public ParseInput(string rawFilePath, string rawDirectoryPath, string outputDirectory, OutputFormat outputFormat
