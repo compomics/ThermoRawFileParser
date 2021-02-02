@@ -1015,9 +1015,7 @@ namespace ThermoRawFileParser.Writer
                 var timesBinaryData =
                     new BinaryDataArrayType
                     {
-                        binary = ParseInput.NoZlibCompression
-                            ? Get64BitArray(trace.Times)
-                            : GetZLib64BitArray(trace.Times)
+                        binary = ParseInput.NoZlibCompression ? Get64BitArray(trace.Times) : GetZLib64BitArray(trace.Times)
                     };
                 timesBinaryData.encodedLength =
                     (4 * Math.Ceiling((double)timesBinaryData
@@ -1069,9 +1067,7 @@ namespace ThermoRawFileParser.Writer
                 var intensitiesBinaryData =
                     new BinaryDataArrayType
                     {
-                        binary = ParseInput.NoZlibCompression
-                            ? Get64BitArray(trace.Intensities)
-                            : GetZLib64BitArray(trace.Intensities)
+                        binary = ParseInput.NoZlibCompression ? Get64BitArray(trace.Intensities) : GetZLib64BitArray(trace.Intensities)
                     };
                 intensitiesBinaryData.encodedLength =
                     (4 * Math.Ceiling((double)intensitiesBinaryData
@@ -1454,9 +1450,7 @@ namespace ThermoRawFileParser.Writer
                 var massesBinaryData =
                     new BinaryDataArrayType
                     {
-                        binary = masses.Length > 0
-                        ? ParseInput.NoZlibCompression ? Get64BitArray(masses) : GetZLib64BitArray(masses)
-                        : new byte[0] // zero length array encoded by GZip produces non-zero length array; some downstream tools do not like it
+                        binary = ParseInput.NoZlibCompression ? Get64BitArray(masses) : GetZLib64BitArray(masses) 
                     };
                 massesBinaryData.encodedLength =
                     (4 * Math.Ceiling((double) massesBinaryData
@@ -1504,9 +1498,7 @@ namespace ThermoRawFileParser.Writer
                 var intensitiesBinaryData =
                     new BinaryDataArrayType
                     {
-                        binary = intensities.Length > 0
-                        ? ParseInput.NoZlibCompression ? Get64BitArray(intensities) : GetZLib64BitArray(intensities)
-                        : new byte[0] // zero length array encoded by GZip produces non-zero length array; some downstream tools do not like it
+                        binary = ParseInput.NoZlibCompression ? Get64BitArray(intensities) : GetZLib64BitArray(intensities)
                     };
                 intensitiesBinaryData.encodedLength =
                     (4 * Math.Ceiling((double) intensitiesBinaryData
@@ -1725,9 +1717,7 @@ namespace ThermoRawFileParser.Writer
                 var intensitiesBinaryData =
                     new BinaryDataArrayType
                     {
-                        binary = ParseInput.NoZlibCompression
-                            ? Get64BitArray(intensities)
-                            : GetZLib64BitArray(intensities)
+                        binary = ParseInput.NoZlibCompression ? Get64BitArray(intensities) : GetZLib64BitArray(intensities)
                     };
                 intensitiesBinaryData.encodedLength =
                     (4 * Math.Ceiling((double)intensitiesBinaryData
@@ -2294,7 +2284,7 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         /// <param name="array">the double collection</param>
         /// <returns>the byte array</returns>
-        private static byte[] Get64BitArray(IEnumerable<double> array)
+        private static byte[] Get64BitArray(ICollection<double> array)
         {
             byte[] bytes;
 
@@ -2318,8 +2308,11 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         /// <param name="array">the double collection</param>
         /// <returns>the byte array</returns>
-        private static byte[] GetZLib64BitArray(IEnumerable<double> array)
+        private static byte[] GetZLib64BitArray(ICollection<double> array)
         {
+            // zero length array encoded by GZip produces non-zero length array; some downstream tools do not like it
+            if (array.Count == 0) return new byte[0];
+
             byte[] bytes;
 
             using (var memoryStream = new MemoryStream())
