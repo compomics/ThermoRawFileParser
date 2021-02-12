@@ -1147,6 +1147,7 @@ namespace ThermoRawFileParser.Writer
             int? charge = null;
             double? monoisotopicMz = null;
             double? ionInjectionTime = null;
+            double? FAIMSCV = null;
             List<double> SPSMasses = new List<double>();
             for (var i = 0; i < trailerData.Length; i++)
             {
@@ -1167,6 +1168,12 @@ namespace ThermoRawFileParser.Writer
                 if (trailerData.Labels[i] == "Ion Injection Time (ms):")
                 {
                     ionInjectionTime = double.Parse(trailerData.Values[i], NumberStyles.Any,
+                        CultureInfo.CurrentCulture);
+                }
+
+                if (trailerData.Labels[i] == "FAIMS CV:")
+                {
+                    FAIMSCV = double.Parse(trailerData.Values[i], NumberStyles.Any,
                         CultureInfo.CurrentCulture);
                 }
 
@@ -1285,6 +1292,18 @@ namespace ThermoRawFileParser.Writer
                 value = scan.ScanStatistics.TIC.ToString(CultureInfo.InvariantCulture),
                 cvRef = "MS"
             });
+
+            //FAIMS
+            if(FAIMSCV != null)
+            {
+                spectrumCvParams.Add(new CVParamType
+                {
+                    name = "FAIMS compensation voltage",
+                    accession = "MS:1001581",
+                    value = FAIMSCV.ToString(),
+                    cvRef = "MS"
+                });
+            }
 
             double? basePeakMass;
             double? basePeakIntensity;
