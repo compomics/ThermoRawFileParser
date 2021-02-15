@@ -124,7 +124,7 @@ namespace ThermoRawFileParser.Writer
                     URI = @"https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo",
                     fullName = "Mass spectrometry ontology",
                     id = "MS",
-                    version = "4.1.41"
+                    version = "4.1.48"
                 });
                 Serialize(serializer, new CVType
                 {
@@ -258,9 +258,8 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteAttributeString("version", MainClass.Version);
                 SerializeCvParam(new CVParamType
                 {
-                    accession = "MS:1000799",
-                    value = "ThermoRawFileParser",
-                    name = "custom unreleased software tool",
+                    accession = "MS:1003145",
+                    name = "ThermoRawFileParser",
                     cvRef = "MS"
                 });
                 _writer.WriteEndElement(); // software                
