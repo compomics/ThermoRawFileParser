@@ -14,7 +14,6 @@ namespace ThermoRawFileParser.Writer
         private static readonly ILog Log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly string _outputDirectory;
         private readonly string _metadataFileName;
 
         /// <summary>
@@ -22,9 +21,8 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         /// <param name="outputDirectory"></param>
         /// <param name="metadataFileName"></param>
-        public MetadataWriter(string outputDirectory, string metadataFileName)
+        public MetadataWriter(string metadataFileName)
         {
-            _outputDirectory = outputDirectory;
             _metadataFileName = metadataFileName;
         }
 
@@ -76,24 +74,7 @@ namespace ThermoRawFileParser.Writer
             };
 
             // Write the meta data to file
-            string metadataOutputPath;
-            if (_outputDirectory == null)
-            {
-                metadataOutputPath = _metadataFileName;
-            }
-            else
-            {
-                metadataOutputPath = _outputDirectory + "/" + _metadataFileName + "-metadata.txt";
-            }
-
-            File.WriteAllLines(metadataOutputPath, output.ToArray());
-
-            // Write the string array to a new file named "WriteLines.txt".
-            //using (var outputFile = new StreamWriter(metadataOutputPath))
-            //{
-            //    foreach (var line in output)
-            //        outputFile.WriteLine(line);
-            //}
+            File.WriteAllLines(_metadataFileName, output.ToArray());
         }
 
         /// <summary>
@@ -248,17 +229,7 @@ namespace ThermoRawFileParser.Writer
             var json = JsonConvert.SerializeObject(metadata);
             json.Replace("\r\n", "\n");
 
-            string metadataOutputPath;
-            if (_outputDirectory == null)
-            {
-                metadataOutputPath = _metadataFileName;
-            }
-            else
-            {
-                metadataOutputPath = _outputDirectory + "/" + _metadataFileName + "-metadata.json";
-            }
-
-            File.WriteAllText(metadataOutputPath, json);
+            File.WriteAllText(_metadataFileName, json);
         }
 
         private static CVTerm ParseActivationType(ActivationType activation)

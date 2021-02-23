@@ -120,26 +120,31 @@ namespace ThermoRawFileParser
 
                 if (parseInput.MetadataFormat != MetadataFormat.NONE)
                 {
-                    MetadataWriter metadataWriter;
-                    if (parseInput.MetadataOutputFile != null)
-                    {
-                        metadataWriter = new MetadataWriter(null, parseInput.MetadataOutputFile);
-                    }
-                    else
-                    {
-                        metadataWriter = new MetadataWriter(parseInput.OutputDirectory,
-                            parseInput.RawFileNameWithoutExtension);
-                    }
-
                     switch (parseInput.MetadataFormat)
                     {
                         case MetadataFormat.JSON:
-                            metadataWriter.WriteJsonMetada(rawFile, firstScanNumber, lastScanNumber);
+                            parseInput.DepositionMetadataFile = parseInput.MetadataOutputFile != null
+                                ? parseInput.MetadataOutputFile
+                                : Path.Combine(parseInput.OutputDirectory, parseInput.RawFileNameWithoutExtension) + "-metadata.json";
                             break;
                         case MetadataFormat.TXT:
-                            metadataWriter.WriteMetadata(rawFile, firstScanNumber, lastScanNumber);
+                            parseInput.ExperimentMetadataFile = parseInput.MetadataOutputFile != null
+                                ? parseInput.MetadataOutputFile
+                                : Path.Combine(parseInput.OutputDirectory, parseInput.RawFileNameWithoutExtension) + "-metadata.txt"; ;
                             break;
                     }
+                }
+
+                if (parseInput.DepositionMetadataFile != null)
+                {
+                    MetadataWriter metadataWriter = new MetadataWriter(parseInput.DepositionMetadataFile);
+                    metadataWriter.WriteJsonMetada(rawFile, firstScanNumber, lastScanNumber);
+                }
+
+                if (parseInput.ExperimentMetadataFile != null)
+                {
+                    MetadataWriter metadataWriter = new MetadataWriter(parseInput.ExperimentMetadataFile);
+                    metadataWriter.WriteMetadata(rawFile, firstScanNumber, lastScanNumber);
                 }
 
                 if (parseInput.OutputFormat != OutputFormat.NONE)
