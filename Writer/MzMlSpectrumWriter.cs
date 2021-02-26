@@ -1146,6 +1146,7 @@ namespace ThermoRawFileParser.Writer
             int? charge = null;
             double? monoisotopicMz = null;
             double? ionInjectionTime = null;
+			double? isolationWidth = null;
             double? FAIMSCV = null;
             List<double> SPSMasses = new List<double>();
 
@@ -1173,6 +1174,8 @@ namespace ThermoRawFileParser.Writer
             }
 
             /*var trailerData = _rawFile.GetTrailerExtraInformation(scanNumber);
+            double? isolationWidth = null;
+            List<double> SPSMasses = new List<double>();
             for (var i = 0; i < trailerData.Length; i++)
             {
                 if (trailerData.Labels[i] == "Charge State:")
@@ -1181,6 +1184,11 @@ namespace ThermoRawFileParser.Writer
                     {
                         charge = Convert.ToInt32(trailerData.Values[i]);
                     }
+                }
+
+                if (trailerData.Labels[i] == "MS" + (int)scanFilter.MSOrder + " Isolation Width:")
+                {
+                    isolationWidth = double.Parse(trailerData.Values[i], NumberStyles.Any);
                 }
 
                 if (trailerData.Labels[i] == "Monoisotopic M/Z:")
@@ -1267,7 +1275,7 @@ namespace ThermoRawFileParser.Writer
 
                     // Construct and set the precursor list element of the spectrum                    
                     var precursorListType =
-                        ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz, SPSMasses);
+                        ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz, isolationWidth, SPSMasses);
                     spectrum.precursorList = precursorListType;
                     break;
                 case MSOrderType.Ms3:
@@ -1278,7 +1286,7 @@ namespace ThermoRawFileParser.Writer
                         name = "MSn spectrum",
                         value = ""
                     });
-                    precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz, SPSMasses);
+                    precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz, isolationWidth, SPSMasses);
                     spectrum.precursorList = precursorListType;
                     break;
                 default:
@@ -1821,9 +1829,10 @@ namespace ThermoRawFileParser.Writer
         /// <param name="msLevel">the MS level</param>
         /// <param name="monoisotopicMz">the monoisotopic m/z value</param>
         /// <param name="isolationWidth">the isolation width</param>
+        /// <param name="SPSMasses">masses selected for SPS</param>
         /// <returns>the precursor list</returns>
         private PrecursorListType ConstructPrecursorList(IScanEventBase scanEvent, int? charge, MSOrderType msLevel,
-            double? monoisotopicMz, List<double> SPSMasses)
+            double? monoisotopicMz, double? isolationWidth, List<double> SPSMasses)
         {
             // Construct the precursor
             var precursorList = new PrecursorListType
@@ -1836,7 +1845,7 @@ namespace ThermoRawFileParser.Writer
             int precursorScanNumber = _precursorMs1ScanNumber;
             IReaction reaction = null;
             var precursorMz = 0.0;
-            double? isolationWidth = null;
+            
             try
             {
                 switch (msLevel)
@@ -1866,7 +1875,6 @@ namespace ThermoRawFileParser.Writer
                 }
 
                 precursorMz = reaction.PrecursorMass;
-                isolationWidth = reaction.IsolationWidth;
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -1910,23 +1918,24 @@ namespace ThermoRawFileParser.Writer
             }
  
             //Precursor intensity is disabled for now
-            //if (selectedIonMz > ZeroDelta)
-            //{
-            //    var selectedIonIntensity = CalculatePrecursorPeakIntensity(_rawFile, precursorScanNumber, selectedIonMz);
-            //    if (selectedIonIntensity != null)
-            //    {
-            //        ionCvParams.Add(new CVParamType
-            //        {
-            //            name = "peak intensity",
-            //            value = selectedIonIntensity.ToString(),
-            //            accession = "MS:1000042",
-            //            cvRef = "MS",
-            //            unitAccession = "MS:1000131",
-            //            unitCvRef = "MS",
-            //            unitName = "number of detector counts"
-            //        });
-            //    }
-            //}
+            if (selectedIonMz > ZeroDelta)
+            {
+                var selectedIonIntensity = CalculatePrecursorPeakIntensity(_rawFile, precursorScanNumber, selectedIonMz, isolationWidth, ParseInput.NoPeakPicking); //new Pwiz way
+                //var selectedIonIntensity = CalculatePrecursorPeakIntensity2(_rawFile, precursorScanNumber, selectedIonMz, isolationWidth); //old Pwiz way
+                if (selectedIonIntensity != null)
+                {
+                    ionCvParams.Add(new CVParamType
+                    {
+                        name = "peak intensity",
+                        value = selectedIonIntensity.ToString(),
+                        accession = "MS:1000042",
+                        cvRef = "MS",
+                        unitAccession = "MS:1000131",
+                        unitCvRef = "MS",
+                        unitName = "number of detector counts"
+                    });
+                }
+            }
 
             precursor.selectedIonList.selectedIon[0].cvParam = ionCvParams.ToArray();
 
