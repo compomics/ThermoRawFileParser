@@ -1142,12 +1142,37 @@ namespace ThermoRawFileParser.Writer
             };
 
             // Trailer extra data list
-            var trailerData = _rawFile.GetTrailerExtraInformation(scanNumber);
+            var trailerData = new ScanTrailer(_rawFile.GetTrailerExtraInformation(scanNumber));
             int? charge = null;
             double? monoisotopicMz = null;
             double? ionInjectionTime = null;
             double? FAIMSCV = null;
             List<double> SPSMasses = new List<double>();
+
+            charge = trailerData.AsPositiveInt("Charge State:");
+            monoisotopicMz = trailerData.AsDouble("Monoisotopic M/Z:");
+            ionInjectionTime = trailerData.AsDouble("Ion Injection Time (ms):");
+            if (trailerData.AsBool("FAIMS Voltage On:").GetValueOrDefault(false))
+                FAIMSCV = trailerData.AsDouble("FAIMS CV:");
+
+            //tune version < 3 produced trailer entry like "SPS Mass #", one entry per mass
+            foreach (var label in trailerData.MatchKeys(SPSentry))
+            {
+                var mass = trailerData.AsDouble(label).GetValueOrDefault(0);
+                if (mass > 0) SPSMasses.Add((double)mass); //zero means mass does not exist
+            }
+
+            //tune version == 3 produces trailer entry "SPS Masses", comma separated list of masses 
+            foreach (var label in trailerData.MatchKeys(SPSentry3))
+            {
+                foreach (var mass in trailerData.Get(label).Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    SPSMasses.Add(double.Parse(mass));
+                }
+
+            }
+
+            /*var trailerData = _rawFile.GetTrailerExtraInformation(scanNumber);
             for (var i = 0; i < trailerData.Length; i++)
             {
                 if (trailerData.Labels[i] == "Charge State:")
@@ -1192,12 +1217,14 @@ namespace ThermoRawFileParser.Writer
                     }
                     
                 }
-            }
+            }*/
 
             // Construct and set the scan list element of the spectrum
             var scanListType = ConstructScanList(scanNumber, scan, scanFilter, scanEvent, monoisotopicMz,
                 ionInjectionTime);
             spectrum.scanList = scanListType;
+
+            int? trailerMasterScan;
 
             switch (scanFilter.MSOrder)
             {
@@ -1211,7 +1238,8 @@ namespace ThermoRawFileParser.Writer
                     });
 
                     // Keep track of scan number for precursor reference
-                    _precursorMs1ScanNumber = scanNumber;
+                    trailerMasterScan = trailerData.AsInt("Master Scan Number:");
+                    _precursorMs1ScanNumber = trailerMasterScan.HasValue ? trailerMasterScan.Value : scanNumber;
 
                     break;
                 case MSOrderType.Ms2:
@@ -1232,7 +1260,9 @@ namespace ThermoRawFileParser.Writer
                             _precursorMs2ScanNumbers.Remove(result.Groups[1].Value);
                         }
 
-                        _precursorMs2ScanNumbers.Add(result.Groups[1].Value, scanNumber);
+                        trailerMasterScan = trailerData.AsInt("Master Scan Number:");
+                        _precursorMs2ScanNumbers.Add(result.Groups[1].Value,
+                            trailerMasterScan.HasValue ? trailerMasterScan.Value : scanNumber);
                     }
 
                     // Construct and set the precursor list element of the spectrum                    
