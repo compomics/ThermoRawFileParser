@@ -155,7 +155,6 @@
     <Compile Include="RawFileParser.cs" />
     <Compile Include="Util\LimitedSizeDictionary.cs" />
     <Compile Include="Util\Peptide.cs" />
-    <Compile Include="Writer\ScanTrailer.cs" />
     <Compile Include="XIC\JSONInputUnit.cs" />
     <Compile Include="XIC\JSONParser.cs" />
     <Compile Include="XIC\XicData.cs" />

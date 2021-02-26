@@ -5,7 +5,6 @@ using System.Reflection;
 using log4net;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
-using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
 
 namespace ThermoRawFileParser.Writer
@@ -177,84 +176,49 @@ namespace ThermoRawFileParser.Writer
         }
 
         /// <summary>
-        /// Calculate the precursor peak intensity (similar to modern MSConvert).
-        /// Sum intensities of all peaks in the isolation window.
+        /// Calculate the precursor peak intensity.
         /// </summary>
         /// <param name="rawFile">the RAW file object</param>
         /// <param name="precursorScanNumber">the precursor scan number</param>
         /// <param name="precursorMass">the precursor mass</param>
-        /// <param name="isolationWidth">the isolation width</param>
-        /// <param name="useProfile">profile/centroid switch</param>
         protected static double? CalculatePrecursorPeakIntensity(IRawDataPlus rawFile, int precursorScanNumber,
-            double precursorMass, double? isolationWidth, bool useProfile)
+            double precursorMass)
         {
-            double precursorIntensity = 0;
-            double halfWidth = isolationWidth is null ? 0 : (double) isolationWidth / 2; //if isolationWidth was not defined set it to 0
-            
+            double? precursorIntensity = null;
+            double tolerance;
+
             // Get the precursor scan from the RAW file
             var scan = Scan.FromFile(rawFile, precursorScanNumber);
 
+            //Select centroid stream if it exists, otherwise use profile one
             double[] masses;
             double[] intensities;
 
-            if (useProfile)
+            if (scan.HasCentroidStream)
             {
-                masses = scan.SegmentedScan.Positions;
-                intensities = scan.SegmentedScan.Intensities;
+                masses = scan.CentroidScan.Masses;
+                intensities = scan.CentroidScan.Intensities;
+                tolerance = 0.01; //high resolution scan
             }
             else
             {
-                //use centroids if they exist, otherwise perform centroiding
-                if (scan.HasCentroidStream)
-                {
-                    masses = scan.CentroidScan.Masses;
-                    intensities = scan.CentroidScan.Intensities;
-                }
-                else
-                {
-                    var scanEvent = rawFile.GetScanEventForScanNumber(precursorScanNumber);
-                    var centroidedScan = scanEvent.ScanData == ScanDataType.Profile //only centroid profile spectra
-                        ? Scan.ToCentroid(scan).SegmentedScan
-                        : scan.SegmentedScan;
-
-                    masses = centroidedScan.Positions;
-                    intensities = centroidedScan.Intensities;
-                }
+                masses = scan.SegmentedScan.Positions;
+                intensities = scan.SegmentedScan.Intensities;
+                tolerance = 0.5; //low resolution scan
             }
 
-            var index = masses.FastBinarySearch(precursorMass - halfWidth); //set index to the first peak inside isolation window
-
-            while (index < masses.Length && masses[index] < precursorMass + halfWidth)
+            //find closest peak in a stream
+            var bestDelta = tolerance;
+            for (var i = 0; i < masses.Length; i++)
             {
-                precursorIntensity += intensities[index];
-                index++;
-            }
+                var delta = precursorMass - masses[i];
+                if (Math.Abs(delta) < bestDelta)
+                {
+                    bestDelta = delta;
+                    precursorIntensity = intensities[i];
+                }
 
-            return precursorIntensity;
-        }
-
-        /// <summary>
-        /// Calculate the precursor peak intensity (similar to leagcy MSConvert).
-        /// Get base-peak intensity inside isolation window.
-        /// </summary>
-        /// <param name="rawFile">the RAW file object</param>
-        /// <param name="precursorScanNumber">the precursor scan number</param>
-        /// <param name="precursorMass">the precursor mass</param>
-        /// <param name="isolationWidth">the isolation width</param>
-        protected static double? CalculatePrecursorPeakIntensity2(IRawDataPlus rawFile, int precursorScanNumber, double precursorMass, double? isolationWidth)
-        {
-            double? precursorIntensity = null;
-            double halfWidth = isolationWidth is null ? 0 : (double)isolationWidth / 2; //if isolationWidth was not defined set it to 0
-
-            var chrosettings = new ChromatogramTraceSettings();
-            chrosettings.MassRanges = new Range[] { new Range(precursorMass - halfWidth, precursorMass + halfWidth) };
-            chrosettings.Trace = TraceType.BasePeak;
-
-            var chrodata = rawFile.GetChromatogramData(new ChromatogramTraceSettings[] { chrosettings }, precursorScanNumber, precursorScanNumber);
-
-            if (chrodata != null && chrodata.Length > 0)
-            {
-                precursorIntensity = chrodata.IntensitiesArray[0][0];
+                if (delta < -1 * tolerance) break;
             }
 
             return precursorIntensity;
