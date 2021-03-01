@@ -31,7 +31,7 @@ namespace ThermoRawFileParser.Writer
 
         //tune version < 3 produces multiple trailer entry like "SPS Mass [number]"
         private readonly Regex SPSentry = new Regex(@"SPS Mass\s+\d+:");
-        //tune version == 3 produces trailer entry "SPS Masses/Continued"
+        //tune version == 3 produces trailer entry "SPS Masses (Continued)"
         private readonly Regex SPSentry3 = new Regex(@"SPS Masses(?:\s+Continued)?:");
 
         private IRawDataPlus _rawFile;
@@ -1142,7 +1142,46 @@ namespace ThermoRawFileParser.Writer
             };
 
             // Trailer extra data list
-            var trailerData = _rawFile.GetTrailerExtraInformation(scanNumber);
+            var trailerData = new ScanTrailer(_rawFile.GetTrailerExtraInformation(scanNumber));
+            int? charge;
+            double? monoisotopicMz;
+            double? ionInjectionTime;
+            double? isolationWidth;
+            double? FAIMSCV = null;
+            List<double> SPSMasses = new List<double>();
+
+            charge = trailerData.AsPositiveInt("Charge State:");
+            monoisotopicMz = trailerData.AsDouble("Monoisotopic M/Z:");
+            ionInjectionTime = trailerData.AsDouble("Ion Injection Time (ms):");
+            isolationWidth = trailerData.AsDouble("MS" + (int)scanFilter.MSOrder + " Isolation Width:");
+            if (trailerData.AsBool("FAIMS Voltage On:").GetValueOrDefault(false))
+                FAIMSCV = trailerData.AsDouble("FAIMS CV:");
+
+            //tune version < 3
+            if (trailerData.Has("SPS Mass 1:"))
+            {
+                foreach (var label in trailerData.MatchKeys(SPSentry))
+                {
+                    var mass = trailerData.AsDouble(label).GetValueOrDefault(0);
+                    if (mass > 0) SPSMasses.Add((double)mass); //zero means mass does not exist
+                }
+            }
+
+            //tune version == 3
+            if (trailerData.Has("SPS Masses:"))
+            {
+                foreach (var label in trailerData.MatchKeys(SPSentry3))
+                {
+                    foreach (var mass in trailerData.Get(label).Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        SPSMasses.Add(double.Parse(mass));
+                    }
+
+                }
+            }
+
+            //Older iterative version that works with trailer directly, can be removed if the new object version is better
+            /*var trailerData = _rawFile.GetTrailerExtraInformation(scanNumber);
             int? charge = null;
             double? monoisotopicMz = null;
             double? ionInjectionTime = null;
@@ -1200,7 +1239,7 @@ namespace ThermoRawFileParser.Writer
                     }
                     
                 }
-            }
+            }*/
 
             // Construct and set the scan list element of the spectrum
             var scanListType = ConstructScanList(scanNumber, scan, scanFilter, scanEvent, monoisotopicMz,
