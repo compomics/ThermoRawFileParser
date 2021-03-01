@@ -60,6 +60,10 @@ namespace ThermoRawFileParser
         /// </summary>>
         public string MetadataOutputFile { get; set; }
 
+        public string DepositionMetadataFile { get; set; }
+
+        public string ExperimentMetadataFile { get; set; }
+
         /// <summary>
         /// Gzip the output file.
         /// </summary>
@@ -96,6 +100,7 @@ namespace ThermoRawFileParser
         /// <summary>
         /// The raw file name.
         /// </summary>
+        //NOTE. This field does not seem to be used.
         private string rawFileName;
 
         /// <summary>

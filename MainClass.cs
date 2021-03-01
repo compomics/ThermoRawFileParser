@@ -403,6 +403,16 @@ namespace ThermoRawFileParser
                     v => parseInput.MetadataOutputFile = v
                 },
                 {
+                    "D=|deposition_metadata",
+                    "The path to deposition metadata output file.",
+                    v => parseInput.DepositionMetadataFile = v
+                },
+                {
+                    "E=|experiment_metadata",
+                    "The path to experiment metadata output file.",
+                    v => parseInput.ExperimentMetadataFile = v
+                },
+                {
                     "g|gzip", "GZip the output file.",
                     v => parseInput.Gzip = v != null
                 },
@@ -472,13 +482,13 @@ namespace ThermoRawFileParser
 
                 if (!extra.IsNullOrEmpty())
                 {
-                    throw new OptionException("unexpected extra arguments", null);
+                    throw new OptionException("Unexpected extra arguments", null);
                 }
 
                 if (help)
                 {
                     var helpMessage =
-                        $"usage is {Assembly.GetExecutingAssembly().GetName().Name}.exe [subcommand] [options]\noptional subcommands are xic|query (use [subcommand] -h for more info]):";
+                        $"Usage is {Assembly.GetExecutingAssembly().GetName().Name}.exe [subcommand] [options]\noptional subcommands are xic|query (use [subcommand] -h for more info]):";
                     ShowHelp(helpMessage, null, optionSet);
                     return;
                 }
@@ -577,6 +587,13 @@ namespace ThermoRawFileParser
                 if (metadataFormatString == null && outputFormatString == null)
                 {
                     parseInput.OutputFormat = OutputFormat.MzML;
+                }
+
+                if (metadataFormatString != null &&
+                    (parseInput.DepositionMetadataFile != null || parseInput.ExperimentMetadataFile != null))
+                {
+                    throw new OptionException("Metadata format key should not be combined with explicit metadata file options",
+                        "-m, --metadata, -D, -deposition_metadata, -E, --experiment_metadata");
                 }
 
                 if (outputFormatString != null)
