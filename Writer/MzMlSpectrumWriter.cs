@@ -1170,9 +1170,9 @@ namespace ThermoRawFileParser.Writer
             //tune version == 3
             if (trailerData.Has("SPS Masses:"))
             {
-                foreach (var label in trailerData.MatchKeys(SPSentry3))
+                foreach (var labelvalue in trailerData.MatchValues(SPSentry3))
                 {
-                    foreach (var mass in trailerData.Get(label).Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    foreach (var mass in labelvalue.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                     {
                         SPSMasses.Add(double.Parse(mass));
                     }
@@ -1269,6 +1269,10 @@ namespace ThermoRawFileParser.Writer
                         name = "MSn spectrum",
                         value = ""
                     });
+
+                    //update precursor scan if it is provided in trailer data
+                    var trailerMasterScan = trailerData.AsPositiveInt("Master Scan Number:");
+                    if (trailerMasterScan.HasValue) _precursorMs1ScanNumber = trailerMasterScan.Value;
 
                     // Keep track of scan number and isolation m/z for precursor reference                   
                     var result = FilterStringIsolationMzPattern.Match(scanEvent.ToString());

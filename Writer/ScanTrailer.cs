@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using ThermoFisher.CommonCore.Data.Business;
 
 namespace ThermoRawFileParser.Writer
@@ -16,7 +13,7 @@ namespace ThermoRawFileParser.Writer
 
         public string[] Values { get => data.Values.ToArray(); }
 
-        private Dictionary<string, string> data;
+        private readonly Dictionary<string, string> data;
 
         public ScanTrailer(LogEntry trailerData)
         {
@@ -28,6 +25,11 @@ namespace ThermoRawFileParser.Writer
             }
         }
 
+        /// <summary>
+        /// Try returning selected trailer element as boolean value,
+        /// if the element does not exist or cannot be converted to boolean return null
+        /// </summary>
+        /// <param name="key">name of the element</param>
         public bool? AsBool(string key)
         {
             if(data.ContainsKey(key))
@@ -48,6 +50,11 @@ namespace ThermoRawFileParser.Writer
             return null;
         }
 
+        /// <summary>
+        /// Try returning selected trailer element as double value,
+        /// if the element does not exist or cannot be converted to double return null
+        /// </summary>
+        /// <param name="key">name of the element</param>
         public double? AsDouble(string key)
         {
             if (data.ContainsKey(key))
@@ -57,6 +64,11 @@ namespace ThermoRawFileParser.Writer
             return null;
         }
 
+        /// <summary>
+        /// Try returning selected trailer element as integer value,
+        /// if the element does not exist or cannot be converted to integer return null
+        /// </summary>
+        /// <param name="key">name of the element</param>
         public int? AsInt(string key)
         {
             if (data.ContainsKey(key))
@@ -66,6 +78,11 @@ namespace ThermoRawFileParser.Writer
             return null;
         }
 
+        /// <summary>
+        /// Try returning selected trailer element as strictly positive (non zero) integer value,
+        /// if the element does not exist or cannot be converted to strictly positive integer return null
+        /// </summary>
+        /// <param name="key">name of the element</param>
         public int? AsPositiveInt(string key)
         {
             int? value = AsInt(key);
@@ -75,11 +92,21 @@ namespace ThermoRawFileParser.Writer
 
         }
 
+        /// <summary>
+        /// Try returning selected trailer element as string,
+        /// alias to `Get`
+        /// </summary>
+        /// <param name="key">name of the element</param>
         public string AsString(string key)
         {
             return Get(key);
         }
 
+        /// <summary>
+        /// Try getting selected trailer element by name,
+        /// if the element does not exist return null
+        /// </summary>
+        /// <param name="key">name of the element</param>
         public string Get(string key)
         {
             if (data.ContainsKey(key))
@@ -89,16 +116,28 @@ namespace ThermoRawFileParser.Writer
             return null;
         }
 
+        /// <summary>
+        /// Check if selected trailer element exists
+        /// </summary>
+        /// <param name="key">name of the element</param>
         public bool Has(string key)
         {
             return data.ContainsKey(key);
         }
 
+        /// <summary>
+        /// Return iterator over trailer element names matching regex
+        /// </summary>
+        /// <param name="regex">compiled regex object</param>
         public IEnumerable<string> MatchKeys(Regex regex)
         {
             return data.Keys.Where(k => regex.IsMatch(k));
         }
 
+        /// <summary>
+        /// Return iterator over trailer element values which names are matching regex
+        /// </summary>
+        /// <param name="regex">compiled regex object</param>
         public IEnumerable<string> MatchValues(Regex regex)
         {
             return data.Where(item => regex.IsMatch(item.Key)).Select(item => item.Value);
