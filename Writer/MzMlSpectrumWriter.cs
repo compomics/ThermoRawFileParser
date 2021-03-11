@@ -1047,6 +1047,17 @@ namespace ThermoRawFileParser.Writer
                             value = ""
                         });
                 }
+                else
+                {
+                    timesBinaryDataCvParams.Add(
+                        new CVParamType
+                        {
+                            accession = "MS:1000576",
+                            name = "no compression",
+                            cvRef = "MS",
+                            value = ""
+                        });
+                }
 
                 timesBinaryData.cvParam = timesBinaryDataCvParams.ToArray();
 
@@ -1086,6 +1097,17 @@ namespace ThermoRawFileParser.Writer
                         {
                             accession = "MS:1000574",
                             name = "zlib compression",
+                            cvRef = "MS",
+                            value = ""
+                        });
+                }
+                else
+                {
+                    intensitiesBinaryDataCvParams.Add(
+                        new CVParamType
+                        {
+                            accession = "MS:1000576",
+                            name = "no compression",
                             cvRef = "MS",
                             value = ""
                         });
@@ -1479,6 +1501,17 @@ namespace ThermoRawFileParser.Writer
                             value = ""
                         });
                 }
+                else
+                {
+                    massesBinaryDataCvParams.Add(
+                        new CVParamType
+                        {
+                            accession = "MS:1000576",
+                            name = "no compression",
+                            cvRef = "MS",
+                            value = ""
+                        });
+                }
 
                 massesBinaryData.cvParam = massesBinaryDataCvParams.ToArray();
 
@@ -1523,6 +1556,17 @@ namespace ThermoRawFileParser.Writer
                         {
                             accession = "MS:1000574",
                             name = "zlib compression",
+                            cvRef = "MS",
+                            value = ""
+                        });
+                }
+                else
+                {
+                    intensitiesBinaryDataCvParams.Add(
+                        new CVParamType
+                        {
+                            accession = "MS:1000576",
+                            name = "no compression",
                             cvRef = "MS",
                             value = ""
                         });
@@ -1698,6 +1742,17 @@ namespace ThermoRawFileParser.Writer
                             value = ""
                         });
                 }
+                else
+                {
+                    positionsBinaryDataCvParams.Add(
+                        new CVParamType
+                        {
+                            accession = "MS:1000576",
+                            name = "no compression",
+                            cvRef = "MS",
+                            value = ""
+                        });
+                }
 
                 positionsBinaryData.cvParam = positionsBinaryDataCvParams.ToArray();
 
@@ -1742,6 +1797,17 @@ namespace ThermoRawFileParser.Writer
                         {
                             accession = "MS:1000574",
                             name = "zlib compression",
+                            cvRef = "MS",
+                            value = ""
+                        });
+                }
+                else
+                {
+                    intensitiesBinaryDataCvParams.Add(
+                        new CVParamType
+                        {
+                            accession = "MS:1000576",
+                            name = "no compression",
                             cvRef = "MS",
                             value = ""
                         });
