@@ -121,7 +121,7 @@ Return one or more chromatograms based on query JSON input.
 mono ThermoRawFileParser.exe xic -i=/home/user/data_input/raw_file.raw -j=/home/user/xic_input.json
 ```
 ```
-ThermoRawFileParser.exe query --help
+ThermoRawFileParser.exe xic --help
 usage is:
   -h, --help                 Prints out the options.
   -i, --input=VALUE          The raw file input (Required). Specify this or an

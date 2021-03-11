@@ -13,7 +13,6 @@
     {
         JSON,
         TXT,
-        PARQUET,
         NONE
     }
 }
