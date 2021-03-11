@@ -19,7 +19,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.3.2";
+        public const string Version = "1.3.3";
 
         public static void Main(string[] args)
         {
@@ -385,7 +385,7 @@ namespace ThermoRawFileParser
                 },
                 {
                     "f=|format=",
-                    "The spectra output format: 0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet. Defaults to mzML if no format is specified.",
+                    "The spectra output format: 0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet. Defaults to indexed mzML if no format is specified.",
                     v => outputFormatString = v
                 },
                 {
@@ -565,7 +565,7 @@ namespace ThermoRawFileParser
 
                 if (metadataFormatString == null && outputFormatString == null)
                 {
-                    parseInput.OutputFormat = OutputFormat.MzML;
+                    parseInput.OutputFormat = OutputFormat.IndexMzML;
                 }
 
                 if (outputFormatString != null)
