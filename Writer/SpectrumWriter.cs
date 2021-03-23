@@ -55,6 +55,13 @@ namespace ThermoRawFileParser.Writer
         /// <param name="extension">The extension of the output file</param>
         protected void ConfigureWriter(string extension)
         {
+            if (ParseInput.StdOut)
+            {
+                Writer = new StreamWriter(Console.OpenStandardOutput());
+                Writer.AutoFlush = true;
+                return;
+            }
+
             if (ParseInput.OutputFile == null)
             {
                 var fullExtension = ParseInput.Gzip ? extension + ".gzip" : extension;

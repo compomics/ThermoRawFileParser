@@ -39,28 +39,7 @@ namespace ThermoRawFileParser
                 {
                     parseInput.RawFilePath = filePath;
                     Log.Info("Started parsing " + parseInput.RawFilePath);
-                    try
-                    {
-                        ProcessFile(parseInput);
-                    }
-                    catch (UnauthorizedAccessException ex)
-                    {
-                        Log.Error(!ex.Message.IsNullOrEmpty()
-                            ? ex.Message
-                            : "Attempting to write to an unauthorized location.");
-                    }
-                    catch (Exception ex)
-                    {
-                        if (ex is RawFileParserException)
-                        {
-                            Log.Error(ex.Message);
-                        }
-                        else
-                        {
-                            Log.Error("An unexpected error occured while parsing file:" + parseInput.RawFilePath);
-                            Log.Error(ex.ToString());
-                        }
-                    }
+                    TryProcessFile(parseInput);
                 }
             }
             // Input raw file mode
@@ -68,7 +47,37 @@ namespace ThermoRawFileParser
             {
                 Log.Info("Started parsing " + parseInput.RawFilePath);
 
+                TryProcessFile(parseInput);
+            }
+        }
+
+        /// <summary>
+        /// Process and extract the given RAW file and catch IO exceptions.
+        /// </summary>
+        /// <param name="parseInput">the parse input object</param>
+        private static void TryProcessFile(ParseInput parseInput)
+        {
+            try
+            {
                 ProcessFile(parseInput);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Log.Error(!ex.Message.IsNullOrEmpty()
+                    ? ex.Message
+                    : "Attempting to write to an unauthorized location.");
+            }
+            catch (Exception ex)
+            {
+                if (ex is RawFileParserException)
+                {
+                    Log.Error(ex.Message);
+                }
+                else
+                {
+                    Log.Error("An unexpected error occured while parsing file:" + parseInput.RawFilePath);
+                    Log.Error(ex.ToString());
+                }
             }
         }
 
@@ -111,26 +120,8 @@ namespace ThermoRawFileParser
 
                 if (parseInput.MetadataFormat != MetadataFormat.NONE)
                 {
-                    MetadataWriter metadataWriter;
-                    if (parseInput.MetadataOutputFile != null)
-                    {
-                        metadataWriter = new MetadataWriter(null, parseInput.MetadataOutputFile);
-                    }
-                    else
-                    {
-                        metadataWriter = new MetadataWriter(parseInput.OutputDirectory,
-                            parseInput.RawFileNameWithoutExtension);
-                    }
-
-                    switch (parseInput.MetadataFormat)
-                    {
-                        case MetadataFormat.JSON:
-                            metadataWriter.WriteJsonMetada(rawFile, firstScanNumber, lastScanNumber);
-                            break;
-                        case MetadataFormat.TXT:
-                            metadataWriter.WriteMetadata(rawFile, firstScanNumber, lastScanNumber);
-                            break;
-                    }
+                    MetadataWriter metadataWriter = new MetadataWriter(parseInput);
+                    metadataWriter.WriteMetadata(rawFile, firstScanNumber, lastScanNumber);
                 }
 
                 if (parseInput.OutputFormat != OutputFormat.NONE)
