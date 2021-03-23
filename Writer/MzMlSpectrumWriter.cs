@@ -1168,6 +1168,7 @@ namespace ThermoRawFileParser.Writer
             double? monoisotopicMz = null;
             double? ionInjectionTime = null;
             double? FAIMSCV = null;
+            bool FAIMSON = false;
             List<double> SPSMasses = new List<double>();
             for (var i = 0; i < trailerData.Length; i++)
             {
@@ -1196,12 +1197,18 @@ namespace ThermoRawFileParser.Writer
                     FAIMSCV = double.Parse(trailerData.Values[i], NumberStyles.Any,
                         CultureInfo.CurrentCulture);
                 }
+                
+                // Check if the FAIMS voltage is on
+                if (trailerData.Labels[i] == "FAIMS Voltage On:" && trailerData.Values[i].Equals("Yes"))
+                {
+                    FAIMSON = true;
+                }
 
                 // Tune version < 3 produced trailer entry like "SPS Mass #", one entry per mass
                 if (_spSentry.IsMatch(trailerData.Labels[i]))
                 {
                     var mass = double.Parse(trailerData.Values[i]);
-                    if (mass > 0)  SPSMasses.Add(mass); //zero means mass does not exist
+                    if (mass > 0)  SPSMasses.Add(mass); // zero means mass does not exist
                 }
 
                 // Tune version == 3 produces trailer entry "SPS Masses", comma separated list of masses 
@@ -1314,7 +1321,7 @@ namespace ThermoRawFileParser.Writer
             });
 
             // FAIMS
-            if(FAIMSCV != null && Math.Abs(FAIMSCV.Value) > 0.001)
+            if(FAIMSCV != null && FAIMSON)
             {
                 spectrumCvParams.Add(new CVParamType
                 {
