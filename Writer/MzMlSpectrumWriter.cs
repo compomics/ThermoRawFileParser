@@ -1181,7 +1181,7 @@ namespace ThermoRawFileParser.Writer
             //tune version < 3
             if (trailerData.Has("SPS Mass 1:"))
             {
-                foreach (var label in trailerData.MatchKeys(SPSentry))
+                foreach (var label in trailerData.MatchKeys(_spSentry))
                 {
                     var mass = trailerData.AsDouble(label).GetValueOrDefault(0);
                     if (mass > 0) SPSMasses.Add((double)mass); //zero means mass does not exist
@@ -1191,7 +1191,7 @@ namespace ThermoRawFileParser.Writer
             //tune version == 3
             if (trailerData.Has("SPS Masses:"))
             {
-                foreach (var labelvalue in trailerData.MatchValues(SPSentry3))
+                foreach (var labelvalue in trailerData.MatchValues(_spSentry3))
                 {
                     foreach (var mass in labelvalue.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                     {
@@ -1372,7 +1372,7 @@ namespace ThermoRawFileParser.Writer
             });
 
             // FAIMS
-            if(FAIMSCV != null && FAIMSON)
+            if(FAIMSCV != null)
             {
                 spectrumCvParams.Add(new CVParamType
                 {

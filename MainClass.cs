@@ -574,8 +574,7 @@ namespace ThermoRawFileParser
                         "-o, --output");
                 }
 
-                if (metadataFormatString == null && parseInput.DepositionMetadataFile == null
-                    && parseInput.ExperimentMetadataFile == null && outputFormatString == null)
+                if (metadataFormatString == null && outputFormatString == null)
                 {
                     parseInput.OutputFormat = OutputFormat.IndexMzML;
                 }
