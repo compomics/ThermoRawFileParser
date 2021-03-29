@@ -62,7 +62,6 @@ namespace ThermoRawFileParser.Writer
                 $"Scan start time=[MS, MS:1000016, scan start time, {startTime:F2}]",
                 $"Time range={startTime:F2};{endTime:F2}",
                 $"Mass range={rawFile.RunHeaderEx.LowMass:F4};{rawFile.RunHeaderEx.HighMass:F4}",
-                "",
                 "#Sample information",
                 "Sample name=" + rawFile.SampleInformation.SampleName,
                 "Sample id=" + rawFile.SampleInformation.SampleId,

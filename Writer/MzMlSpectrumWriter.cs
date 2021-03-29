@@ -81,7 +81,7 @@ namespace ThermoRawFileParser.Writer
             ConfigureWriter(".mzML");
 
             XmlSerializer serializer;
-            var settings = new XmlWriterSettings {Indent = true, Encoding = Encoding.UTF8};
+            var settings = new XmlWriterSettings {Indent = true, Encoding = new UTF8Encoding()};
             var sha1 = SHA1.Create();
             CryptoStream cryptoStream = null;
             if (_doIndexing)
