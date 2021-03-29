@@ -1163,13 +1163,54 @@ namespace ThermoRawFileParser.Writer
             };
 
             // Trailer extra data list
-            var trailerData = _rawFile.GetTrailerExtraInformation(scanNumber);
+            var trailerData = new ScanTrailer(_rawFile.GetTrailerExtraInformation(scanNumber));
+            int? charge;
+            double? monoisotopicMz;
+            double? ionInjectionTime;
+            double? isolationWidth;
+            double? FAIMSCV = null;
+            List<double> SPSMasses = new List<double>();
+
+            charge = trailerData.AsPositiveInt("Charge State:");
+            monoisotopicMz = trailerData.AsDouble("Monoisotopic M/Z:");
+            ionInjectionTime = trailerData.AsDouble("Ion Injection Time (ms):");
+            isolationWidth = trailerData.AsDouble("MS" + (int)scanFilter.MSOrder + " Isolation Width:");
+            if (trailerData.AsBool("FAIMS Voltage On:").GetValueOrDefault(false))
+                FAIMSCV = trailerData.AsDouble("FAIMS CV:");
+
+            //tune version < 3
+            if (trailerData.Has("SPS Mass 1:"))
+            {
+                foreach (var label in trailerData.MatchKeys(_spSentry))
+                {
+                    var mass = trailerData.AsDouble(label).GetValueOrDefault(0);
+                    if (mass > 0) SPSMasses.Add((double)mass); //zero means mass does not exist
+                }
+            }
+
+            //tune version == 3
+            if (trailerData.Has("SPS Masses:"))
+            {
+                foreach (var labelvalue in trailerData.MatchValues(_spSentry3))
+                {
+                    foreach (var mass in labelvalue.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        SPSMasses.Add(double.Parse(mass));
+                    }
+
+                }
+            }
+
+            //Older iterative version that works with trailer directly, can be removed if the new object version is better
+            /*var trailerData = _rawFile.GetTrailerExtraInformation(scanNumber);
             int? charge = null;
             double? monoisotopicMz = null;
             double? ionInjectionTime = null;
             double? FAIMSCV = null;
             bool FAIMSON = false;
             List<double> SPSMasses = new List<double>();
+            double? isolationWidth = null;
+
             for (var i = 0; i < trailerData.Length; i++)
             {
                 if (trailerData.Labels[i] == "Charge State:")
@@ -1189,6 +1230,12 @@ namespace ThermoRawFileParser.Writer
                 if (trailerData.Labels[i] == "Ion Injection Time (ms):")
                 {
                     ionInjectionTime = double.Parse(trailerData.Values[i], NumberStyles.Any,
+                        CultureInfo.CurrentCulture);
+                }
+
+                if (trailerData.Labels[i] == "MS" + (int) scanFilter.MSOrder + " Isolation Width:")
+                {
+                    isolationWidth = double.Parse(trailerData.Values[i], NumberStyles.Any,
                         CultureInfo.CurrentCulture);
                 }
 
@@ -1220,7 +1267,7 @@ namespace ThermoRawFileParser.Writer
                     }
                     
                 }
-            }
+            }*/
 
             // Construct and set the scan list element of the spectrum
             var scanListType = ConstructScanList(scanNumber, scan, scanFilter, scanEvent, monoisotopicMz,
@@ -1251,6 +1298,10 @@ namespace ThermoRawFileParser.Writer
                         value = ""
                     });
 
+                    //update precursor scan if it is provided in trailer data
+                    var trailerMasterScan = trailerData.AsPositiveInt("Master Scan Number:");
+                    if (trailerMasterScan.HasValue) _precursorMs1ScanNumber = trailerMasterScan.Value;
+
                     // Keep track of scan number and isolation m/z for precursor reference                   
                     var result = _filterStringIsolationMzPattern.Match(scanEvent.ToString());
                     if (result.Success)
@@ -1265,7 +1316,7 @@ namespace ThermoRawFileParser.Writer
 
                     // Construct and set the precursor list element of the spectrum                    
                     var precursorListType =
-                        ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz, SPSMasses);
+                        ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz, isolationWidth, SPSMasses);
                     spectrum.precursorList = precursorListType;
                     break;
                 case MSOrderType.Ms3:
@@ -1276,7 +1327,7 @@ namespace ThermoRawFileParser.Writer
                         name = "MSn spectrum",
                         value = ""
                     });
-                    precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz, SPSMasses);
+                    precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz, isolationWidth, SPSMasses);
                     spectrum.precursorList = precursorListType;
                     break;
                 default:
@@ -1321,7 +1372,7 @@ namespace ThermoRawFileParser.Writer
             });
 
             // FAIMS
-            if(FAIMSCV != null && FAIMSON)
+            if(FAIMSCV != null)
             {
                 spectrumCvParams.Add(new CVParamType
                 {
@@ -1863,9 +1914,10 @@ namespace ThermoRawFileParser.Writer
         /// <param name="msLevel">the MS level</param>
         /// <param name="monoisotopicMz">the monoisotopic m/z value</param>
         /// <param name="isolationWidth">the isolation width</param>
+        /// <param name="SPSMasses">List of masses selected for SPS</param>
         /// <returns>the precursor list</returns>
         private PrecursorListType ConstructPrecursorList(IScanEventBase scanEvent, int? charge, MSOrderType msLevel,
-            double? monoisotopicMz, List<double> SPSMasses)
+            double? monoisotopicMz, double? isolationWidth, List<double> SPSMasses)
         {
             // Construct the precursor
             var precursorList = new PrecursorListType
@@ -1878,7 +1930,6 @@ namespace ThermoRawFileParser.Writer
             int precursorScanNumber = _precursorMs1ScanNumber;
             IReaction reaction = null;
             var precursorMz = 0.0;
-            double? isolationWidth = null;
             try
             {
                 switch (msLevel)
@@ -1908,7 +1959,10 @@ namespace ThermoRawFileParser.Writer
                 }
 
                 precursorMz = reaction.PrecursorMass;
-                isolationWidth = reaction.IsolationWidth;
+
+                //if isolation width was not found in the trailer, try to get one from the reaction
+                if (isolationWidth == null) isolationWidth = reaction.IsolationWidth; 
+
             }
             catch (ArgumentOutOfRangeException)
             {
