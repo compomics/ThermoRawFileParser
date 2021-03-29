@@ -31,9 +31,9 @@ namespace ThermoRawFileParser.Writer
 
         public List<CVTerm> MsData { get; } = new List<CVTerm>();
 
-        public List<CVTerm> SampleData { get; } = new List<CVTerm>();
-
         public List<CVTerm> ScanSettings { get; } = new List<CVTerm>();
+        
+        public List<CVTerm> SampleData { get; } = new List<CVTerm>();
 
         /**
          * Add a File property to the fileProperties 

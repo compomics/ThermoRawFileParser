@@ -156,25 +156,11 @@ namespace ThermoRawFileParser.Writer
                 rawFile.FileHeader.Revision.ToString()));
             metadata.addFileProperty(new CVTerm("NCIT:C69199", "NCIT", "Content Creation Date",
                 rawFile.FileHeader.CreationDate.ToString()));
-            metadata.addFileProperty(new CVTerm("NCIT:C25365", "NCIT", "Description",
-                rawFile.FileHeader.FileDescription));
-
-            // Scan Settings
-            metadata.addScanSetting(new CVTerm("MS:1000016", "MS", "scan start time",
-                startTime.ToString(CultureInfo.InvariantCulture)));
-            metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution",
-                rawFile.RunHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)));
-            metadata.addScanSetting(new CVTerm("UO:0000002", "MS", "mass unit",
-                rawFile.GetInstrumentData().Units.ToString()));
-            metadata.addScanSetting(new CVTerm("PRIDE:0000478", "PRIDE", "Number of scans",
-                rawFile.RunHeaderEx.SpectraCount.ToString()));
-            metadata.addScanSetting(new CVTerm("PRIDE:0000479", "PRIDE", "MS scan range",
-                firstScanNumber + ":" + lastScanNumber));
-            metadata.addScanSetting(new CVTerm("PRIDE:0000484", "PRIDE", "Retention time range",
-                startTime + ":" + endTime));
-            metadata.addScanSetting(new CVTerm("PRIDE:0000485", "PRIDE", "Mz range",
-                rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass));
-            metadata.addScanSetting(fragmentationTypes);
+            if (!rawFile.FileHeader.FileDescription.IsNullOrEmpty())
+            {
+                metadata.addFileProperty(new CVTerm("NCIT:C25365", "NCIT", "Description",
+                    rawFile.FileHeader.FileDescription));
+            }
 
             // Instrument Properties
             metadata.addInstrumentProperty(new CVTerm("MS:1000494", "MS", "Thermo Scientific instrument model",
@@ -185,8 +171,11 @@ namespace ThermoRawFileParser.Writer
                 rawFile.GetInstrumentData().SerialNumber));
             metadata.addInstrumentProperty(new CVTerm("NCIT:C111093", "NCIT", "Software Version",
                 rawFile.GetInstrumentData().SoftwareVersion));
-            metadata.addInstrumentProperty(new CVTerm("AFR:0001259", "AFO", "firmware version",
-                rawFile.GetInstrumentData().HardwareVersion));
+            if (!rawFile.GetInstrumentData().HardwareVersion.IsNullOrEmpty())
+            {
+                metadata.addInstrumentProperty(new CVTerm("AFR:0001259", "AFO", "firmware version",
+                    rawFile.GetInstrumentData().HardwareVersion));
+            }
 
             // MS Data
             foreach (KeyValuePair<string, int> entry in msTypes)
@@ -216,6 +205,23 @@ namespace ThermoRawFileParser.Writer
                 minMz.ToString(CultureInfo.InvariantCulture)));
             metadata.addMSData(new CVTerm("PRIDE:0000477", "PRIDE", "MS max MZ",
                 maxMz.ToString(CultureInfo.InvariantCulture)));
+
+            // Scan Settings
+            metadata.addScanSetting(new CVTerm("MS:1000016", "MS", "scan start time",
+                startTime.ToString(CultureInfo.InvariantCulture)));
+            metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution",
+                rawFile.RunHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)));
+            metadata.addScanSetting(new CVTerm("UO:0000002", "MS", "mass unit",
+                rawFile.GetInstrumentData().Units.ToString()));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000478", "PRIDE", "Number of scans",
+                rawFile.RunHeaderEx.SpectraCount.ToString()));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000479", "PRIDE", "MS scan range",
+                firstScanNumber + ":" + lastScanNumber));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000484", "PRIDE", "Retention time range",
+                startTime + ":" + endTime));
+            metadata.addScanSetting(new CVTerm("PRIDE:0000485", "PRIDE", "Mz range",
+                rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass));
+            metadata.addScanSetting(fragmentationTypes);
 
             // Sample Data
             if (!rawFile.SampleInformation.SampleName.IsNullOrEmpty())
@@ -299,9 +305,12 @@ namespace ThermoRawFileParser.Writer
                 "#FileProperties",
                 "RAW file path=" + rawFile.FileName,
                 "RAW file version=" + rawFile.FileHeader.Revision,
-                "Creation date=" + rawFile.FileHeader.CreationDate,
-                "Description=" + rawFile.FileHeader.FileDescription
+                "Creation date=" + rawFile.FileHeader.CreationDate
             };
+            if (!rawFile.FileHeader.FileDescription.IsNullOrEmpty())
+            {
+                output.Add("Description=" + rawFile.FileHeader.FileDescription);
+            }
 
             // Instrument Properties
             output.Add("#InstrumentProperties");
@@ -311,9 +320,12 @@ namespace ThermoRawFileParser.Writer
                     "Instrument name=" + rawFile.GetInstrumentData().Name,
                     $"Instrument serial number=[MS, MS:1000529, instrument serial number, {rawFile.GetInstrumentData().SerialNumber}]",
                     $"Software version=[NCIT, NCIT:C111093, Software Version, {rawFile.GetInstrumentData().SoftwareVersion}]",
-                    "Firmware version=" + rawFile.GetInstrumentData().HardwareVersion,
                 }
             );
+            if (!rawFile.GetInstrumentData().HardwareVersion.IsNullOrEmpty())
+            {
+                output.Add("Firmware version=" + rawFile.GetInstrumentData().HardwareVersion);
+            }
 
             // MS Data
             output.Add("#MsData");
@@ -331,10 +343,10 @@ namespace ThermoRawFileParser.Writer
                 {
                     "MS min charge=" + minCharge.ToString(CultureInfo.InvariantCulture),
                     "MS max charge=" + maxCharge.ToString(CultureInfo.InvariantCulture),
-                    $"MS min RT={minTime:F2}",
-                    $"MS max RT={maxTime:F2}",
-                    $"MS min MZ={minMz:F4}",
-                    $"MS max MZ={maxMz:F4}"
+                    $"MS min RT={minTime.ToString(CultureInfo.InvariantCulture)}",
+                    $"MS max RT={maxTime.ToString(CultureInfo.InvariantCulture)}",
+                    $"MS min MZ={minMz.ToString(CultureInfo.InvariantCulture)}",
+                    $"MS max MZ={maxMz.ToString(CultureInfo.InvariantCulture)}"
                 }
             );
 
@@ -342,13 +354,13 @@ namespace ThermoRawFileParser.Writer
             output.AddRange(new List<string>
                 {
                     "#ScanSettings",
-                    $"Scan start time={startTime:F2}",
-                    $"Mass resolution=[MS, MS:1000011, mass resolution, {rawFile.RunHeaderEx.MassResolution:F3}]",
+                    $"Scan start time={startTime.ToString(CultureInfo.InvariantCulture)}",
+                    $"Mass resolution=[MS, MS:1000011, mass resolution, {rawFile.RunHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)}]",
                     "Units=" + rawFile.GetInstrumentData().Units,
                     $"Number of scans={rawFile.RunHeaderEx.SpectraCount}",
                     $"Scan range={firstScanNumber};{lastScanNumber}",
-                    $"Time range={startTime:F2};{endTime:F2}",
-                    $"Mass range={rawFile.RunHeaderEx.LowMass:F4};{rawFile.RunHeaderEx.HighMass:F4}",
+                    $"Time range={startTime.ToString(CultureInfo.InvariantCulture)};{endTime.ToString(CultureInfo.InvariantCulture)}",
+                    $"Mass range={rawFile.RunHeaderEx.LowMass.ToString(CultureInfo.InvariantCulture)};{rawFile.RunHeaderEx.HighMass.ToString(CultureInfo.InvariantCulture)}",
                     "Fragmentation types=" + String.Join(", ", fragmentationTypes.Select(f => f.value))
                 }
             );
