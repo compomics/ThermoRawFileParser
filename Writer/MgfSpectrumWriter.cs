@@ -108,32 +108,11 @@ namespace ThermoRawFileParser.Writer
                             $"RTINSECONDS={(retentionTime * 60).ToString(CultureInfo.InvariantCulture)}");
 
                         // Trailer extra data list
-                        var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
-                        int? charge = null;
-                        double? monoisotopicMz = null;
-                        double? isolationWidth = null;
-                        for (var i = 0; i < trailerData.Length; i++)
-                        {
-                            if (trailerData.Labels[i] == "Charge State:")
-                            {
-                                if (Convert.ToInt32(trailerData.Values[i]) > 0)
-                                {
-                                    charge = Convert.ToInt32(trailerData.Values[i]);
-                                }
-                            }
-
-                            if (trailerData.Labels[i] == "Monoisotopic M/Z:")
-                            {
-                                monoisotopicMz = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                                    CultureInfo.CurrentCulture);
-                            }
-
-                            if (trailerData.Labels[i] == "MS" + (int) scanFilter.MSOrder + " Isolation Width:")
-                            {
-                                isolationWidth = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                                    CultureInfo.CurrentCulture);
-                            }
-                        }
+                        var trailerData = new ScanTrailer(rawFile.GetTrailerExtraInformation(scanNumber));
+                        int? charge = trailerData.AsPositiveInt("Charge State:");
+                        double? monoisotopicMz = trailerData.AsDouble("Monoisotopic M/Z:");
+                        double? isolationWidth =
+                            trailerData.AsDouble("MS" + (int) scanFilter.MSOrder + " Isolation Width:");
 
                         if (reaction != null)
                         {
@@ -261,7 +240,7 @@ namespace ThermoRawFileParser.Writer
 
                     break;
             }
-            
+
             return precursorReference;
         }
     }

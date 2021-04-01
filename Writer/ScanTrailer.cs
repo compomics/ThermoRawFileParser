@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ThermoFisher.CommonCore.Data.Business;
@@ -7,11 +8,20 @@ namespace ThermoRawFileParser.Writer
 {
     public class ScanTrailer
     {
-        public int Length { get => data.Count; }
+        public int Length
+        {
+            get => data.Count;
+        }
 
-        public string[] Labels { get => data.Keys.ToArray(); }
+        public string[] Labels
+        {
+            get => data.Keys.ToArray();
+        }
 
-        public string[] Values { get => data.Values.ToArray(); }
+        public string[] Values
+        {
+            get => data.Values.ToArray();
+        }
 
         private readonly Dictionary<string, string> data;
 
@@ -32,7 +42,7 @@ namespace ThermoRawFileParser.Writer
         /// <param name="key">name of the element</param>
         public bool? AsBool(string key)
         {
-            if(data.ContainsKey(key))
+            if (data.ContainsKey(key))
             {
                 var stringValue = data[key].ToLower();
 
@@ -59,8 +69,10 @@ namespace ThermoRawFileParser.Writer
         {
             if (data.ContainsKey(key))
             {
-                if (double.TryParse(data[key], out var result)) return result;
+                if (double.TryParse(data[key], NumberStyles.Any,
+                    CultureInfo.CurrentCulture, out var result)) return result;
             }
+
             return null;
         }
 
@@ -75,6 +87,7 @@ namespace ThermoRawFileParser.Writer
             {
                 if (int.TryParse(data[key], out var result)) return result;
             }
+
             return null;
         }
 
@@ -89,7 +102,6 @@ namespace ThermoRawFileParser.Writer
 
             if (value != null && value > 0) return value;
             else return null;
-
         }
 
         /// <summary>
@@ -113,6 +125,7 @@ namespace ThermoRawFileParser.Writer
             {
                 return data[key];
             }
+
             return null;
         }
 

@@ -1164,20 +1164,16 @@ namespace ThermoRawFileParser.Writer
 
             // Trailer extra data list
             var trailerData = new ScanTrailer(_rawFile.GetTrailerExtraInformation(scanNumber));
-            int? charge;
-            double? monoisotopicMz;
-            double? ionInjectionTime;
-            double? isolationWidth;
-            double? FAIMSCV = null;
-            List<double> SPSMasses = new List<double>();
 
-            charge = trailerData.AsPositiveInt("Charge State:");
-            monoisotopicMz = trailerData.AsDouble("Monoisotopic M/Z:");
-            ionInjectionTime = trailerData.AsDouble("Ion Injection Time (ms):");
-            isolationWidth = trailerData.AsDouble("MS" + (int)scanFilter.MSOrder + " Isolation Width:");
+            int? charge = trailerData.AsPositiveInt("Charge State:");
+            double? monoisotopicMz = trailerData.AsDouble("Monoisotopic M/Z:");
+            double? ionInjectionTime = trailerData.AsDouble("Ion Injection Time (ms):");
+            double? isolationWidth = trailerData.AsDouble("MS" + (int)scanFilter.MSOrder + " Isolation Width:");
+            double? FAIMSCV = null;
             if (trailerData.AsBool("FAIMS Voltage On:").GetValueOrDefault(false))
                 FAIMSCV = trailerData.AsDouble("FAIMS CV:");
 
+            List<double> SPSMasses = new List<double>();
             //tune version < 3
             if (trailerData.Has("SPS Mass 1:"))
             {

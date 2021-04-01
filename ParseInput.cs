@@ -29,9 +29,6 @@ namespace ThermoRawFileParser
                 if (value != null)
                 {
                     RawFileNameWithoutExtension = Path.GetFileNameWithoutExtension(value);
-                    //do we need it?
-                    var splittedPath = value.Split('/');
-                    _rawFileName = splittedPath[splittedPath.Length - 1];
                 }
             }
         }
@@ -93,12 +90,6 @@ namespace ThermoRawFileParser
         public string S3Url { get; set; }
 
         public string BucketName { get; set; }
-
-        //this property assigned but never used
-        /// <summary>
-        /// The raw file name.
-        /// </summary>
-        private string _rawFileName;
 
         /// <summary>
         /// The RAW file name without extension.
