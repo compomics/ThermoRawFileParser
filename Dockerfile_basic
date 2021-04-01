@@ -5,7 +5,7 @@ FROM mono:latest
 LABEL base_image="mono:latest"
 LABEL version="1"
 LABEL software="ThermoRawFileParser"
-LABEL software.version="1.2.3"
+LABEL software.version="1.3.3"
 LABEL about.summary="A software to convert Thermo RAW files to mgf and mzML"
 LABEL about.home="https://github.com/compomics/ThermoRawFileParser"
 LABEL about.documentation="https://github.com/compomics/ThermoRawFileParser"
