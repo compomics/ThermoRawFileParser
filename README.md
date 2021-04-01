@@ -57,6 +57,9 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
   -b, --output_file=VALUE    The output file. Specify this or an output
                                directory -o. Specifying neither writes to the
                                input directory.
+  -s, --stdout               Write to standard output. Cannot be combined with
+                               file or directory output. Implies silent logging,
+                               i.e. logging level 0
   -f, --format=VALUE         The spectra output format: 0 for MGF, 1 for mzML,
                                2 for indexed mzML, 3 for Parquet. Defaults to
                                mzML if no format is specified.
