@@ -62,7 +62,7 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
                                i.e. logging level 0
   -f, --format=VALUE         The spectra output format: 0 for MGF, 1 for mzML,
                                2 for indexed mzML, 3 for Parquet. Defaults to
-                               mzML if no format is specified.
+                               indexed mzML if no format is specified.
   -m, --metadata=VALUE       The metadata output format: 0 for JSON, 1 for TXT.
   -c, --metadata_output_file=VALUE
                              The metadata output file. By default the metadata
