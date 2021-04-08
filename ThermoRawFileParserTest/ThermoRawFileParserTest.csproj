@@ -112,6 +112,12 @@
       <HintPath>..\packages\NUnit.3.13.1\lib\net45\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="OpenMcdf, Version=2.2.1.9, Culture=neutral, PublicKeyToken=fdbb1629d7c00800, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenMcdf.2.2.1.9\lib\net40\OpenMcdf.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenMcdf.Extensions, Version=2.3.0.0, Culture=neutral, PublicKeyToken=fdbb1629d7c00800, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenMcdf.Extensions.2.2.1.4\lib\net40\OpenMcdf.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="PepXML, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\mzLib.1.0.450\lib\net471\PepXML.dll</HintPath>
       <Private>True</Private>
@@ -128,9 +134,18 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.IO.FileSystem.AccessControl, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.AccessControl.5.0.0\lib\net461\System.IO.FileSystem.AccessControl.dll</HintPath>
+    </Reference>
     <Reference Include="System.Net" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security.AccessControl, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.AccessControl.5.0.0\lib\net461\System.Security.AccessControl.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
@@ -138,17 +153,15 @@
       <HintPath>..\packages\mzLib.1.0.450\lib\net471\ThermoFisher.CommonCore.BackgroundSubtraction.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ThermoFisher.CommonCore.Data, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
-      <HintPath>..\packages\mzLib.1.0.450\lib\net471\ThermoFisher.CommonCore.Data.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="ThermoFisher.CommonCore.Data, Version=5.0.0.71, Culture=neutral, PublicKeyToken=1aef06afb5abd953, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThermoFisher.CommonCore.Data.5.0.0.71\lib\netstandard2.0\ThermoFisher.CommonCore.Data.dll</HintPath>
     </Reference>
     <Reference Include="ThermoFisher.CommonCore.MassPrecisionEstimator, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\mzLib.1.0.450\lib\net471\ThermoFisher.CommonCore.MassPrecisionEstimator.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ThermoFisher.CommonCore.RawFileReader, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1aef06afb5abd953">
-      <HintPath>..\packages\mzLib.1.0.450\lib\net471\ThermoFisher.CommonCore.RawFileReader.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="ThermoFisher.CommonCore.RawFileReader, Version=5.0.0.71, Culture=neutral, PublicKeyToken=1aef06afb5abd953, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThermoFisher.CommonCore.RawFileReader.5.0.0.71\lib\netstandard2.0\ThermoFisher.CommonCore.RawFileReader.dll</HintPath>
     </Reference>
     <Reference Include="ThermoRawFileReader, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\mzLib.1.0.450\lib\net471\ThermoRawFileReader.dll</HintPath>
@@ -171,6 +184,7 @@
     <Compile Include="XicReaderTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Data\TestFolderMgfs\small1.RAW">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
