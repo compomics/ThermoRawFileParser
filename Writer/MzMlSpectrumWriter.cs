@@ -285,7 +285,7 @@ namespace ThermoRawFileParser.Writer
                     value = ""
                 });
                 _writer.WriteEndElement(); // processingMethod  
-                if (!ParseInput.NoPeakPicking)
+                if (ParseInput.NoPeakPicking.Count < ParseInput.AllLevels.Count)
                 {
                     _writer.WriteStartElement("processingMethod");
                     _writer.WriteAttributeString("order", "1");
@@ -1386,7 +1386,7 @@ namespace ThermoRawFileParser.Writer
             double[] masses;
             double[] intensities;
 
-            if (!ParseInput.NoPeakPicking)
+            if (!ParseInput.NoPeakPicking.Contains((int)scanFilter.MSOrder))
             {
                 //Spectrum will be centroided
                 spectrumCvParams.Add(new CVParamType

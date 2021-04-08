@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using ThermoRawFileParser.Writer;
 
@@ -8,7 +7,7 @@ namespace ThermoRawFileParser
     public class ParseInput
     {
         // All MS levels
-        private readonly HashSet<int> _allLevels = new HashSet<int>(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+        public static HashSet<int> AllLevels { get => new HashSet<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }; }
 
         /// <summary>
         /// The RAW file path.
@@ -63,7 +62,7 @@ namespace ThermoRawFileParser
         /// </summary>
         public bool Gzip { get; set; }
 
-        public bool NoPeakPicking { get; set; }
+        public HashSet<int> NoPeakPicking { get; set; }
 
         public bool NoZlibCompression { get; set; }
 
@@ -101,12 +100,12 @@ namespace ThermoRawFileParser
             MetadataFormat = MetadataFormat.NONE;
             OutputFormat = OutputFormat.NONE;
             Gzip = false;
-            NoPeakPicking = false;
+            NoPeakPicking = new HashSet<int>();
             NoZlibCompression = false;
             LogFormat = LogFormat.DEFAULT;
             IgnoreInstrumentErrors = false;
             AllDetectors = false;
-            MsLevel = _allLevels;
+            MsLevel = AllLevels;
             MgfPrecursor = false;
             StdOut = false;
         }
