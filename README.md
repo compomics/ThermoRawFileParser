@@ -68,9 +68,14 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
                              The metadata output file. By default the metadata
                                file is written to the output directory.
   -g, --gzip                 GZip the output file.
-  -p, --noPeakPicking        Don't use the peak picking provided by the native
+  -p, --noPeakPicking[=VALUE]
+                             Don't use the peak picking provided by the native
                                Thermo library. By default peak picking is
-                               enabled.
+                               enabled. Optional argument allows disabling peak
+                               peaking only for selected MS levels and should
+                               be a comma-separated list of integers (1,2,3)
+                               and/or intervals (1-3), open-end intervals (1-)
+                               are allowed
   -z, --noZlibCompression    Don't use zlib compression for the m/z ratios and
                                intensities. By default zlib compression is
                                enabled.
