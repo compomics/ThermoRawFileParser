@@ -60,11 +60,11 @@ namespace ThermoRawFileParser.Writer
                 // Get the scan event for this scan number
                 var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
 
-                // Only consider MS2 spectra
+                // Keep track of the number of MS<MS level> spectra
                 if (msTypes.ContainsKey(scanFilter.MSOrder.ToString()))
                 {
                     var value = msTypes[scanFilter.MSOrder.ToString()];
-                    value = value + 1;
+                    value += 1;
                     msTypes[scanFilter.MSOrder.ToString()] = value;
                 }
                 else
