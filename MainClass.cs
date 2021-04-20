@@ -19,7 +19,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.4.0";
+        public const string Version = "1.3.4";
 
         public static void Main(string[] args)
         {
@@ -409,7 +409,7 @@ namespace ThermoRawFileParser
                 {
                     "p:|noPeakPicking:",
                     "Don't use the peak picking provided by the native Thermo library. By default peak picking is enabled. Optional argument allows disabling peak peaking only for selected MS levels and should be a comma-separated list of integers (1,2,3) and/or intervals (1-3), open-end intervals (1-) are allowed",
-                    v => parseInput.NoPeakPicking = v is null? ParseInput.AllLevels: ParseMsLevel(v)
+                    v => parseInput.NoPeakPicking = v is null ? ParseInput.AllLevels : ParseMsLevel(v)
                 },
                 {
                     "z|noZlibCompression",

@@ -139,7 +139,7 @@ namespace ThermoRawFileParser.Writer
                         // Write the filter string
                         //Writer.WriteLine($"SCANEVENT={scanEvent.ToString()}");
 
-                        if (!ParseInput.NoPeakPicking.Contains((int)scanFilter.MSOrder))
+                        if (!ParseInput.NoPeakPicking.Contains((int) scanFilter.MSOrder))
                         {
                             // Check if the scan has a centroid stream
                             if (scan.HasCentroidStream)
