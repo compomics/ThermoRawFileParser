@@ -220,43 +220,10 @@ By default the parser only logs to console. To enable logging to file, uncomment
 
 ## Docker
 
-Run ThermoRawFileParser simply with the pre-build biocontainer:
+First check the latest version tag on [biocontainers/thermorawfileparser/tags](https://quay.io/repository/biocontainers/thermorawfileparser?tab=tags). Then pull and run the container with
 
 ```bash
-docker run -i -t -v /home/user/raw:/data_input quay.io/biocontainers/thermorawfileparser:1.1.2--0 ThermoRawFileParser.sh --help
+docker run -i -t -v /home/user/raw:/data_input quay.io/biocontainers/thermorawfileparser:<tag> ThermoRawFileParser.sh --help
 ```
 
-### Basic docker
-
-Use the `Dockerfile_basic` docker file to build an image. It fetches to source code from github and builds it.
-```
-docker build --no-cache -t thermorawparser -f Dockerfile_basic .
-```
-Run example:
-```
-docker run -v /home/user/raw:/data_input -i -t thermorawparser mono /src/bin/x64/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0
-```
-Create example for reusing the container:
-```
-docker create -v /home/user/raw:/data_input --name=rawparser -it thermorawparser
-docker start rawparser
-docker exec rawparser mono /src/bin/x64/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0
-docker exec rawparser mono /src/bin/x64/Debug/ThermoRawFileParser.exe -i=/data_input/another_raw_file.raw -o=/data_input/output/ -f=0 -g -m=0
-docker stop rawparser
-```
-
-### Biocontainers docker
-
-Use the `Dockerfile` docker file to build an image. It fetches to source code from github and builds it.
-```
-docker build --no-cache -t thermorawparser .
-```
-Run example:
-```
-docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser mono /home/biodocker/bin/bin/x64/Debug/ThermoRawFileParser.exe -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0
-```
-or with the bash script (`ThermoRawFileParser.sh`):
-```
-docker run -v /home/user/raw:/data_input -i -t --user biodocker thermorawparser /bin/bash /home/biodocker/bin/ThermoRawFileParser.sh -i=/data_input/raw_file.raw -o=/data_input/output/ -f=0 -g -m=0
-```
 [Go to top of page](#thermorawfileparser)
