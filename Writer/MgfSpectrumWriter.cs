@@ -139,23 +139,16 @@ namespace ThermoRawFileParser.Writer
                         // Write the filter string
                         //Writer.WriteLine($"SCANEVENT={scanEvent.ToString()}");
 
+                        double[] masses;
+                        double[] intensities;
+
                         if (!ParseInput.NoPeakPicking.Contains((int) scanFilter.MSOrder))
                         {
                             // Check if the scan has a centroid stream
                             if (scan.HasCentroidStream)
                             {
-                                if (scan.CentroidScan.Length > 0)
-                                {
-                                    for (var i = 0; i < scan.CentroidScan.Length; i++)
-                                    {
-                                        Writer.WriteLine(
-                                            scan.CentroidScan.Masses[i].ToString("0.0000000",
-                                                CultureInfo.InvariantCulture)
-                                            + " "
-                                            + scan.CentroidScan.Intensities[i].ToString("0.0000000000",
-                                                CultureInfo.InvariantCulture));
-                                    }
-                                }
+                                masses = scan.CentroidScan.Masses;
+                                intensities = scan.CentroidScan.Intensities;
                             }
                             else // Otherwise take segmented (low res) scan data
                             {
@@ -164,27 +157,23 @@ namespace ThermoRawFileParser.Writer
                                     ? Scan.ToCentroid(scan).SegmentedScan
                                     : scan.SegmentedScan;
 
-                                for (var i = 0; i < segmentedScan.Positions.Length; i++)
-                                {
-                                    Writer.WriteLine(
-                                        segmentedScan.Positions[i].ToString("0.0000000",
-                                            CultureInfo.InvariantCulture)
-                                        + " "
-                                        + segmentedScan.Intensities[i].ToString("0.0000000000",
-                                            CultureInfo.InvariantCulture));
-                                }
+                                masses = segmentedScan.Positions;
+                                intensities = segmentedScan.Intensities;
                             }
                         }
                         else // Use the segmented data as is
                         {
-                            for (var i = 0; i < scan.SegmentedScan.Positions.Length; i++)
+                            masses = scan.SegmentedScan.Positions;
+                            intensities = scan.SegmentedScan.Intensities;
+                        }
+
+                        if (!(masses is null) && masses.Length > 0)
+                        {
+                            Array.Sort(masses, intensities);
+
+                            for (var i = 0; i < masses.Length; i++)
                             {
-                                Writer.WriteLine(
-                                    scan.SegmentedScan.Positions[i].ToString("0.0000000",
-                                        CultureInfo.InvariantCulture)
-                                    + " "
-                                    + scan.SegmentedScan.Intensities[i].ToString("0.0000000000",
-                                        CultureInfo.InvariantCulture));
+                                Writer.WriteLine(String.Format("{0:f5} {1:f3}", masses[i], intensities[i]));
                             }
                         }
 

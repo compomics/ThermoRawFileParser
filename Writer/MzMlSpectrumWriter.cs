@@ -1558,6 +1558,9 @@ namespace ThermoRawFileParser.Writer
             // M/Z Data
             if (masses != null)
             {
+                //sorting
+                Array.Sort(masses, intensities);
+
                 // Set the spectrum default array length
                 spectrum.defaultArrayLength = masses.Length;
 
