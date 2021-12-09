@@ -5,6 +5,7 @@ using System.Reflection;
 using log4net;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
+using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
 
 namespace ThermoRawFileParser.Writer
@@ -176,49 +177,57 @@ namespace ThermoRawFileParser.Writer
         }
 
         /// <summary>
-        /// Calculate the precursor peak intensity.
+        /// Calculate the precursor peak intensity (similar to modern MSConvert).
+        /// Sum intensities of all peaks in the isolation window.
         /// </summary>
         /// <param name="rawFile">the RAW file object</param>
         /// <param name="precursorScanNumber">the precursor scan number</param>
         /// <param name="precursorMass">the precursor mass</param>
+        /// <param name="isolationWidth">the isolation width</param>
+        /// <param name="useProfile">profile/centroid switch</param>
         protected static double? CalculatePrecursorPeakIntensity(IRawDataPlus rawFile, int precursorScanNumber,
-            double precursorMass)
+            double precursorMass, double? isolationWidth, bool useProfile)
         {
-            double? precursorIntensity = null;
-            double tolerance;
+            double precursorIntensity = 0;
+            double halfWidth = isolationWidth is null || isolationWidth == 0 ? 0 : DefaultIsolationWindowLowerOffset; // that is how it is made in MSConvert (why?)
 
             // Get the precursor scan from the RAW file
             var scan = Scan.FromFile(rawFile, precursorScanNumber);
 
-            //Select centroid stream if it exists, otherwise use profile one
             double[] masses;
             double[] intensities;
 
-            if (scan.HasCentroidStream)
-            {
-                masses = scan.CentroidScan.Masses;
-                intensities = scan.CentroidScan.Intensities;
-                tolerance = 0.01; //high resolution scan
-            }
-            else
+            if (useProfile)
             {
                 masses = scan.SegmentedScan.Positions;
                 intensities = scan.SegmentedScan.Intensities;
-                tolerance = 0.5; //low resolution scan
+            }
+            else
+            {
+                //use centroids if they exist, otherwise perform centroiding
+                if (scan.HasCentroidStream)
+                {
+                    masses = scan.CentroidScan.Masses;
+                    intensities = scan.CentroidScan.Intensities;
+                }
+                else
+                {
+                    var scanEvent = rawFile.GetScanEventForScanNumber(precursorScanNumber);
+                    var centroidedScan = scanEvent.ScanData == ScanDataType.Profile //only centroid profile spectra
+                        ? Scan.ToCentroid(scan).SegmentedScan
+                        : scan.SegmentedScan;
+
+                    masses = centroidedScan.Positions;
+                    intensities = centroidedScan.Intensities;
+                }
             }
 
-            //find closest peak in a stream
-            var bestDelta = tolerance;
-            for (var i = 0; i < masses.Length; i++)
-            {
-                var delta = precursorMass - masses[i];
-                if (Math.Abs(delta) < bestDelta)
-                {
-                    bestDelta = delta;
-                    precursorIntensity = intensities[i];
-                }
+            var index = masses.FastBinarySearch(precursorMass - halfWidth); //set index to the first peak inside isolation window
 
-                if (delta < -1 * tolerance) break;
+            while (index > 0 && index < masses.Length && masses[index] < precursorMass + halfWidth) //negative index means value was not found
+            {
+                precursorIntensity += intensities[index];
+                index++;
             }
 
             return precursorIntensity;

@@ -2029,24 +2029,24 @@ namespace ThermoRawFileParser.Writer
                 });
             }
 
-            //Precursor intensity is disabled for now
-            //if (selectedIonMz > ZeroDelta)
-            //{
-            //    var selectedIonIntensity = CalculatePrecursorPeakIntensity(_rawFile, precursorScanNumber, selectedIonMz);
-            //    if (selectedIonIntensity != null)
-            //    {
-            //        ionCvParams.Add(new CVParamType
-            //        {
-            //            name = "peak intensity",
-            //            value = selectedIonIntensity.ToString(),
-            //            accession = "MS:1000042",
-            //            cvRef = "MS",
-            //            unitAccession = "MS:1000131",
-            //            unitCvRef = "MS",
-            //            unitName = "number of detector counts"
-            //        });
-            //    }
-            //}
+            if (selectedIonMz > ZeroDelta)
+            {
+                var selectedIonIntensity = CalculatePrecursorPeakIntensity(_rawFile, precursorScanNumber, selectedIonMz, isolationWidth,
+                    ParseInput.NoPeakPicking.Contains((int)msLevel - 1));
+                if (selectedIonIntensity != null)
+                {
+                    ionCvParams.Add(new CVParamType
+                    {
+                        name = "peak intensity",
+                        value = selectedIonIntensity.ToString(),
+                        accession = "MS:1000042",
+                        cvRef = "MS",
+                        unitAccession = "MS:1000131",
+                        unitCvRef = "MS",
+                        unitName = "number of detector counts"
+                    });
+                }
+            }
 
             precursor.selectedIonList.selectedIon[0].cvParam = ionCvParams.ToArray();
 
