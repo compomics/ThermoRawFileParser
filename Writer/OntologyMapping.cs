@@ -140,6 +140,15 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
+                    IonizationModeType.PaperSprayIonization, new CVParamType
+                    {
+                        accession = "MS:1003235",
+                        name = "paper spray ionization",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
                     IonizationModeType.Any, new CVParamType
                     {
                         accession = "MS:1000008",
