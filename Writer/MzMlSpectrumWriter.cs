@@ -1415,9 +1415,7 @@ namespace ThermoRawFileParser.Writer
             double[] masses;
             double[] intensities;
 
-            double[] baselines;
-            double[] noises;
-            double[] resolutions;
+            
 
             if (!ParseInput.NoPeakPicking.Contains((int) scanFilter.MSOrder))
             {
@@ -1438,9 +1436,6 @@ namespace ThermoRawFileParser.Writer
 
                     masses = scan.CentroidScan.Masses;
                     intensities = scan.CentroidScan.Intensities;
-                    baselines = scan.PreferredBaselines;
-                    noises = scan.PreferredNoises;
-                    resolutions = scan.PreferredResolutions;
 
                     if (scan.CentroidScan.Length > 0)
                     {
@@ -1460,10 +1455,6 @@ namespace ThermoRawFileParser.Writer
 
                     masses = segmentedScan.Positions;
                     intensities = segmentedScan.Intensities;
-
-                    baselines = scan.PreferredBaselines;
-                    noises = scan.PreferredNoises;
-                    resolutions = scan.PreferredResolutions;
 
                     if (segmentedScan.PositionCount > 0)
                     {
@@ -1501,9 +1492,7 @@ namespace ThermoRawFileParser.Writer
                 masses = scan.SegmentedScan.Positions;
                 intensities = scan.SegmentedScan.Intensities;
 
-                baselines = scan.PreferredBaselines;
-                noises = scan.PreferredNoises;
-                resolutions = scan.PreferredResolutions;
+                
 
 
                 if (scan.SegmentedScan.Positions.Length > 0)
@@ -1512,6 +1501,8 @@ namespace ThermoRawFileParser.Writer
                     highestObservedMz = scan.SegmentedScan.Positions[scan.SegmentedScan.Positions.Length - 1];
                 }
             }
+
+            
 
             // Base peak m/z
             if (basePeakMass != null)
@@ -1607,6 +1598,7 @@ namespace ThermoRawFileParser.Writer
                     },
                     new CVParamType {accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""}
                 };
+
                 if (!ParseInput.NoZlibCompression)
                 {
                     massesBinaryDataCvParams.Add(
@@ -1696,74 +1688,191 @@ namespace ThermoRawFileParser.Writer
                 binaryData.Add(intensitiesBinaryData);
             }
 
-            
-
-            // Noise Data
-            if (noises != null)
+            // Include optional noise data
+            if (ParseInput.NoiseData)
             {
-                // Set the spectrum default array length if necessary
-                if (spectrum.defaultArrayLength == 0)
-                {
-                    spectrum.defaultArrayLength = noises.Length;
-                }
+                double[] baselineData;
+                double[] noiseData;
+                double[] massData;
 
-                var noisesBinaryData =
+                baselineData = scan.PreferredBaselines;
+                noiseData = scan.PreferredNoises;
+                massData = scan.PreferredMasses;
+
+                // Noise Data
+                if ((baselineData != null) && (noiseData != null) && (massData != null))
+                {
+                    // Set the spectrum default array length if necessary
+                    if (spectrum.defaultArrayLength == 0)
+                    {
+                        spectrum.defaultArrayLength = noiseData.Length;
+                    }
+
+                    var baselineBinaryData =
                     new BinaryDataArrayType
                     {
                         binary = ParseInput.NoZlibCompression
-                            ? Get64BitArray(noises)
-                            : GetZLib64BitArray(noises)
+                            ? Get64BitArray(baselineData)
+                            : GetZLib64BitArray(baselineData)
                     };
-                noisesBinaryData.encodedLength =
-                    (4 * Math.Ceiling((double)noisesBinaryData
-                        .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
-                var noisesBinaryDataCvParams = new List<CVParamType>
-                {
-                    new CVParamType
+                    baselineBinaryData.encodedLength =
+                        (4 * Math.Ceiling((double)baselineBinaryData
+                            .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
+
+                    var baselineBinaryDataCvParams = new List<CVParamType>
                     {
-                        accession = "MS:1002742",
-                        name = "noise array",
-                        cvRef = "MS",
-                        unitCvRef = "",
-                        unitAccession = "",
-                        unitName = "",
-                        value = ""
-                    },
-                    new CVParamType {accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""}
-                };
-                if (!ParseInput.NoZlibCompression)
-                {
-                    noisesBinaryDataCvParams.Add(
                         new CVParamType
                         {
-                            accession = "MS:1000574",
-                            name = "zlib compression",
+                            accession = "MS:1002745",
+                            name = "sampled noise baseline array",
                             cvRef = "MS",
                             value = ""
-                        });
-                }
-                else
-                {
-                    noisesBinaryDataCvParams.Add(
+                        },
+                        new CVParamType {accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""}
+                    };
+
+
+                    if (!ParseInput.NoZlibCompression)
+                    {
+                        baselineBinaryDataCvParams.Add(
+                            new CVParamType
+                            {
+                                accession = "MS:1000574",
+                                name = "zlib compression",
+                                cvRef = "MS",
+                                value = ""
+                            });
+                    }
+                    else
+                    {
+                        baselineBinaryDataCvParams.Add(
+                            new CVParamType
+                            {
+                                accession = "MS:1000576",
+                                name = "no compression",
+                                cvRef = "MS",
+                                value = ""
+                            });
+                    }
+
+                    baselineBinaryData.cvParam = baselineBinaryDataCvParams.ToArray();
+
+                    binaryData.Add(baselineBinaryData);
+
+                    var noiseBinaryData =
+                    new BinaryDataArrayType
+                    {
+                        binary = ParseInput.NoZlibCompression
+                            ? Get64BitArray(noiseData)
+                            : GetZLib64BitArray(noiseData)
+                    };
+                    noiseBinaryData.encodedLength =
+                        (4 * Math.Ceiling((double)noiseBinaryData
+                            .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
+
+                    var noiseBinaryDataCvParams = new List<CVParamType>
+                    {
                         new CVParamType
                         {
-                            accession = "MS:1000576",
-                            name = "no compression",
+                            accession = "MS:1002744",
+                            name = "sampled noise intensity array",
                             cvRef = "MS",
+                            unitCvRef = "MS",
+                            unitAccession = "MS:1000131",
+                            unitName = "number of detector counts",
                             value = ""
-                        });
+                        },
+                        new CVParamType {accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""}
+                    };
+
+
+                    if (!ParseInput.NoZlibCompression)
+                    {
+                        noiseBinaryDataCvParams.Add(
+                            new CVParamType
+                            {
+                                accession = "MS:1000574",
+                                name = "zlib compression",
+                                cvRef = "MS",
+                                value = ""
+                            });
+                    }
+                    else
+                    {
+                        noiseBinaryDataCvParams.Add(
+                            new CVParamType
+                            {
+                                accession = "MS:1000576",
+                                name = "no compression",
+                                cvRef = "MS",
+                                value = ""
+                            });
+                    }
+
+                    noiseBinaryData.cvParam = noiseBinaryDataCvParams.ToArray();
+
+                    binaryData.Add(noiseBinaryData);
+
+                    var massBinaryData =
+                    new BinaryDataArrayType
+                    {
+                        binary = ParseInput.NoZlibCompression
+                            ? Get64BitArray(noiseData)
+                            : GetZLib64BitArray(noiseData)
+                    };
+                    noiseBinaryData.encodedLength =
+                        (4 * Math.Ceiling((double)noiseBinaryData
+                            .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
+
+                    var massBinaryDataCvParams = new List<CVParamType>
+                    {
+                        new CVParamType
+                        {
+                            accession = "MS:1002743",
+                            name = "sampled noise m/z array",
+                            cvRef = "MS",
+                            unitCvRef = "MS",
+                            unitAccession = "MS:1000040",
+                            unitName = "m/z",
+                            value = ""
+                        },
+                        new CVParamType {accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""}
+                    };
+
+
+                    if (!ParseInput.NoZlibCompression)
+                    {
+                        massBinaryDataCvParams.Add(
+                            new CVParamType
+                            {
+                                accession = "MS:1000574",
+                                name = "zlib compression",
+                                cvRef = "MS",
+                                value = ""
+                            });
+                    }
+                    else
+                    {
+                        massBinaryDataCvParams.Add(
+                            new CVParamType
+                            {
+                                accession = "MS:1000576",
+                                name = "no compression",
+                                cvRef = "MS",
+                                value = ""
+                            });
+                    }
+
+                    massBinaryData.cvParam = massBinaryDataCvParams.ToArray();
+
+                    binaryData.Add(massBinaryData);
                 }
-
-                noisesBinaryData.cvParam = noisesBinaryDataCvParams.ToArray();
-
-                binaryData.Add(noisesBinaryData);
             }
 
-            Log.Info(masses.Length);
-            Log.Info(intensities.Length);
-            Log.Info(baselines.Length);
-            Log.Info(noises.Length);
-            Log.Info(resolutions.Length);
+
+
+
+
 
             if (!binaryData.IsNullOrEmpty())
             {

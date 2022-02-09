@@ -78,6 +78,8 @@ namespace ThermoRawFileParser
 
         public bool MgfPrecursor { get; set; }
 
+        public bool NoiseData { get; set; }
+
         public bool StdOut { get; set; }
 
         private S3Loader S3Loader { get; set; }
@@ -108,6 +110,7 @@ namespace ThermoRawFileParser
             MsLevel = AllLevels;
             MgfPrecursor = false;
             StdOut = false;
+            NoiseData = false;
         }
 
         public ParseInput(string rawFilePath, string rawDirectoryPath, string outputDirectory, OutputFormat outputFormat
