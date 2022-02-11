@@ -39,12 +39,18 @@ namespace ThermoRawFileParser.Writer
         protected StreamWriter Writer;
 
         /// <summary>
+        /// Precursor cache
+        /// </summary>
+        private static Util.LimitedSizeDictionary<int, Scan> precursorCache;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="parseInput">the parse input object</param>
         protected SpectrumWriter(ParseInput parseInput)
         {
             ParseInput = parseInput;
+            precursorCache = new Util.LimitedSizeDictionary<int, Scan>(10);
         }
 
         /// <inheritdoc />
@@ -191,35 +197,41 @@ namespace ThermoRawFileParser.Writer
             double precursorIntensity = 0;
             double halfWidth = isolationWidth is null || isolationWidth == 0 ? 0 : DefaultIsolationWindowLowerOffset; // that is how it is made in MSConvert (why?)
 
-            // Get the precursor scan from the RAW file
-            var scan = Scan.FromFile(rawFile, precursorScanNumber);
+            // Get the precursor scan from the RAW file or cache
+            Scan scan;
+            if (precursorCache.ContainsKey(precursorScanNumber))
+            {
+                scan = precursorCache[precursorScanNumber];
+            }
+            else
+            {
+                scan = Scan.FromFile(rawFile, precursorScanNumber);
+                //check if it is necessary to centroid a profile scan
+                if (!useProfile && !scan.HasCentroidStream)
+                {
+                    var scanEvent = rawFile.GetScanEventForScanNumber(precursorScanNumber);
+                    var centroidedScan = scanEvent.ScanData == ScanDataType.Profile //only centroid profile spectra
+                        ? Scan.ToCentroid(scan)
+                        : scan;
+
+                    precursorCache.Add(precursorScanNumber, centroidedScan);
+                }
+
+                precursorCache.Add(precursorScanNumber, scan);
+            }
 
             double[] masses;
             double[] intensities;
 
-            if (useProfile)
+            if (!useProfile && scan.HasCentroidStream) //use centroid stream if it exist
+            {
+                masses = scan.CentroidScan.Masses;
+                intensities = scan.CentroidScan.Intensities;
+            }
+            else //profile spectra were centroided earlier
             {
                 masses = scan.SegmentedScan.Positions;
                 intensities = scan.SegmentedScan.Intensities;
-            }
-            else
-            {
-                //use centroids if they exist, otherwise perform centroiding
-                if (scan.HasCentroidStream)
-                {
-                    masses = scan.CentroidScan.Masses;
-                    intensities = scan.CentroidScan.Intensities;
-                }
-                else
-                {
-                    var scanEvent = rawFile.GetScanEventForScanNumber(precursorScanNumber);
-                    var centroidedScan = scanEvent.ScanData == ScanDataType.Profile //only centroid profile spectra
-                        ? Scan.ToCentroid(scan).SegmentedScan
-                        : scan.SegmentedScan;
-
-                    masses = centroidedScan.Positions;
-                    intensities = centroidedScan.Intensities;
-                }
             }
 
             var index = masses.FastBinarySearch(precursorMass - halfWidth); //set index to the first peak inside isolation window
