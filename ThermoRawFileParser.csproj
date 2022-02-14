@@ -197,6 +197,7 @@
     <Compile Include="RawFileParserException.cs" />
     <Compile Include="RawFileParser.cs" />
     <Compile Include="Util\LimitedSizeDictionary.cs" />
+    <Compile Include="Util\MZArray.cs" />
     <Compile Include="Util\Peptide.cs" />
     <Compile Include="Writer\ScanTrailer.cs" />
     <Compile Include="XIC\JSONInputUnit.cs" />
