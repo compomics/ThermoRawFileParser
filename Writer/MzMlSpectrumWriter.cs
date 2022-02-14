@@ -2455,21 +2455,29 @@ namespace ThermoRawFileParser.Writer
         /// <returns>the byte array</returns>
         private static byte[] Get64BitArray(ICollection<double> array)
         {
-            byte[] bytes;
+            Array bytes = Array.CreateInstance(typeof(byte), array.Count * sizeof(double));
 
-            using (var memoryStream = new MemoryStream())
+            if (BitConverter.IsLittleEndian) //should be for most modern systems, but maybe..
             {
-                foreach (var doubleValue in array)
-                {
-                    var doubleValueByteArray = BitConverter.GetBytes(doubleValue);
-                    memoryStream.Write(doubleValueByteArray, 0, doubleValueByteArray.Length);
-                }
-
-                memoryStream.Position = 0;
-                bytes = memoryStream.ToArray();
+                Buffer.BlockCopy(array.ToArray(), 0, bytes, 0, bytes.Length); //copy the buffer directly
             }
+            else //swap byte order of all elements in array
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    foreach (var doubleValue in array)
+                    {
+                        var doubleValueByteArray = BitConverter.GetBytes(doubleValue);
+                        Array.Reverse(doubleValueByteArray);
+                        memoryStream.Write(doubleValueByteArray, 0, doubleValueByteArray.Length);
+                    }
 
-            return bytes;
+                    memoryStream.Position = 0;
+                    bytes = memoryStream.ToArray();
+                }
+            }    
+
+            return (byte[])bytes;
         }
 
         /// <summary>
@@ -2482,17 +2490,13 @@ namespace ThermoRawFileParser.Writer
             // zero length array encoded by GZip produces non-zero length array; some downstream tools do not like it
             if (array.Count == 0) return new byte[0];
 
-            byte[] bytes;
+            byte[] bytes = Get64BitArray(array);
 
             using (var memoryStream = new MemoryStream())
             using (var outZStream = new ZOutputStream(memoryStream, zlibConst.Z_DEFAULT_COMPRESSION))
             {
-                foreach (var doubleValue in array)
-                {
-                    var doubleValueByteArray = BitConverter.GetBytes(doubleValue);
-                    outZStream.Write(doubleValueByteArray, 0, doubleValueByteArray.Length);
-                }
-
+                    outZStream.Write(bytes, 0, bytes.Length);
+                
                 outZStream.finish();
                 memoryStream.Position = 0;
                 bytes = memoryStream.ToArray();

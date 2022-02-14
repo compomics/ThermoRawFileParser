@@ -7,6 +7,7 @@ using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
+using ThermoRawFileParser.Util;
 
 namespace ThermoRawFileParser.Writer
 {
@@ -41,7 +42,7 @@ namespace ThermoRawFileParser.Writer
         /// <summary>
         /// Precursor cache
         /// </summary>
-        private static Util.LimitedSizeDictionary<int, Scan> precursorCache;
+        private static LimitedSizeDictionary<int, Scan> precursorCache;
 
         /// <summary>
         /// Constructor.
@@ -50,7 +51,7 @@ namespace ThermoRawFileParser.Writer
         protected SpectrumWriter(ParseInput parseInput)
         {
             ParseInput = parseInput;
-            precursorCache = new Util.LimitedSizeDictionary<int, Scan>(10);
+            precursorCache = new LimitedSizeDictionary<int, Scan>(10);
         }
 
         /// <inheritdoc />
