@@ -105,7 +105,7 @@ namespace ThermoRawFileParser.Writer
                     WriteStartElementWithNamespace("indexedmzML");
                     WriteAttributeString("xmlns", "xsi", "http://www.w3.org/2001/XMLSchema-instance");
                     WriteAttributeString("xsi", "schemaLocation",
-                        "http://psi.hupo.org/ms/mzml http://psidev.info/files/ms/mzML/xsd/mzML1.1.0.xsd");
+                        "http://psi.hupo.org/ms/mzml http://psidev.info/files/ms/mzML/xsd/mzML1.1.2_idx.xsd");
                 }
 
                 // MzML
