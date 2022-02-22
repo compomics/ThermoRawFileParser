@@ -2031,7 +2031,7 @@ namespace ThermoRawFileParser.Writer
 
             if (selectedIonMz > ZeroDelta)
             {
-                var selectedIonIntensity = CalculatePrecursorPeakIntensity(_rawFile, precursorScanNumber, selectedIonMz, isolationWidth,
+                var selectedIonIntensity = CalculatePrecursorPeakIntensity(_rawFile, precursorScanNumber, reaction.PrecursorMass, isolationWidth,
                     ParseInput.NoPeakPicking.Contains((int)msLevel - 1));
                 if (selectedIonIntensity != null)
                 {
