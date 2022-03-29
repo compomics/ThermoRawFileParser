@@ -125,7 +125,7 @@ namespace ThermoRawFileParser.Writer
                     URI = @"https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo",
                     fullName = "Mass spectrometry ontology",
                     id = "MS",
-                    version = "4.1.48"
+                    version = "4.1.79"
                 });
                 Serialize(serializer, new CVType
                 {
@@ -671,10 +671,14 @@ namespace ThermoRawFileParser.Writer
                     }
                     catch (Exception e)
                     {
-                        Log.Warn("The IonizationMode does not contains the following property --" + e.Message);
                         if (!ParseInput.IgnoreInstrumentErrors)
                         {
-                            throw;
+                            Log.ErrorFormat("Unsupported Ionization Mode - {0}; Use ignoreInstrumentErrors key to suppress this error", scanFilter.IonizationMode.ToString());
+                            throw e;
+                        }
+                        else
+                        {
+                            Log.WarnFormat("Unsupported Ionization Mode - {0}", scanFilter.IonizationMode.ToString());
                         }
                     }
 
@@ -692,10 +696,14 @@ namespace ThermoRawFileParser.Writer
                 }
                 catch (Exception)
                 {
-                    Log.Warn("No Scan Filter found for the following scan --" + scanNumber);
                     if (!ParseInput.IgnoreInstrumentErrors)
                     {
+                        Log.ErrorFormat("No Scan Filter found for the following scan {0}; Use ignoreInstrumentErrors key to suppress", scanNumber);
                         throw;
+                    }
+                    else
+                    {
+                        Log.WarnFormat("No Scan Filter found for the following scan {0}", scanNumber);
                     }
                 }
 
