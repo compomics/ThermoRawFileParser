@@ -240,8 +240,8 @@ namespace ThermoRawFileParser.Writer
                 {
                     ActivationType.MultiPhotonDissociation, new CVParamType
                     {
-                        accession = "MS:1000435",
-                        name = "photodissociation",
+                        accession = "MS:1000262",
+                        name = "infrared multiphoton dissociation",
                         cvRef = "MS",
                         value = ""
                     }
@@ -264,6 +264,7 @@ namespace ThermoRawFileParser.Writer
                         value = ""
                     }
                 },
+                // Unknown dissociation method?
                 //{
                 //    ActivationType.SAactivation, new CVParamType
                 //    {
@@ -273,29 +274,29 @@ namespace ThermoRawFileParser.Writer
                 //        value = ""
                 //    }
                 //},
-                //{
-                //    ActivationType.ProtonTransferReaction, new CVParamType
-                //    {
-                //        accession = "",
-                //        name = "",
-                //        cvRef = "MS",
-                //        value = ""
-                //    }
-                //},
-                //{
-                //    ActivationType.NegativeProtonTransferReaction, new CVParamType
-                //    {
-                //        accession = "",
-                //        name = "",
-                //        cvRef = "MS",
-                //        value = ""
-                //    }
-                //},
+                {
+                    ActivationType.ProtonTransferReaction, new CVParamType
+                    {
+                        accession = "MS:1003249",
+                        name = "proton transfer charge reduction",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    ActivationType.NegativeProtonTransferReaction, new CVParamType
+                    {
+                        accession = "MS:1003249",
+                        name = "proton transfer charge reduction",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
                 {
                     ActivationType.NegativeElectronTransferDissociation, new CVParamType
                     {
-                        accession = "MS:1000598",
-                        name = "electron transfer dissociation",
+                        accession = "MS:1003247",
+                        name = "negative electron transfer dissociation",
                         cvRef = "MS",
                         value = ""
                     }
@@ -303,8 +304,8 @@ namespace ThermoRawFileParser.Writer
                 {
                     ActivationType.UltraVioletPhotoDissociation, new CVParamType
                     {
-                        accession = "MS:1000435",
-                        name = "photodissociation",
+                        accession = "MS:1003246",
+                        name = "ultraviolet photodissociation",
                         cvRef = "MS",
                         value = ""
                     }

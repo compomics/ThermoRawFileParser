@@ -125,7 +125,7 @@ namespace ThermoRawFileParser.Writer
                     URI = @"https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo",
                     fullName = "Mass spectrometry ontology",
                     id = "MS",
-                    version = "4.1.70"
+                    version = "4.1.79"
                 });
                 Serialize(serializer, new CVType
                 {
@@ -703,7 +703,7 @@ namespace ThermoRawFileParser.Writer
                     }
                     else
                     {
-                        Log.ErrorFormat("No Scan Filter found for the following scan {0}", scanNumber);
+                        Log.WarnFormat("No Scan Filter found for the following scan {0}", scanNumber);
                     }
                 }
 
