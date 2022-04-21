@@ -108,14 +108,9 @@ namespace ThermoRawFileParser
                     throw new RawFileParserException("RAW file still being acquired - " + parseInput.RawFilePath);
                 }
 
-                
-
-
                 // Get the number of instruments (controllers) present in the RAW file and set the 
                 // selected instrument to the MS instrument, first instance of it
                 rawFile.SelectInstrument(Device.MS, 1);
-
-                
 
                 rawFile.IncludeReferenceAndExceptionData = parseInput.ExData;
 

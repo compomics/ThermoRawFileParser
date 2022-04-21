@@ -1162,10 +1162,6 @@ namespace ThermoRawFileParser.Writer
             // Get each scan from the RAW file
             var scan = Scan.FromFile(_rawFile, scanNumber);
 
-            
-
-            
-
             // Get the scan filter for this scan number
             var scanFilter = _rawFile.GetFilterForScanNumber(scanNumber);
 
@@ -1415,8 +1411,6 @@ namespace ThermoRawFileParser.Writer
             double[] masses;
             double[] intensities;
 
-            
-
             if (!ParseInput.NoPeakPicking.Contains((int) scanFilter.MSOrder))
             {
                 //Spectrum will be centroided
@@ -1492,17 +1486,12 @@ namespace ThermoRawFileParser.Writer
                 masses = scan.SegmentedScan.Positions;
                 intensities = scan.SegmentedScan.Intensities;
 
-                
-
-
                 if (scan.SegmentedScan.Positions.Length > 0)
                 {
                     lowestObservedMz = scan.SegmentedScan.Positions[0];
                     highestObservedMz = scan.SegmentedScan.Positions[scan.SegmentedScan.Positions.Length - 1];
                 }
             }
-
-            
 
             // Base peak m/z
             if (basePeakMass != null)
@@ -1731,7 +1720,6 @@ namespace ThermoRawFileParser.Writer
                         new CVParamType {accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""}
                     };
 
-
                     if (!ParseInput.NoZlibCompression)
                     {
                         baselineBinaryDataCvParams.Add(
@@ -1817,11 +1805,11 @@ namespace ThermoRawFileParser.Writer
                     new BinaryDataArrayType
                     {
                         binary = ParseInput.NoZlibCompression
-                            ? Get64BitArray(noiseData)
-                            : GetZLib64BitArray(noiseData)
+                            ? Get64BitArray(massData)
+                            : GetZLib64BitArray(massData)
                     };
-                    noiseBinaryData.encodedLength =
-                        (4 * Math.Ceiling((double)noiseBinaryData
+                    massBinaryData.encodedLength =
+                        (4 * Math.Ceiling((double)massBinaryData
                             .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
 
                     var massBinaryDataCvParams = new List<CVParamType>
@@ -1868,11 +1856,6 @@ namespace ThermoRawFileParser.Writer
                     binaryData.Add(massBinaryData);
                 }
             }
-
-
-
-
-
 
             if (!binaryData.IsNullOrEmpty())
             {
