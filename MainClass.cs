@@ -444,6 +444,10 @@ namespace ThermoRawFileParser
                     v => parseInput.MgfPrecursor = v != null
                 },
                 {
+                    "N|noiseData", "Include noise data in mzML output",
+                    v => parseInput.NoiseData = v != null
+                },
+                {
                     "u:|s3_url:",
                     "Optional property to write directly the data into S3 Storage.",
                     v => parseInput.S3Url = v
