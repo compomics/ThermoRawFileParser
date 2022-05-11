@@ -199,6 +199,7 @@
     <Compile Include="Util\LimitedSizeDictionary.cs" />
     <Compile Include="Util\MZArray.cs" />
     <Compile Include="Util\Peptide.cs" />
+    <Compile Include="Writer\PrecursorInfo.cs" />
     <Compile Include="Writer\ScanTrailer.cs" />
     <Compile Include="XIC\JSONInputUnit.cs" />
     <Compile Include="XIC\JSONParser.cs" />

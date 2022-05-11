@@ -27,7 +27,7 @@ namespace ThermoRawFileParser.Writer
         private static readonly ILog Log =
             LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly Regex _filterStringIsolationMzPattern = new Regex(@"ms2 (.*?)@");
+        private readonly Regex _filterStringIsolationMzPattern = new Regex(@"ms\d+ (.+?) \[");
 
         // Tune version < 3 produces multiple trailer entry like "SPS Mass [number]"
         private readonly Regex _spSentry = new Regex(@"SPS Mass\s+\d+:");
@@ -46,11 +46,12 @@ namespace ThermoRawFileParser.Writer
             new Dictionary<IonizationModeType, CVParamType>();
 
         // Precursor scan number for reference in the precursor element of an MS2 spectrum
-        private int _precursorMs1ScanNumber;
+        private int _precursorScanNumber;
 
-        // Precursor scan number (value) and isolation m/z (key) for reference in the precursor element of an MS3 spectrum
-        private readonly LimitedSizeDictionary<string, int> _precursorMs2ScanNumbers =
-            new LimitedSizeDictionary<string, int>(40);
+        // Precursor scan number (value) and isolation m/z (key) for reference in the precursor element of an MSn spectrum
+        private readonly Dictionary<string, int> _precursorScanNumbers = new Dictionary<string, int>();
+
+        private Dictionary<int, PrecursorInfo> _precursorTree = new Dictionary<int, PrecursorInfo>();
 
         private const string SourceFileId = "RAW1";
         private readonly XmlSerializerFactory _factory = new XmlSerializerFactory();
@@ -1161,6 +1162,9 @@ namespace ThermoRawFileParser.Writer
             // Get the scan filter for this scan number
             var scanFilter = _rawFile.GetFilterForScanNumber(scanNumber);
 
+            // Get scan ms level
+            var msLevel = (int)scanFilter.MSOrder;
+
             // Get the scan event for this scan number
             var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
             var spectrum = new SpectrumType
@@ -1176,7 +1180,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     name = "ms level",
                     accession = "MS:1000511",
-                    value = ((int) scanFilter.MSOrder).ToString(CultureInfo.InvariantCulture),
+                    value = msLevel.ToString(),
                     cvRef = "MS"
                 }
             };
@@ -1216,96 +1220,30 @@ namespace ThermoRawFileParser.Writer
                 }
             }
 
-            //Older iterative version that works with trailer directly, can be removed if the new object version is better
-            /*var trailerData = _rawFile.GetTrailerExtraInformation(scanNumber);
-            int? charge = null;
-            double? monoisotopicMz = null;
-            double? ionInjectionTime = null;
-            double? FAIMSCV = null;
-            bool FAIMSON = false;
-            List<double> SPSMasses = new List<double>();
-            double? isolationWidth = null;
-
-            for (var i = 0; i < trailerData.Length; i++)
-            {
-                if (trailerData.Labels[i] == "Charge State:")
-                {
-                    if (Convert.ToInt32(trailerData.Values[i]) > 0)
-                    {
-                        charge = Convert.ToInt32(trailerData.Values[i]);
-                    }
-                }
-
-                if (trailerData.Labels[i] == "Monoisotopic M/Z:")
-                {
-                    monoisotopicMz = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                        CultureInfo.CurrentCulture);
-                }
-
-                if (trailerData.Labels[i] == "Ion Injection Time (ms):")
-                {
-                    ionInjectionTime = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                        CultureInfo.CurrentCulture);
-                }
-
-                if (trailerData.Labels[i] == "MS" + (int) scanFilter.MSOrder + " Isolation Width:")
-                {
-                    isolationWidth = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                        CultureInfo.CurrentCulture);
-                }
-
-                if (trailerData.Labels[i] == "FAIMS CV:")
-                {
-                    FAIMSCV = double.Parse(trailerData.Values[i], NumberStyles.Any,
-                        CultureInfo.CurrentCulture);
-                }
-                
-                // Check if the FAIMS voltage is on
-                if (trailerData.Labels[i] == "FAIMS Voltage On:" && trailerData.Values[i].Equals("Yes"))
-                {
-                    FAIMSON = true;
-                }
-
-                // Tune version < 3 produced trailer entry like "SPS Mass #", one entry per mass
-                if (_spSentry.IsMatch(trailerData.Labels[i]))
-                {
-                    var mass = double.Parse(trailerData.Values[i]);
-                    if (mass > 0)  SPSMasses.Add(mass); // zero means mass does not exist
-                }
-
-                // Tune version == 3 produces trailer entry "SPS Masses", comma separated list of masses 
-                if (_spSentry3.IsMatch(trailerData.Labels[i]))
-                {
-                    foreach (var mass in trailerData.Values[i].Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                    {
-                        SPSMasses.Add(double.Parse(mass));
-                    }
-                    
-                }
-            }*/
-
             // Construct and set the scan list element of the spectrum
             var scanListType = ConstructScanList(scanNumber, scan, scanFilter, scanEvent, monoisotopicMz,
                 ionInjectionTime);
             spectrum.scanList = scanListType;
 
-            switch (scanFilter.MSOrder)
+
+            if (msLevel == 1)
             {
-                case MSOrderType.Ms:
-                    spectrumCvParams.Add(new CVParamType
-                    {
-                        accession = "MS:1000579",
-                        cvRef = "MS",
-                        name = "MS1 spectrum",
-                        value = ""
-                    });
+                spectrumCvParams.Add(new CVParamType
+                {
+                    accession = "MS:1000579",
+                    cvRef = "MS",
+                    name = "MS1 spectrum",
+                    value = ""
+                });
 
-                    // Keep track of scan number for precursor reference
-                    _precursorMs1ScanNumber = scanNumber;
+                // Keep track of scan number for precursor reference
+                _precursorScanNumbers[""] = scanNumber;
+                _precursorTree[scanNumber] = new PrecursorInfo();
 
-                    break;
-                case MSOrderType.Ms2:
-                    spectrumCvParams.Add(new CVParamType
+            }
+            else if (msLevel > 1)
+            { 
+                spectrumCvParams.Add(new CVParamType
                     {
                         accession = "MS:1000580",
                         cvRef = "MS",
@@ -1313,42 +1251,44 @@ namespace ThermoRawFileParser.Writer
                         value = ""
                     });
 
-                    //update precursor scan if it is provided in trailer data
-                    var trailerMasterScan = trailerData.AsPositiveInt("Master Scan Number:");
-                    if (trailerMasterScan.HasValue) _precursorMs1ScanNumber = trailerMasterScan.Value;
-
-                    // Keep track of scan number and isolation m/z for precursor reference                   
-                    var result = _filterStringIsolationMzPattern.Match(scanEvent.ToString());
-                    if (result.Success)
+                // Keep track of scan number and isolation m/z for precursor reference                   
+                var result = _filterStringIsolationMzPattern.Match(scanEvent.ToString());
+                if (result.Success)
+                {
+                    if (_precursorScanNumbers.ContainsKey(result.Groups[1].Value))
                     {
-                        if (_precursorMs2ScanNumbers.ContainsKey(result.Groups[1].Value))
-                        {
-                            _precursorMs2ScanNumbers.Remove(result.Groups[1].Value);
-                        }
-
-                        _precursorMs2ScanNumbers.Add(result.Groups[1].Value, scanNumber);
+                        _precursorScanNumbers.Remove(result.Groups[1].Value);
                     }
 
-                    // Construct and set the precursor list element of the spectrum                    
-                    var precursorListType =
-                        ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz, isolationWidth,
-                            SPSMasses);
-                    spectrum.precursorList = precursorListType;
-                    break;
-                case MSOrderType.Ms3:
-                    spectrumCvParams.Add(new CVParamType
+                    _precursorScanNumbers.Add(result.Groups[1].Value, scanNumber);
+                }
+
+                //update precursor scan if it is provided in trailer data
+                var trailerMasterScan = trailerData.AsPositiveInt("Master Scan Number:");
+                if (trailerMasterScan.HasValue)
+                {
+                    _precursorScanNumber = trailerMasterScan.Value;
+                }
+                else //try getting it from the scan filter
+                {
+                    var parts = Regex.Split(result.Groups[1].Value, " ");
+                    string parentFilter = String.Join(" ", parts.Take(parts.Length - 1));
+                    if (_precursorScanNumbers.ContainsKey(parentFilter))
                     {
-                        accession = "MS:1000580",
-                        cvRef = "MS",
-                        name = "MSn spectrum",
-                        value = ""
-                    });
-                    precursorListType = ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz,
-                        isolationWidth, SPSMasses);
-                    spectrum.precursorList = precursorListType;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                        _precursorScanNumber = _precursorScanNumbers[parentFilter];
+                    }
+                }
+
+                // Construct and set the precursor list element of the spectrum                    
+                spectrum.precursorList =
+                    ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz, isolationWidth,
+                        SPSMasses);
+
+                _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, spectrum.precursorList.precursor);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException($"Unknown msLevel: {msLevel}");
             }
 
             // Scan polarity            
@@ -1943,45 +1883,19 @@ namespace ThermoRawFileParser.Writer
         private PrecursorListType ConstructPrecursorList(IScanEventBase scanEvent, int? charge, MSOrderType msLevel,
             double? monoisotopicMz, double? isolationWidth, List<double> SPSMasses)
         {
-            // Construct the precursor
-            var precursorList = new PrecursorListType
-            {
-                count = (Math.Max(SPSMasses.Count, 1)).ToString(),
-                precursor = new PrecursorType[Math.Max(SPSMasses.Count, 1)]
-            };
+            // Construct the precursors
+
+            List<PrecursorType> precursors = new List<PrecursorType>();
 
             var spectrumRef = "";
-            int precursorScanNumber = _precursorMs1ScanNumber;
+            int precursorScanNumber = _precursorScanNumber;
             IReaction reaction = null;
             var precursorMz = 0.0;
             try
             {
-                switch (msLevel)
-                {
-                    case MSOrderType.Ms2:
-                        spectrumRef = ConstructSpectrumTitle((int) Device.MS, 1, _precursorMs1ScanNumber);
-                        reaction = scanEvent.GetReaction(0);
-                        precursorScanNumber = _precursorMs1ScanNumber;
-                        break;
-                    case MSOrderType.Ms3:
-                        var precursorMs2ScanNumber =
-                            _precursorMs2ScanNumbers.Keys.FirstOrDefault(isolationMz =>
-                                scanEvent.ToString().Contains(isolationMz));
-                        if (!precursorMs2ScanNumber.IsNullOrEmpty())
-                        {
-                            spectrumRef = ConstructSpectrumTitle((int) Device.MS, 1,
-                                _precursorMs2ScanNumbers[precursorMs2ScanNumber]);
-                            reaction = scanEvent.GetReaction(1);
-                            precursorScanNumber = _precursorMs1ScanNumber;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException("Couldn't find a MS2 precursor scan for MS3 scan " +
-                                                                scanEvent);
-                        }
-
-                        break;
-                }
+                spectrumRef = ConstructSpectrumTitle((int)Device.MS, 1, _precursorScanNumber);
+                reaction = scanEvent.GetReaction((int)msLevel - 2);
+                precursorScanNumber = _precursorScanNumber;
 
                 precursorMz = reaction.PrecursorMass;
 
@@ -2069,7 +1983,7 @@ namespace ThermoRawFileParser.Writer
                 };
             if (isolationWidth != null)
             {
-                var offset = isolationWidth.Value / 2;
+                var offset = isolationWidth.Value / 2 + reaction.IsolationWidthOffset;
                 precursor.isolationWindow.cvParam[1] =
                     new CVParamType
                     {
@@ -2127,7 +2041,7 @@ namespace ThermoRawFileParser.Writer
                 activationCvParams.Add(activation);
             }
 
-            // Check for supplemental activation
+            // TODO: implement supplemental activation
             if (scanEvent.SupplementalActivation == TriState.On)
             {
                 try
@@ -2190,7 +2104,7 @@ namespace ThermoRawFileParser.Writer
                     cvParam = activationCvParams.ToArray()
                 };
 
-            precursorList.precursor[0] = precursor;
+            precursors.Add(precursor);
 
             // The first SPS mass seems to be the same as the one from reaction or scan filter
             for (int n = 1; n < SPSMasses.Count; n++)
@@ -2228,10 +2142,21 @@ namespace ThermoRawFileParser.Writer
                         cvParam = activationCvParams.ToArray()
                     };
 
-                precursorList.precursor[n] = SPSPrecursor;
+                precursors.Add(SPSPrecursor);
             }
 
-            return precursorList;
+            //Add precursors from previous levels
+            if (_precursorTree[precursorScanNumber].Scan != 0)
+            {
+                precursors.AddRange(_precursorTree[precursorScanNumber].Precursors);
+            }
+
+            return new PrecursorListType
+            {
+                count = precursors.Count.ToString(),
+                precursor = precursors.ToArray()
+            };
+
         }
 
         /// <summary>
