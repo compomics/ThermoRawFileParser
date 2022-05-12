@@ -1,27 +1,35 @@
-﻿using System.Collections.Generic;
-
-namespace ThermoRawFileParser.Writer
+﻿namespace ThermoRawFileParser.Writer
 {
+    /// <summary>
+    /// Class that stores info from precursors
+    /// </summary>
     public class PrecursorInfo
     {
-        public int MSLevel { get; set; }
+        //for future use
+        public int MSLevel { get; }
 
-        public int Scan { get; set; }
+        //precursor scan number, 0 - means not a precursor
+        public int Scan { get; }
 
-        public MzML.PrecursorType[] Precursors { get { return _precursors.ToArray(); } }
+        //technical field to store number of reactions the precursor has
+        //every level of SA counts as additional reaction and thus we need to keep track of it
+        public int ReactionCount { get; }
 
-        private List<MzML.PrecursorType> _precursors;
+        //mzML-formatted precursor information for all levels
+        public MzML.PrecursorType[] Precursors { get ; }
 
         public PrecursorInfo()
         {
             Scan = 0;
-            _precursors = new List<MzML.PrecursorType>();
+            ReactionCount = 0;
+            Precursors = new MzML.PrecursorType[0];
         }
 
-        public PrecursorInfo(int scan, MzML.PrecursorType[] precursors)
+        public PrecursorInfo(int scan, int reactionCount, MzML.PrecursorType[] precursors)
         {
             Scan = scan;
-            _precursors = new List<MzML.PrecursorType>(precursors);
+            ReactionCount = reactionCount;
+            Precursors = precursors;
         }
     }
 }

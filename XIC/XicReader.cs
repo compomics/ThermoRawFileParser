@@ -169,11 +169,11 @@ namespace ThermoRawFileParser.XIC
                 data = rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, firstScanNumber,
                     lastScanNumber);
             }
-            catch (InvalidFilterFormatException ex)
+            catch (InvalidFilterFormatException)
             {
                 Log.Warn($"Invalid filter string {settings.Filter}");
             }
-            catch (InvalidFilterCriteriaException ex)
+            catch (InvalidFilterCriteriaException)
             {
                 Log.Warn($"Invalid filter string {settings.Filter}");
             }

@@ -45,12 +45,10 @@ namespace ThermoRawFileParser.Writer
         private readonly Dictionary<IonizationModeType, CVParamType> _ionizationTypes =
             new Dictionary<IonizationModeType, CVParamType>();
 
-        // Precursor scan number for reference in the precursor element of an MS2 spectrum
-        private int _precursorScanNumber;
-
         // Precursor scan number (value) and isolation m/z (key) for reference in the precursor element of an MSn spectrum
         private readonly Dictionary<string, int> _precursorScanNumbers = new Dictionary<string, int>();
 
+        //Precursor information for scans
         private Dictionary<int, PrecursorInfo> _precursorTree = new Dictionary<int, PrecursorInfo>();
 
         private const string SourceFileId = "RAW1";
@@ -1156,6 +1154,9 @@ namespace ThermoRawFileParser.Writer
         /// <returns>The SpectrumType object</returns>
         private SpectrumType ConstructMSSpectrum(int scanNumber)
         {
+            // Last precursor scan number for use in MSn spectrum
+            int _precursorScanNumber = 0;
+
             // Get each scan from the RAW file
             var scan = Scan.FromFile(_rawFile, scanNumber);
 
@@ -1272,19 +1273,44 @@ namespace ThermoRawFileParser.Writer
                 else //try getting it from the scan filter
                 {
                     var parts = Regex.Split(result.Groups[1].Value, " ");
-                    string parentFilter = String.Join(" ", parts.Take(parts.Length - 1));
+
+                    //find the position of the first (from the end) precursor with a different mass 
+                    //to account for possible supplementary activations written in the filter
+                    var lastIonMass = parts.Last().Split('@').First();
+                    int last = parts.Length;
+                    while (last > 0 && 
+                           parts[last - 1].Split('@').First() == lastIonMass)
+                    {
+                        last--;
+                    }
+
+                    string parentFilter = String.Join(" ", parts.Take(last));
                     if (_precursorScanNumbers.ContainsKey(parentFilter))
                     {
                         _precursorScanNumber = _precursorScanNumbers[parentFilter];
                     }
                 }
 
-                // Construct and set the precursor list element of the spectrum                    
-                spectrum.precursorList =
-                    ConstructPrecursorList(scanEvent, charge, scanFilter.MSOrder, monoisotopicMz, isolationWidth,
-                        SPSMasses);
+                if (_precursorScanNumber > 0)
+                {
+                    // Construct and set the precursor list element of the spectrum                  
+                    spectrum.precursorList =
+                        ConstructPrecursorList(_precursorScanNumber, scanEvent, charge, monoisotopicMz, isolationWidth,
+                            SPSMasses, out var reactionCount);
 
-                _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, spectrum.precursorList.precursor);
+                    //save precursor information for later reference
+                    _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, reactionCount, spectrum.precursorList.precursor);
+                }
+                else
+                {
+                    spectrum.precursorList = new PrecursorListType
+                    {
+                        count = "0",
+                        precursor = new PrecursorType[0]
+                    };
+
+                    Log.Error($"Failed finding precursor for {scanNumber}");
+                }
             }
             else
             {
@@ -1873,30 +1899,32 @@ namespace ThermoRawFileParser.Writer
         /// <summary>
         /// Populate the precursor list element
         /// </summary>
+        /// <param name="precursorScanNumber">scan number for the last precursor</param>
         /// <param name="scanEvent">the scan event</param>
-        /// <param name="charge">the charge</param>
-        /// <param name="msLevel">the MS level</param>
-        /// <param name="monoisotopicMz">the monoisotopic m/z value</param>
-        /// <param name="isolationWidth">the isolation width</param>
+        /// <param name="charge">the charge from trailer</param>
+        /// <param name="monoisotopicMz">the monoisotopic m/z value from trailer</param>
+        /// <param name="isolationWidth">the isolation width value from trailer</param>
         /// <param name="SPSMasses">List of masses selected for SPS</param>
+        /// <param name="reactionCount">Number of activation reactions (see PrecursorInfo for details)</param>
         /// <returns>the precursor list</returns>
-        private PrecursorListType ConstructPrecursorList(IScanEventBase scanEvent, int? charge, MSOrderType msLevel,
-            double? monoisotopicMz, double? isolationWidth, List<double> SPSMasses)
+        private PrecursorListType ConstructPrecursorList(int precursorScanNumber, IScanEventBase scanEvent, int? charge,
+            double? monoisotopicMz, double? isolationWidth, List<double> SPSMasses, out int reactionCount)
         {
-            // Construct the precursors
-
             List<PrecursorType> precursors = new List<PrecursorType>();
 
+            // Get precursors from earlier levels
+            var prevPrecursors = _precursorTree[precursorScanNumber];
+
             var spectrumRef = "";
-            int precursorScanNumber = _precursorScanNumber;
+            int msLevel = (int)scanEvent.MSOrder;
             IReaction reaction = null;
             var precursorMz = 0.0;
+            reactionCount = prevPrecursors.ReactionCount;
             try
             {
-                spectrumRef = ConstructSpectrumTitle((int)Device.MS, 1, _precursorScanNumber);
-                reaction = scanEvent.GetReaction((int)msLevel - 2);
-                precursorScanNumber = _precursorScanNumber;
-
+                spectrumRef = ConstructSpectrumTitle((int)Device.MS, 1, precursorScanNumber);
+                reaction = scanEvent.GetReaction(reactionCount);
+                
                 precursorMz = reaction.PrecursorMass;
 
                 //if isolation width was not found in the trailer, try to get one from the reaction
@@ -1904,7 +1932,7 @@ namespace ThermoRawFileParser.Writer
             }
             catch (ArgumentOutOfRangeException)
             {
-                // Do nothing
+                Log.Warn($"Failed to get reaction when parsing precursor {precursorScanNumber}");
             }
 
             var precursor = new PrecursorType
@@ -1946,7 +1974,7 @@ namespace ThermoRawFileParser.Writer
             if (selectedIonMz > ZeroDelta)
             {
                 var selectedIonIntensity = CalculatePrecursorPeakIntensity(_rawFile, precursorScanNumber, reaction.PrecursorMass, isolationWidth,
-                    ParseInput.NoPeakPicking.Contains((int)msLevel - 1));
+                    ParseInput.NoPeakPicking.Contains(msLevel - 1));
                 if (selectedIonIntensity != null)
                 {
                     ionCvParams.Add(new CVParamType
@@ -2041,12 +2069,15 @@ namespace ThermoRawFileParser.Writer
                 activationCvParams.Add(activation);
             }
 
-            // TODO: implement supplemental activation
+            //increase reaction count after successful parsing
+            reactionCount++;
+
             if (scanEvent.SupplementalActivation == TriState.On)
+            //the property is On if *at least* one of the levels had SA (i.e. not necissirily the last one), thus we need to try (and posibly fail)
             {
                 try
                 {
-                    reaction = scanEvent.GetReaction(1);
+                    reaction = scanEvent.GetReaction(reactionCount);
 
                     if (reaction != null)
                     {
@@ -2065,36 +2096,40 @@ namespace ThermoRawFileParser.Writer
                                 });
                         }
 
-                        // Add this supplemental CV term
-                        // TODO: use a more generic approach
-                        if (reaction.ActivationType == ActivationType.HigherEnergyCollisionalDissociation)
+                        // Add the supplemental CV term
+                        switch (reaction.ActivationType)
                         {
-                            activationCvParams.Add(new CVParamType
-                            {
-                                accession = "MS:1002678",
-                                name = "supplemental beam-type collision-induced dissociation",
-                                cvRef = "MS",
-                                value = ""
-                            });
+                            case ActivationType.HigherEnergyCollisionalDissociation:
+                                activationCvParams.Add(new CVParamType
+                                {
+                                    accession = "MS:1002678",
+                                    name = "supplemental beam-type collision-induced dissociation",
+                                    cvRef = "MS",
+                                    value = ""
+                                }); break;
+
+                            case ActivationType.CollisionInducedDissociation:
+                                activationCvParams.Add(new CVParamType
+                                {
+                                    accession = "MS:1002679",
+                                    name = "supplemental collision-induced dissociation",
+                                    cvRef = "MS",
+                                    value = ""
+                                }); break;
+
+                            default:
+                                Log.Warn($"Unknown supplemental activation type: {reaction.ActivationType}");
+                                break;
+
                         }
 
-                        if (!OntologyMapping.DissociationTypes.TryGetValue(reaction.ActivationType, out var activation))
-                        {
-                            activation = new CVParamType
-                            {
-                                accession = "MS:1000044",
-                                name = "Activation Method",
-                                cvRef = "MS",
-                                value = ""
-                            };
-                        }
-
-                        activationCvParams.Add(activation);
+                        //increase reaction count after successful parsing
+                        reactionCount++;
                     }
                 }
                 catch (ArgumentOutOfRangeException)
                 {
-                    // Do nothing
+                    // If we failed do nothing
                 }
             }
 
@@ -2145,11 +2180,8 @@ namespace ThermoRawFileParser.Writer
                 precursors.Add(SPSPrecursor);
             }
 
-            //Add precursors from previous levels
-            if (_precursorTree[precursorScanNumber].Scan != 0)
-            {
-                precursors.AddRange(_precursorTree[precursorScanNumber].Precursors);
-            }
+            //Add precursors from previous levels to the end of the list
+            precursors.AddRange(prevPrecursors.Precursors);
 
             return new PrecursorListType
             {
