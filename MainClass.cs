@@ -685,6 +685,9 @@ namespace ThermoRawFileParser
                 if (parseInput.StdOut)
                 {
                     parseInput.LogFormat = LogFormat.SILENT;
+
+                    //use non-indexed mzML with stdout
+                    if (parseInput.OutputFormat == OutputFormat.IndexMzML) parseInput.OutputFormat = OutputFormat.MzML;
                 }
 
                 if (parseInput.S3Url != null && parseInput.S3AccessKeyId != null &&
