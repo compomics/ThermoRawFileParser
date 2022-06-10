@@ -112,7 +112,7 @@ namespace ThermoRawFileParser
                 // selected instrument to the MS instrument, first instance of it
                 rawFile.SelectInstrument(Device.MS, 1);
 
-                rawFile.IncludeReferenceAndExceptionData = parseInput.ExData;
+                rawFile.IncludeReferenceAndExceptionData = !parseInput.ExData;
 
                 // Get the first and last scan from the RAW file
                 var firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;

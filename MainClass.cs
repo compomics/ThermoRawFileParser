@@ -19,7 +19,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.3.4";
+        public const string Version = "1.4.0";
 
         public static void Main(string[] args)
         {
@@ -390,11 +390,11 @@ namespace ThermoRawFileParser
                 },
                 {
                     "f=|format=",
-                    "The spectra output format: 0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet. Defaults to indexed mzML if no format is specified.",
+                    "The spectra output format: 0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet; both numeric and text (case insensitive) value recognized. Defaults to indexed mzML if no format is specified.",
                     v => outputFormatString = v
                 },
                 {
-                    "m=|metadata=", "The metadata output format: 0 for JSON, 1 for TXT.",
+                    "m=|metadata=", "The metadata output format: 0 for JSON, 1 for TXT; both numeric and text (case insensitive) value recognized",
                     v => metadataFormatString = v
                 },
                 {
@@ -422,7 +422,7 @@ namespace ThermoRawFileParser
                     v => parseInput.AllDetectors = v != null
                 },
                 {
-                    "l=|logging=", "Optional logging level: 0 for silent, 1 for verbose.",
+                    "l=|logging=", "Optional logging level: 0 for silent, 1 for verbose; both numeric and text (case insensitive) value recognized.",
                     v => logFormatString = v
                 },
                 {
@@ -430,7 +430,7 @@ namespace ThermoRawFileParser
                     v => parseInput.IgnoreInstrumentErrors = v != null
                 },
                 {
-                    "x|includeExceptionData", "Include reference and exception data",
+                    "x|excludeExceptionData", "Exclude reference and exception data",
                     v => parseInput.ExData = v != null
                 },
                 {
@@ -585,54 +585,12 @@ namespace ThermoRawFileParser
 
                 if (outputFormatString != null)
                 {
-                    int outPutFormatInt;
-                    try
-                    {
-                        outPutFormatInt = int.Parse(outputFormatString);
-                    }
-                    catch (FormatException)
-                    {
-                        throw new OptionException(
-                            "unknown output format value (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet)",
-                            "-f, --format");
-                    }
-
-                    if (Enum.IsDefined(typeof(OutputFormat), outPutFormatInt) &&
-                        ((OutputFormat) outPutFormatInt) != OutputFormat.NONE)
-                    {
-                        parseInput.OutputFormat = (OutputFormat) outPutFormatInt;
-                    }
-                    else
-                    {
-                        throw new OptionException(
-                            "unknown output format value (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet)",
-                            "-f, --format");
-                    }
+                    parseInput.OutputFormat = (OutputFormat)ParseToEnum(typeof(OutputFormat), outputFormatString, "-f, --format");
                 }
 
                 if (metadataFormatString != null)
                 {
-                    int metadataInt;
-                    try
-                    {
-                        metadataInt = int.Parse(metadataFormatString);
-                    }
-                    catch (FormatException)
-                    {
-                        throw new OptionException("unknown metadata format value (0 for JSON, 1 for TXT)",
-                            "-m, --metadata");
-                    }
-
-                    if (Enum.IsDefined(typeof(MetadataFormat), metadataInt) &&
-                        ((MetadataFormat) metadataInt) != MetadataFormat.NONE)
-                    {
-                        parseInput.MetadataFormat = (MetadataFormat) metadataInt;
-                    }
-                    else
-                    {
-                        throw new OptionException("unknown metadata format value (0 for JSON, 1 for TXT)",
-                            "-m, --metadata");
-                    }
+                    parseInput.MetadataFormat = (MetadataFormat)ParseToEnum(typeof(MetadataFormat), metadataFormatString, "-m, --metadata");
                 }
 
                 if (parseInput.MetadataOutputFile != null && Directory.Exists(parseInput.MetadataOutputFile))
@@ -657,29 +615,7 @@ namespace ThermoRawFileParser
 
                 if (logFormatString != null)
                 {
-                    int logFormatInt;
-                    try
-                    {
-                        logFormatInt = int.Parse(logFormatString);
-                    }
-                    catch (FormatException)
-                    {
-                        throw new OptionException("unknown log format value (0 for silent, 1 for verbose)",
-                            "-l, --logging");
-                    }
-
-                    if (Enum.IsDefined(typeof(LogFormat), logFormatInt))
-                    {
-                        if ((LogFormat) logFormatInt != LogFormat.NONE)
-                        {
-                            parseInput.LogFormat = (LogFormat) logFormatInt;
-                        }
-                    }
-                    else
-                    {
-                        throw new OptionException("unknown log format value (0 for silent, 1 for verbose)",
-                            "-l, --logging");
-                    }
+                    parseInput.LogFormat = (LogFormat)ParseToEnum(typeof(LogFormat), logFormatString, "-l, --logging");
                 }
 
                 if (parseInput.StdOut)
@@ -794,6 +730,49 @@ namespace ThermoRawFileParser
             Console.Error.WriteLine(message);
             optionSet.WriteOptionDescriptions(Console.Error);
             Environment.Exit(-1);
+        }
+
+        private static string GetValidEnumLevels(Type enumType)
+        {
+            List<string> output = new List<string>();
+            foreach (int v in Enum.GetValues(enumType))
+            {
+                output.Add(String.Format("{0} ({1})", Enum.GetName(enumType, v), v));
+            }
+
+            return String.Join("\n", output);
+        }
+
+        private static int ParseToEnum(Type enumType, string formatString, string keyName)
+        {
+            if (int.TryParse(formatString, out var formatInt)) //can be parsed as int
+            {
+                if (Enum.IsDefined(enumType, formatInt))
+                {
+                    return formatInt;
+                }
+                else
+                {
+                    throw new OptionException(
+                    String.Format("unknown format value, the following values recognized (case insensitive)\n{0}", GetValidEnumLevels(enumType)),
+                    keyName);
+                }
+
+            }
+            else //try parse as a string
+            {
+                try
+                {
+                    return (int)Enum.Parse(enumType, formatString, true);
+                }
+
+                catch (Exception)
+                {
+                    throw new OptionException(
+                    String.Format("unknown format value, the following values recognized (case insensitive)\n{0}", GetValidEnumLevels(enumType)),
+                    keyName);
+                }
+            }
         }
 
         private static HashSet<int> ParseMsLevel(string inputString)
