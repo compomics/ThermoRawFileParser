@@ -42,10 +42,10 @@ For running on Windows, omit `mono`. The optional parameters only work in the -o
 
 ```
 ThermoRawFileParser.exe --help
- usage is ThermoRawFileParser.exe [subcommand] [options]
+Usage is ThermoRawFileParser.exe [subcommand] [options]
 optional subcommands are xic|query (use [subcommand] -h for more info]):
   -h, --help                 Prints out the options.
-      --version              Prints out the library version.
+      --version              Prints out the version of the executable.
   -i, --input=VALUE          The raw file input (Required). Specify this or an
                                input directory -d.
   -d, --input_directory=VALUE
@@ -59,11 +59,15 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
                                input directory.
   -s, --stdout               Write to standard output. Cannot be combined with
                                file or directory output. Implies silent logging,
-                               i.e. logging level 0
+                                i.e. logging level 0
   -f, --format=VALUE         The spectra output format: 0 for MGF, 1 for mzML,
-                               2 for indexed mzML, 3 for Parquet. Defaults to
-                               indexed mzML if no format is specified.
-  -m, --metadata=VALUE       The metadata output format: 0 for JSON, 1 for TXT.
+                               2 for indexed mzML, 3 for Parquet; both numeric
+                               and text (case insensitive) value recognized.
+                               Defaults to indexed mzML if no format is
+                               specified.
+  -m, --metadata=VALUE       The metadata output format: 0 for JSON, 1 for TXT;
+                               both numeric and text (case insensitive) value
+                               recognized
   -c, --metadata_output_file=VALUE
                              The metadata output file. By default the metadata
                                file is written to the output directory.
@@ -81,14 +85,15 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
                                enabled.
   -a, --allDetectors         Extract additional detector data: UV/PDA etc
   -l, --logging=VALUE        Optional logging level: 0 for silent, 1 for
-                               verbose.
+                               verbose; both numeric and text (case insensitive)
+                                value recognized.
   -e, --ignoreInstrumentErrors
                              Ignore missing properties by the instrument.
-  -x, --includeExceptionData Include reference and exception data
+  -x, --excludeExceptionData Exclude reference and exception data
   -L, --msLevel=VALUE        Select MS levels (MS1, MS2, etc) included in the
                                output, should be a comma-separated list of
-                               integers ( 1,2,3 ) and/or intervals ( 1-3 ),
-                               open-end intervals ( 1- ) are allowed
+                               integers (1,2,3) and/or intervals (1-3), open-
+                               end intervals (1-) are allowed
   -P, --mgfPrecursor         Include precursor scan number in MGF file TITLE
   -N, --noiseData            Include noise data in mzML output
   -u, --s3_url[=VALUE]       Optional property to write directly the data into
@@ -100,8 +105,7 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
                              Optional key for the S3 bucket to write the file
                                output.
   -n, --s3_bucketName[=VALUE]
-                             S3 bucket name
-```
+                             S3 bucket name```
 
 A (java) graphical user interface is also available [here](https://github.com/compomics/ThermoRawFileParserGUI) that enables the selection of an input RAW directory or one ore more RAW files.
 
