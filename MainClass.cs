@@ -19,7 +19,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.3.4";
+        public const string Version = "1.4.0";
 
         public static void Main(string[] args)
         {
@@ -390,11 +390,11 @@ namespace ThermoRawFileParser
                 },
                 {
                     "f=|format=",
-                    "The spectra output format: 0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet. Defaults to indexed mzML if no format is specified.",
+                    "The spectra output format: 0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet; both numeric and text (case insensitive) value recognized. Defaults to indexed mzML if no format is specified.",
                     v => outputFormatString = v
                 },
                 {
-                    "m=|metadata=", "The metadata output format: 0 for JSON, 1 for TXT.",
+                    "m=|metadata=", "The metadata output format: 0 for JSON, 1 for TXT; both numeric and text (case insensitive) value recognized",
                     v => metadataFormatString = v
                 },
                 {
@@ -422,7 +422,7 @@ namespace ThermoRawFileParser
                     v => parseInput.AllDetectors = v != null
                 },
                 {
-                    "l=|logging=", "Optional logging level: 0 for silent, 1 for verbose.",
+                    "l=|logging=", "Optional logging level: 0 for silent, 1 for verbose; both numeric and text (case insensitive) value recognized.",
                     v => logFormatString = v
                 },
                 {
@@ -430,7 +430,7 @@ namespace ThermoRawFileParser
                     v => parseInput.IgnoreInstrumentErrors = v != null
                 },
                 {
-                    "x|includeExceptionData", "Include reference and exception data",
+                    "x|excludeExceptionData", "Exclude reference and exception data",
                     v => parseInput.ExData = v != null
                 },
                 {
