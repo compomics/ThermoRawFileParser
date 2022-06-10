@@ -260,10 +260,18 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteAttributeString("version", MainClass.Version);
                 SerializeCvParam(new CVParamType
                 {
-                   accession = "MS:1003145",
-                    name = "ThermoRawFileParser",
+                    accession = "MS:1000799",
+                    value = "ThermoRawFileParser",
+                    name = "custom unreleased software tool",
                     cvRef = "MS"
                 });
+                // Replace the above with the correct term when downstream tools have updated their PSI-MS CV.
+                //SerializeCvParam(new CVParamType
+                //{
+                //   accession = "MS:1003145",
+                //    name = "ThermoRawFileParser",
+                //    cvRef = "MS"
+                //});
                 _writer.WriteEndElement(); // software                
                 _writer.WriteEndElement(); // softwareList                                                                                
 
