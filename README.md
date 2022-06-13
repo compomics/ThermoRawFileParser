@@ -105,7 +105,8 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
                              Optional key for the S3 bucket to write the file
                                output.
   -n, --s3_bucketName[=VALUE]
-                             S3 bucket name```
+                             S3 bucket name
+```
 
 A (java) graphical user interface is also available [here](https://github.com/compomics/ThermoRawFileParserGUI) that enables the selection of an input RAW directory or one ore more RAW files.
 
