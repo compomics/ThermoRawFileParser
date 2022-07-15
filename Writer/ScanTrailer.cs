@@ -35,6 +35,11 @@ namespace ThermoRawFileParser.Writer
             }
         }
 
+        public ScanTrailer()
+        {
+            data = new Dictionary<string, string>();
+        }
+
         /// <summary>
         /// Try returning selected trailer element as boolean value,
         /// if the element does not exist or cannot be converted to boolean return null

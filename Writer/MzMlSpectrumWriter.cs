@@ -1199,7 +1199,17 @@ namespace ThermoRawFileParser.Writer
             };
 
             // Trailer extra data list
-            var trailerData = new ScanTrailer(_rawFile.GetTrailerExtraInformation(scanNumber));
+            ScanTrailer trailerData;
+
+            try
+            {
+                trailerData = new ScanTrailer(_rawFile.GetTrailerExtraInformation(scanNumber));
+            }
+            catch (Exception ex)
+            {
+                Log.WarnFormat("Cannot load trailer infromation for scan {0} due to following exception\n{1}", scanNumber, ex.Message);
+                trailerData = new ScanTrailer();
+            }
 
             int? charge = trailerData.AsPositiveInt("Charge State:");
             double? monoisotopicMz = trailerData.AsDouble("Monoisotopic M/Z:");

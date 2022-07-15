@@ -108,7 +108,18 @@ namespace ThermoRawFileParser.Writer
                             $"RTINSECONDS={(retentionTime * 60).ToString(CultureInfo.InvariantCulture)}");
 
                         // Trailer extra data list
-                        var trailerData = new ScanTrailer(rawFile.GetTrailerExtraInformation(scanNumber));
+                        ScanTrailer trailerData;
+
+                        try
+                        {
+                            trailerData = new ScanTrailer(rawFile.GetTrailerExtraInformation(scanNumber));
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.WarnFormat("Cannot load trailer infromation for scan {0} due to following exception\n{1}", scanNumber, ex.Message);
+                            trailerData = new ScanTrailer();
+                        }
+
                         int? charge = trailerData.AsPositiveInt("Charge State:");
                         double? monoisotopicMz = trailerData.AsDouble("Monoisotopic M/Z:");
                         double? isolationWidth =
