@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -21,15 +22,13 @@ namespace ThermoRawFileParser.Writer
         private const string NegativePolarity = "-";
 
         // Filter string
-        private const string FilterStringIsolationMzPattern = @"ms2 (.*?)@";
+        private readonly Regex _filterStringIsolationMzPattern = new Regex(@"ms\d+ (.+?) \[");
 
-        // Precursor scan number for MS2 scans
-        private int _precursorMs1ScanNumber;
+        // Precursor scan number for MSn scans
+        private int _precursorScanNumber;
 
-        // Dictionary with isolation m/z (key) and precursor scan number (value) entries
-        // for reference in the precursor element of an MS3 spectrum
-        private readonly LimitedSizeDictionary<string, int> _isolationMzToPrecursorScanNumberMapping =
-            new LimitedSizeDictionary<string, int>(40);
+        // Precursor scan number (value) and isolation m/z (key) for reference in the precursor element of an MSn spectrum
+        private readonly Dictionary<string, int> _precursorScanNumbers = new Dictionary<string, int>();
 
         public MgfSpectrumWriter(ParseInput parseInput) : base(parseInput)
         {
@@ -60,6 +59,8 @@ namespace ThermoRawFileParser.Writer
                         }
                     }
 
+                    _precursorScanNumber = 0;
+
                     // Get the scan from the RAW file
                     var scan = Scan.FromFile(rawFile, scanNumber);
 
@@ -72,23 +73,81 @@ namespace ThermoRawFileParser.Writer
                     // Get the scan event for this scan number
                     var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
 
+                    // Trailer extra data list
+                    ScanTrailer trailerData;
+
+                    try
+                    {
+                        trailerData = new ScanTrailer(rawFile.GetTrailerExtraInformation(scanNumber));
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.WarnFormat("Cannot load trailer infromation for scan {0} due to following exception\n{1}", scanNumber, ex.Message);
+                        trailerData = new ScanTrailer();
+                    }
+
+                    // Get scan ms level
+                    var msLevel = (int)scanFilter.MSOrder;
+
                     // Construct the precursor reference string for the title 
                     var precursorReference = "";
+
                     if (ParseInput.MgfPrecursor)
                     {
-                        if (scanFilter.MSOrder == MSOrderType.Ms)
+                        if (msLevel == 1)
                         {
                             // Keep track of the MS1 scan number for precursor reference
-                            _precursorMs1ScanNumber = scanNumber;
+                            _precursorScanNumbers[""] = scanNumber;
                         }
                         else
                         {
-                            precursorReference = ConstructPrecursorReference(scanFilter.MSOrder, scanNumber, scanEvent);
+                            // Keep track of scan number and isolation m/z for precursor reference                   
+                            var result = _filterStringIsolationMzPattern.Match(scanEvent.ToString());
+                            if (result.Success)
+                            {
+                                if (_precursorScanNumbers.ContainsKey(result.Groups[1].Value))
+                                {
+                                    _precursorScanNumbers.Remove(result.Groups[1].Value);
+                                }
+
+                                _precursorScanNumbers.Add(result.Groups[1].Value, scanNumber);
+                            }
+
+                            //update precursor scan if it is provided in trailer data
+                            var trailerMasterScan = trailerData.AsPositiveInt("Master Scan Number:");
+                            if (trailerMasterScan.HasValue)
+                            {
+                                _precursorScanNumber = trailerMasterScan.Value;
+                            }
+                            else //try getting it from the scan filter
+                            {
+                                var parts = Regex.Split(result.Groups[1].Value, " ");
+
+                                //find the position of the first (from the end) precursor with a different mass 
+                                //to account for possible supplementary activations written in the filter
+                                var lastIonMass = parts.Last().Split('@').First();
+                                int last = parts.Length;
+                                while (last > 0 &&
+                                       parts[last - 1].Split('@').First() == lastIonMass)
+                                {
+                                    last--;
+                                }
+
+                                string parentFilter = String.Join(" ", parts.Take(last));
+                                if (_precursorScanNumbers.ContainsKey(parentFilter))
+                                {
+                                    _precursorScanNumber = _precursorScanNumbers[parentFilter];
+                                }
+                            }
+
+                            if (_precursorScanNumber > 0)
+                                precursorReference = ConstructSpectrumTitle((int)Device.MS, 1, _precursorScanNumber);
+                            else
+                                Log.Error($"Failed finding precursor for {scanNumber}");
                         }
                     }
 
-                    // Don't include MS1 spectra
-                    if (ParseInput.MsLevel.Contains((int) scanFilter.MSOrder))
+                    if (ParseInput.MsLevel.Contains(msLevel))
                     {
                         var reaction = GetReaction(scanEvent, scanNumber);
 
@@ -107,23 +166,10 @@ namespace ThermoRawFileParser.Writer
                         Writer.WriteLine(
                             $"RTINSECONDS={(retentionTime * 60).ToString(CultureInfo.InvariantCulture)}");
 
-                        // Trailer extra data list
-                        ScanTrailer trailerData;
-
-                        try
-                        {
-                            trailerData = new ScanTrailer(rawFile.GetTrailerExtraInformation(scanNumber));
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.WarnFormat("Cannot load trailer infromation for scan {0} due to following exception\n{1}", scanNumber, ex.Message);
-                            trailerData = new ScanTrailer();
-                        }
-
                         int? charge = trailerData.AsPositiveInt("Charge State:");
                         double? monoisotopicMz = trailerData.AsDouble("Monoisotopic M/Z:");
                         double? isolationWidth =
-                            trailerData.AsDouble("MS" + (int) scanFilter.MSOrder + " Isolation Width:");
+                            trailerData.AsDouble("MS" + msLevel + " Isolation Width:");
 
                         if (reaction != null)
                         {
@@ -153,7 +199,7 @@ namespace ThermoRawFileParser.Writer
                         double[] masses;
                         double[] intensities;
 
-                        if (!ParseInput.NoPeakPicking.Contains((int) scanFilter.MSOrder))
+                        if (!ParseInput.NoPeakPicking.Contains(msLevel))
                         {
                             // Check if the scan has a centroid stream
                             if (scan.HasCentroidStream)
@@ -199,49 +245,6 @@ namespace ThermoRawFileParser.Writer
                     Console.WriteLine();
                 }
             }
-        }
-
-        private string ConstructPrecursorReference(MSOrderType msOrder, int scanNumber, IScanEvent scanEvent)
-        {
-            // Precursor reference
-            var precursorReference = "";
-
-            switch (msOrder)
-            {
-                case MSOrderType.Ms2:
-                    // Keep track of the MS2 scan number and isolation m/z for precursor reference                   
-                    var result = Regex.Match(scanEvent.ToString(), FilterStringIsolationMzPattern);
-                    if (result.Success)
-                    {
-                        if (_isolationMzToPrecursorScanNumberMapping.ContainsKey(result.Groups[1].Value))
-                        {
-                            _isolationMzToPrecursorScanNumberMapping.Remove(result.Groups[1].Value);
-                        }
-
-                        _isolationMzToPrecursorScanNumberMapping.Add(result.Groups[1].Value, scanNumber);
-                    }
-
-                    precursorReference = ConstructSpectrumTitle((int) Device.MS, 1, _precursorMs1ScanNumber);
-                    break;
-
-                case MSOrderType.Ms3:
-                    var precursorScanNumber = _isolationMzToPrecursorScanNumberMapping.Keys.FirstOrDefault(
-                        isolationMz => scanEvent.ToString().Contains(isolationMz));
-                    if (!precursorScanNumber.IsNullOrEmpty())
-                    {
-                        precursorReference = ConstructSpectrumTitle((int) Device.MS, 1,
-                            _isolationMzToPrecursorScanNumberMapping[precursorScanNumber]);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("Couldn't find a MS2 precursor scan for MS3 scan " +
-                                                            scanEvent);
-                    }
-
-                    break;
-            }
-
-            return precursorReference;
         }
     }
 }

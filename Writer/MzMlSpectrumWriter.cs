@@ -307,6 +307,7 @@ namespace ThermoRawFileParser.Writer
 
                 // Run
                 _writer.WriteStartElement("run");
+                //TODO: validate id against NCName
                 _writer.WriteAttributeString("id", ParseInput.RawFileNameWithoutExtension);
                 _writer.WriteAttributeString("defaultInstrumentConfigurationRef", "IC1");
                 _writer.WriteAttributeString("startTimeStamp",
