@@ -83,6 +83,7 @@ namespace ThermoRawFileParser.Writer
                     catch (Exception ex)
                     {
                         Log.WarnFormat("Cannot load trailer infromation for scan {0} due to following exception\n{1}", scanNumber, ex.Message);
+                        ParseInput.NewWarn();
                         trailerData = new ScanTrailer();
                     }
 
@@ -141,9 +142,14 @@ namespace ThermoRawFileParser.Writer
                             }
 
                             if (_precursorScanNumber > 0)
+                            {
                                 precursorReference = ConstructSpectrumTitle((int)Device.MS, 1, _precursorScanNumber);
+                            }
                             else
+                            {
                                 Log.Error($"Failed finding precursor for {scanNumber}");
+                                ParseInput.NewError();
+                            }
                         }
                     }
 

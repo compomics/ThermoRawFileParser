@@ -591,6 +591,7 @@ namespace ThermoRawFileParser.Writer
                     catch (Exception ex)
                     {
                         Log.Error(ex);
+                        ParseInput.NewError();
                     }
                 }
 
@@ -665,16 +666,17 @@ namespace ThermoRawFileParser.Writer
                                 OntologyMapping.IonizationTypes[scanFilter.IonizationMode]);
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         if (!ParseInput.IgnoreInstrumentErrors)
                         {
-                            Log.ErrorFormat("Unsupported Ionization Mode - {0}; Use ignoreInstrumentErrors key to suppress this error", scanFilter.IonizationMode.ToString());
-                            throw e;
+                            Log.ErrorFormat("Unsupported ionization mode - {0}; Use ignoreInstrumentErrors key to suppress this error", scanFilter.IonizationMode.ToString());
+                            throw;
                         }
                         else
                         {
                             Log.WarnFormat("Unsupported Ionization Mode - {0}", scanFilter.IonizationMode.ToString());
+                            ParseInput.NewWarn();
                         }
                     }
 
@@ -694,12 +696,13 @@ namespace ThermoRawFileParser.Writer
                 {
                     if (!ParseInput.IgnoreInstrumentErrors)
                     {
-                        Log.ErrorFormat("No Scan Filter found for the following scan {0}; Use ignoreInstrumentErrors key to suppress", scanNumber);
+                        Log.ErrorFormat("No scan filter found for the following scan {0}; Use ignoreInstrumentErrors key to suppress", scanNumber);
                         throw;
                     }
                     else
                     {
                         Log.WarnFormat("No Scan Filter found for the following scan {0}", scanNumber);
+                        ParseInput.NewWarn();
                     }
                 }
 
@@ -1201,6 +1204,7 @@ namespace ThermoRawFileParser.Writer
             catch (Exception ex)
             {
                 Log.WarnFormat("Cannot load trailer infromation for scan {0} due to following exception\n{1}", scanNumber, ex.Message);
+                ParseInput.NewWarn();
                 trailerData = new ScanTrailer();
             }
 
@@ -1325,6 +1329,7 @@ namespace ThermoRawFileParser.Writer
                     };
 
                     Log.Error($"Failed finding precursor for {scanNumber}");
+                    ParseInput.NewError();
                 }
             }
             else
@@ -2129,6 +2134,7 @@ namespace ThermoRawFileParser.Writer
             catch (ArgumentOutOfRangeException)
             {
                 Log.Warn($"Failed to get reaction when parsing precursor {precursorScanNumber}");
+                ParseInput.NewWarn();
             }
 
             var precursor = new PrecursorType
@@ -2315,6 +2321,7 @@ namespace ThermoRawFileParser.Writer
 
                             default:
                                 Log.Warn($"Unknown supplemental activation type: {reaction.ActivationType}");
+                                ParseInput.NewWarn();
                                 break;
 
                         }

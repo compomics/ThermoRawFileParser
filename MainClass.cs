@@ -448,6 +448,10 @@ namespace ThermoRawFileParser
                     v => parseInput.NoiseData = v != null
                 },
                 {
+                  "w|warningsAreErrors", "Return non-zero exit code for warnings; default only for errors",
+                    v => parseInput.Vigilant = v != null 
+                },
+                {
                     "u:|s3_url:",
                     "Optional property to write directly the data into S3 Storage.",
                     v => parseInput.S3Url = v
@@ -677,7 +681,9 @@ namespace ThermoRawFileParser
 
                 RawFileParser.Parse(parseInput);
 
-                exitCode = 0;
+                Log.Info($"Processing completed {parseInput.Errors} errors, {parseInput.Warnings} warnings");
+
+                exitCode = parseInput.Vigilant ? parseInput.Errors + parseInput.Warnings: parseInput.Errors;
             }
             catch (UnauthorizedAccessException ex)
             {

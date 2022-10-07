@@ -61,22 +61,26 @@ namespace ThermoRawFileParser
             {
                 ProcessFile(parseInput);
             }
-            catch (UnauthorizedAccessException ex)
-            {
-                Log.Error(!ex.Message.IsNullOrEmpty()
-                    ? ex.Message
-                    : "Attempting to write to an unauthorized location.");
-            }
+            
             catch (Exception ex)
             {
-                if (ex is RawFileParserException)
+                if (ex is UnauthorizedAccessException)
+                {
+                    Log.Error(!ex.Message.IsNullOrEmpty()
+                        ? ex.Message
+                        : "Attempting to write to an unauthorized location.");
+                    parseInput.NewError();
+                }
+                else if (ex is RawFileParserException)
                 {
                     Log.Error(ex.Message);
+                    parseInput.NewError();
                 }
                 else
                 {
-                    Log.Error("An unexpected error occured while parsing file:" + parseInput.RawFilePath);
+                    Log.Error("An unexpected error occured (see below)");
                     Log.Error(ex.ToString());
+                    parseInput.NewError();
                 }
             }
         }
