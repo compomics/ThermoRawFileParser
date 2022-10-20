@@ -2219,7 +2219,7 @@ namespace ThermoRawFileParser.Writer
                     {
                         accession = "MS:1000828",
                         name = "isolation window lower offset",
-                        value = offset.ToString(CultureInfo.InvariantCulture),
+                        value = (isolationWidth.Value - offset).ToString(CultureInfo.InvariantCulture),
                         cvRef = "MS",
                         unitCvRef = "MS",
                         unitAccession = "MS:1000040",
