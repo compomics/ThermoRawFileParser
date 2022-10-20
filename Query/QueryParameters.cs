@@ -6,6 +6,10 @@ namespace ThermoRawFileParser.Query
 {
     public class QueryParameters
     {
+        private int _errors;
+
+        private int _warnings;
+
         public bool help { get; set; }
         public string rawFilePath { get; set; }
         public string scans { get; set; }
@@ -13,7 +17,15 @@ namespace ThermoRawFileParser.Query
         public bool noPeakPicking { get; set; }
         public HashSet<int> scanNumbers { get; set; }
         public bool stdout { get; set; }
-        
+        public bool Vigilant { get; set; }
+        public int Errors
+        {
+            get => _errors;
+        }
+        public int Warnings
+        {
+            get => _warnings;
+        }
         
         public QueryParameters()
         {
@@ -24,6 +36,9 @@ namespace ThermoRawFileParser.Query
             noPeakPicking = false;
             scanNumbers = new HashSet<int>();
             stdout = false;
+            Vigilant = false;
+            _errors = 0;
+            _warnings = 0;
         }
         
         public QueryParameters(QueryParameters copy)
@@ -36,6 +51,19 @@ namespace ThermoRawFileParser.Query
             scanNumbers = new HashSet<int>();
             foreach (int s in copy.scanNumbers) scanNumbers.Add(s);
             stdout = copy.stdout;
+            Vigilant = copy.Vigilant;
+            _errors = copy.Errors;
+            _warnings = copy.Warnings;
+        }
+
+        public void NewError()
+        {
+            _errors++;
+        }
+
+        public void NewWarn()
+        {
+            _warnings++;
         }
     }
 }

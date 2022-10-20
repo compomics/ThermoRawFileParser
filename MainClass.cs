@@ -261,6 +261,10 @@ namespace ThermoRawFileParser
                     "s|stdout",
                     "Pipes the output into standard output. Logging is being turned off",
                     v => parameters.stdout = v != null
+                },
+                {
+                  "w|warningsAreErrors", "Return non-zero exit code for warnings; default only for errors",
+                    v => parameters.Vigilant = v != null
                 }
             };
 
@@ -325,7 +329,10 @@ namespace ThermoRawFileParser
             try
             {
                 QueryExecutor.Run(parameters);
-                exitCode = 0;
+
+                Log.Info($"Processing completed {parameters.Errors} errors, {parameters.Warnings} warnings");
+
+                exitCode = parameters.Vigilant ? parameters.Errors + parameters.Warnings : parameters.Errors;
             }
             catch (Exception ex)
             {
