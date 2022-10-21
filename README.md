@@ -1,8 +1,8 @@
 # ThermoRawFileParser
 
 Wrapper around the .net (C#) ThermoFisher ThermoRawFileReader library for running on Linux with mono (works on Windows too). It takes a thermo RAW file as input and outputs a metadata file and the spectra in 3 possible formats:
-* MGF: MS2 and MS3 spectra
-* mzML and indexed mzML: MS1, MS2 and MS3 spectra
+* MGF
+* mzML and indexed mzML
 * Apache Parquet: under development
 
 As of version 1.2.0, 2 subcommands are available (shoutout to the [eubic 2020 developers meeting](https://eubic-ms.org/events/2020-developers-meeting/), see [usage](#usage) for examples):
@@ -27,17 +27,22 @@ Click [here](https://github.com/compomics/ThermoRawFileParser/releases) to go to
 You can find the ThermoRawFileParserGUI [here](https://github.com/compomics/ThermoRawFileParserGUI).
 
 ## Usage
+
 ```
 mono ThermoRawFileParser.exe -i=/home/user/data_input/raw_file.raw -o=/home/user/data_input/output/ -f=0 -g -m=0
 ```
+
 with only the mimimal required argument `-i` or `-d` this becomes
+
 ```
 mono ThermoRawFileParser.exe -i=/home/user/data_input/raw_file.raw
 ```
 or
+
 ```
 mono ThermoRawFileParser.exe -d=/home/user/data_input/
 ```
+
 For running on Windows, omit `mono`. The optional parameters only work in the -option=value format. The tool can output some RAW file metadata `-m=0|1` (0 for JSON, 1 for TXT) and the spectra file `-f=0|1|2|3` (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet) or both. Use the `-p` flag to disable the thermo native peak picking. 
 
 ```
@@ -85,8 +90,9 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
                                enabled.
   -a, --allDetectors         Extract additional detector data: UV/PDA etc
   -l, --logging=VALUE        Optional logging level: 0 for silent, 1 for
-                               verbose; both numeric and text (case insensitive)
-                                value recognized.
+                               verbose, 2 for default, 3 for warning, 4 for
+                               error; both numeric and text (case insensitive)
+                               value recognized.
   -e, --ignoreInstrumentErrors
                              Ignore missing properties by the instrument.
   -x, --excludeExceptionData Exclude reference and exception data
@@ -96,6 +102,8 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
                                end intervals (1-) are allowed
   -P, --mgfPrecursor         Include precursor scan number in MGF file TITLE
   -N, --noiseData            Include noise data in mzML output
+  -w, --warningsAreErrors    Return non-zero exit code for warnings; default
+                               only for errors
   -u, --s3_url[=VALUE]       Optional property to write directly the data into
                                S3 Storage.
   -k, --s3_accesskeyid[=VALUE]
@@ -112,9 +120,11 @@ A (java) graphical user interface is also available [here](https://github.com/co
 
 ### query subcommand
 Enables the retrieval spectra by (a) scan number(s) in [PROXI format](https://github.com/HUPO-PSI/proxi-schemas).
+
 ```
 mono ThermoRawFileParser.exe query -i=/home/user/data_input/raw_file.raw -o=/home/user/output.json n="1-5, 20, 25-30"
 ```
+
 ```
 ThermoRawFileParser.exe query --help
 usage is:
@@ -127,13 +137,22 @@ usage is:
                                Thermo library. By default peak picking is
                                enabled.
   -s, --stdout               Pipes the output into standard output. Logging is
-                               being turned off.
+                               being turned off
+  -w, --warningsAreErrors    Return non-zero exit code for warnings; default
+                               only for errors
+  -l, --logging=VALUE        Optional logging level: 0 for silent, 1 for
+                               verbose, 2 for default, 3 for warning, 4 for
+                               error; both numeric and text (case insensitive)
+                               value recognized.
 ```
+
 ### xic subcommand
 Return one or more chromatograms based on query JSON input.
+
 ```
 mono ThermoRawFileParser.exe xic -i=/home/user/data_input/raw_file.raw -j=/home/user/xic_input.json
 ```
+
 ```
 ThermoRawFileParser.exe xic --help
 usage is:
@@ -151,15 +170,23 @@ usage is:
                                encoded string.
   -s, --stdout               Pipes the output into standard output. Logging is
                                being turned off.
+  -w, --warningsAreErrors    Return non-zero exit code for warnings; default
+                               only for errors
+  -l, --logging=VALUE        Optional logging level: 0 for silent, 1 for
+                               verbose, 2 for default, 3 for warning, 4 for
+                               error; both numeric and text (case insensitive)
+                               value recognized.
 ```
+
 Provide one of the following filters:
- * M/Z and tolerance (tolerance unit optional, default `ppm`)
+ * M/Z and tolerance (tolerance unit optional, defaults to `ppm`)
  * M/Z start and end
- * sequence and tolerance (tolerance unit optional, default `ppm`)
- 
-with optional parameters start en end retention time and filter (thermo filter string, defaults to `ms`)
+ * sequence and tolerance (tolerance unit optional, defaults to `ppm`)
+
+optionally one can define starting and ending retention times and thermo filter string (defaults to `ms`)
 
 An example input JSON file:
+
 ```
 [
         {
