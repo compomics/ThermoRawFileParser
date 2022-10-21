@@ -26,6 +26,10 @@ Click [here](https://github.com/compomics/ThermoRawFileParser/releases) to go to
 
 You can find the ThermoRawFileParserGUI [here](https://github.com/compomics/ThermoRawFileParserGUI).
 
+## Release Notes
+
+You can read release notes (starting from version 1.1.7) in the [wiki page](https://github.com/compomics/ThermoRawFileParser/wiki/ReleaseNotes)
+
 ## Usage
 
 ```
