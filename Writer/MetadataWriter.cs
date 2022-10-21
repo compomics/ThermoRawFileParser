@@ -93,6 +93,7 @@ namespace ThermoRawFileParser.Writer
                         catch (ArgumentOutOfRangeException)
                         {
                             Log.Warn("No reaction found for scan " + scanNumber);
+                            _parseInput.NewWarn();
                         }
 
                         // trailer extra data list

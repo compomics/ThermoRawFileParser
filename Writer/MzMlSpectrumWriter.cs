@@ -1362,7 +1362,7 @@ namespace ThermoRawFileParser.Writer
                 case PolarityType.Any:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException("PolarityType is Unknown");
             }
 
             // Total ion current

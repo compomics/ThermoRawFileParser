@@ -103,13 +103,13 @@ namespace ThermoRawFileParser
                 // Check for any errors in the RAW file
                 if (rawFile.IsError)
                 {
-                    throw new RawFileParserException($"Error opening ({rawFile.FileError}) - {parseInput.RawFilePath}");
+                    throw new RawFileParserException($"RAW file cannot be processed because of an error - {rawFile.FileError}");
                 }
 
                 // Check if the RAW file is being acquired
                 if (rawFile.InAcquisition)
                 {
-                    throw new RawFileParserException("RAW file still being acquired - " + parseInput.RawFilePath);
+                    throw new RawFileParserException("RAW file cannot be processed since it is still being acquired");
                 }
 
                 // Get the number of instruments (controllers) present in the RAW file and set the 

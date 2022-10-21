@@ -21,6 +21,8 @@ namespace ThermoRawFileParser.XIC
             IRawDataPlus rawFile;
             using (rawFile = RawFileReaderFactory.ReadFile(rawFilePath))
             {
+                Log.Info($"Started parsing {rawFilePath}");
+
                 if (!rawFile.IsOpen)
                 {
                     throw new RawFileParserException("Unable to access the RAW file using the native Thermo library.");
@@ -30,13 +32,13 @@ namespace ThermoRawFileParser.XIC
                 if (rawFile.IsError)
                 {
                     throw new RawFileParserException(
-                        $"Error opening ({rawFile.FileError}) - {rawFilePath}");
+                        $"RAW file cannot be processed because of an error - {rawFile.FileError}");
                 }
 
                 // Check if the RAW file is being acquired
                 if (rawFile.InAcquisition)
                 {
-                    throw new RawFileParserException("RAW file still being acquired - " + rawFilePath);
+                    throw new RawFileParserException("RAW file cannot be processed since it is still being acquired");
                 }
 
                 // Get the number of instruments (controllers) present in the RAW file and set the 
@@ -124,14 +126,14 @@ namespace ThermoRawFileParser.XIC
                                  Math.Abs(data.PositionsArray[0][0] - endTime) < 0.001))
                             {
                                 Log.Warn(
-                                    $"Only the minimum or maximum retention time was returned. This is an indication that the provided retention time range [{xicUnit.Meta.RtStart}-{xicUnit.Meta.RtEnd}] lies outside the max. window [{startTime}-{endTime}]");
+                                    $"Only the minimum or maximum retention time was returned. Does the provided retention time range [{xicUnit.Meta.RtStart}-{xicUnit.Meta.RtEnd}] lies outside the max. window [{startTime}-{endTime}]?");
                                 parameters.NewWarn();
                             }
                         }
                         else
                         {
                             Log.Warn(
-                                $"No scans found in retention time range [{xicUnit.Meta.RtStart}-{xicUnit.Meta.RtEnd}]. This is an indication that the provided retention time window lies outside the max. window [{startTime}-{endTime}]");
+                                $"No scans found in retention time range [{xicUnit.Meta.RtStart}-{xicUnit.Meta.RtEnd}]. Does the provided retention time window lies outside the max. window [{startTime}-{endTime}]");
                             parameters.NewWarn();
                         }
                     }
@@ -172,6 +174,8 @@ namespace ThermoRawFileParser.XIC
                         }
                     }
                 }
+
+                Log.Info($"Finished parsing {rawFilePath}");
             }
         }
 

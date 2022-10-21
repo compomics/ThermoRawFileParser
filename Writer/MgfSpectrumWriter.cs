@@ -242,7 +242,7 @@ namespace ThermoRawFileParser.Writer
 
                         Writer.WriteLine("END IONS");
 
-                        Log.Debug("Spectrum written to file -- SCAN " + scanNumber);
+                        Log.Debug("Spectrum written to file -- SCAN# " + scanNumber);
                     }
                 }
 

@@ -55,7 +55,7 @@ namespace ThermoRawFileParser.XIC
                         directory = Path.GetDirectoryName(rawFile);
                     }
 
-                    var outputFileName = Path.Combine(directory ?? throw new NoNullAllowedException(),
+                    var outputFileName = Path.Combine(directory ?? throw new NoNullAllowedException("Output directory cannot be null"),
                         Path.GetFileNameWithoutExtension(rawFile) + ".json");
 
                     OutputXicData(dataInstance, outputFileName);

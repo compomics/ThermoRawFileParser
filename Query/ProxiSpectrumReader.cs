@@ -28,6 +28,8 @@ namespace ThermoRawFileParser.Query
             IRawDataPlus rawFile;
             using (rawFile = RawFileReaderFactory.ReadFile(queryParameters.rawFilePath))
             {
+                Log.Info($"Started parsing {queryParameters.rawFilePath}");
+
                 if (!rawFile.IsOpen)
                 {
                     throw new RawFileParserException("Unable to access the RAW file using the native Thermo library.");
@@ -37,13 +39,13 @@ namespace ThermoRawFileParser.Query
                 if (rawFile.IsError)
                 {
                     throw new RawFileParserException(
-                        $"Error opening ({rawFile.FileError}) - {queryParameters.rawFilePath}");
+                        $"RAW file cannot be processed because of an error - {rawFile.FileError}");
                 }
 
                 // Check if the RAW file is being acquired
                 if (rawFile.InAcquisition)
                 {
-                    throw new RawFileParserException("RAW file still being acquired - " + queryParameters.rawFilePath);
+                    throw new RawFileParserException("RAW file cannot be processed since it is still being acquired");
                 }
 
                 // Get the number of instruments (controllers) present in the RAW file and set the 
@@ -227,7 +229,7 @@ namespace ThermoRawFileParser.Query
                     {
                         if (ex.GetBaseException() is IndexOutOfRangeException)
                         {
-                            Log.WarnFormat("Spectrum #{0} outside of file boundries", scanNumber);
+                            Log.WarnFormat("Spectrum #{0} is outside of file boundries", scanNumber);
                             queryParameters.NewWarn();
                         }
                         else
@@ -237,6 +239,8 @@ namespace ThermoRawFileParser.Query
                     }
                 }
             }
+
+            Log.Info($"Finished processing {queryParameters.rawFilePath}");
 
             return resultList;
         }
