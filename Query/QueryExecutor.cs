@@ -4,7 +4,6 @@ using System.Data;
 using System.IO;
 using Mono.Options;
 using Newtonsoft.Json;
-using ThermoRawFileParser.Writer;
 
 namespace ThermoRawFileParser.Query
 {

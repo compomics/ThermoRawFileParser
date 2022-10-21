@@ -17,8 +17,8 @@ namespace ThermoRawFileParser.XIC
         public bool stdout { get; set; }
         public bool Vigilant { get; set; }
         public int Errors { get => _errors; }
-
         public int Warnings { get => _warnings; }
+        public LogFormat LogFormat { get; set; }
 
         public XicParameters()
         {
@@ -31,6 +31,7 @@ namespace ThermoRawFileParser.XIC
             base64 = false;
             stdout = false;
             Vigilant = false;
+            LogFormat = LogFormat.DEFAULT;
             _errors = 0;
             _warnings = 0;
         }
@@ -61,6 +62,7 @@ namespace ThermoRawFileParser.XIC
             outputFileName = copy.outputFileName;
             base64 = copy.base64;
             stdout = copy.stdout;
+            LogFormat = copy.LogFormat;
             Vigilant = copy.Vigilant;
             _errors = copy.Errors;
             _warnings = copy.Warnings;

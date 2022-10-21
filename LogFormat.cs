@@ -5,7 +5,8 @@
         SILENT,        
         VERBOSE,
         DEFAULT,
-        NONE
+        WARNING,
+        ERROR
     }
 
 }

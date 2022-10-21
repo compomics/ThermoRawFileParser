@@ -53,6 +53,7 @@ namespace ThermoRawFileParser
             XicParameters parameters = new XicParameters();
             string singleFile = null;
             string fileDirectory = null;
+            string logFormatString = null;
 
             var optionSet = new OptionSet
             {
@@ -97,6 +98,10 @@ namespace ThermoRawFileParser
                 {
                   "w|warningsAreErrors", "Return non-zero exit code for warnings; default only for errors",
                     v => parameters.Vigilant = v != null
+                },
+                {
+                    "l=|logging=", "Optional logging level: 0 for silent, 1 for verbose, 2 for default, 3 for warning, 4 for error; both numeric and text (case insensitive) value recognized.",
+                    v => logFormatString = v
                 }
             };
 
@@ -187,6 +192,13 @@ namespace ThermoRawFileParser
                         parameters.rawFileList.Add(file.FullName);
                     }
                 }
+
+                if (logFormatString != null)
+                {
+                    parameters.LogFormat = (LogFormat)ParseToEnum(typeof(LogFormat), logFormatString, "-l, --logging");
+                }
+
+                if (parameters.stdout) parameters.LogFormat = LogFormat.SILENT; //switch off logging in stdout
             }
             catch (OptionException optionException)
             {
@@ -210,10 +222,38 @@ namespace ThermoRawFileParser
             var exitCode = 1;
             try
             {
-                // execute the xic commands
+                switch (parameters.LogFormat)
+                {
+                    case LogFormat.VERBOSE:
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository()).Root.Level =
+                            Level.Debug;
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository())
+                            .RaiseConfigurationChanged(EventArgs.Empty);
+                        break;
+                    case LogFormat.SILENT:
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository()).Root.Level =
+                            Level.Off;
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository())
+                            .RaiseConfigurationChanged(EventArgs.Empty);
+                        break;
+                    case LogFormat.WARNING:
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository()).Root.Level =
+                            Level.Warn;
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository())
+                            .RaiseConfigurationChanged(EventArgs.Empty);
+                        break;
+                    case LogFormat.ERROR:
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository()).Root.Level =
+                            Level.Error;
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository())
+                            .RaiseConfigurationChanged(EventArgs.Empty);
+                        break;
+                }
+
                 XicExecutor.Run(parameters);
 
                 Log.Info($"Processing completed {parameters.Errors} errors, {parameters.Warnings} warnings");
+
                 exitCode = parameters.Vigilant ? parameters.Errors + parameters.Warnings : parameters.Errors;
             }
             catch (Exception ex)
@@ -236,6 +276,7 @@ namespace ThermoRawFileParser
 
         private static void SpectrumQueryParametersParsing(string[] args)
         {
+            string logFormatString = null;
             QueryParameters parameters = new QueryParameters();
             var optionSet = new OptionSet
             {
@@ -270,6 +311,10 @@ namespace ThermoRawFileParser
                 {
                   "w|warningsAreErrors", "Return non-zero exit code for warnings; default only for errors",
                     v => parameters.Vigilant = v != null
+                },
+                {
+                    "l=|logging=", "Optional logging level: 0 for silent, 1 for verbose, 2 for default, 3 for warning, 4 for error; both numeric and text (case insensitive) value recognized.",
+                    v => logFormatString = v
                 }
             };
 
@@ -310,6 +355,13 @@ namespace ThermoRawFileParser
                         "specify a valid scan range",
                         "-s, --scans");
                 }
+
+                if (logFormatString != null)
+                {
+                    parameters.LogFormat = (LogFormat)ParseToEnum(typeof(LogFormat), logFormatString, "-l, --logging");
+                }
+
+                if (parameters.stdout) parameters.LogFormat = LogFormat.SILENT; //switch off logging in stdout
             }
             catch (OptionException optionException)
             {
@@ -333,6 +385,34 @@ namespace ThermoRawFileParser
             var exitCode = 1;
             try
             {
+                switch (parameters.LogFormat)
+                {
+                    case LogFormat.VERBOSE:
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository()).Root.Level =
+                            Level.Debug;
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository())
+                            .RaiseConfigurationChanged(EventArgs.Empty);
+                        break;
+                    case LogFormat.SILENT:
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository()).Root.Level =
+                            Level.Off;
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository())
+                            .RaiseConfigurationChanged(EventArgs.Empty);
+                        break;
+                    case LogFormat.WARNING:
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository()).Root.Level =
+                            Level.Warn;
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository())
+                            .RaiseConfigurationChanged(EventArgs.Empty);
+                        break;
+                    case LogFormat.ERROR:
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository()).Root.Level =
+                            Level.Error;
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository())
+                            .RaiseConfigurationChanged(EventArgs.Empty);
+                        break;
+                }
+
                 QueryExecutor.Run(parameters);
 
                 Log.Info($"Processing completed {parameters.Errors} errors, {parameters.Warnings} warnings");
@@ -434,7 +514,7 @@ namespace ThermoRawFileParser
                     v => parseInput.AllDetectors = v != null
                 },
                 {
-                    "l=|logging=", "Optional logging level: 0 for silent, 1 for verbose; both numeric and text (case insensitive) value recognized.",
+                    "l=|logging=", "Optional logging level: 0 for silent, 1 for verbose, 2 for default, 3 for warning, 4 for error; both numeric and text (case insensitive) value recognized.",
                     v => logFormatString = v
                 },
                 {
@@ -687,6 +767,18 @@ namespace ThermoRawFileParser
                         ((log4net.Repository.Hierarchy.Hierarchy) LogManager.GetRepository()).Root.Level =
                             Level.Off;
                         ((log4net.Repository.Hierarchy.Hierarchy) LogManager.GetRepository())
+                            .RaiseConfigurationChanged(EventArgs.Empty);
+                        break;
+                    case LogFormat.WARNING:
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository()).Root.Level =
+                            Level.Warn;
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository())
+                            .RaiseConfigurationChanged(EventArgs.Empty);
+                        break;
+                    case LogFormat.ERROR:
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository()).Root.Level =
+                            Level.Error;
+                        ((log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository())
                             .RaiseConfigurationChanged(EventArgs.Empty);
                         break;
                 }

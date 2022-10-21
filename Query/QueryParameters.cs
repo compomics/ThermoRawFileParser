@@ -18,14 +18,9 @@ namespace ThermoRawFileParser.Query
         public HashSet<int> scanNumbers { get; set; }
         public bool stdout { get; set; }
         public bool Vigilant { get; set; }
-        public int Errors
-        {
-            get => _errors;
-        }
-        public int Warnings
-        {
-            get => _warnings;
-        }
+        public int Errors { get => _errors; }
+        public int Warnings { get => _warnings; }
+        public LogFormat LogFormat { get; set; }
         
         public QueryParameters()
         {
@@ -37,6 +32,7 @@ namespace ThermoRawFileParser.Query
             scanNumbers = new HashSet<int>();
             stdout = false;
             Vigilant = false;
+            LogFormat = LogFormat.DEFAULT;
             _errors = 0;
             _warnings = 0;
         }
@@ -52,6 +48,7 @@ namespace ThermoRawFileParser.Query
             foreach (int s in copy.scanNumbers) scanNumbers.Add(s);
             stdout = copy.stdout;
             Vigilant = copy.Vigilant;
+            LogFormat = copy.LogFormat;
             _errors = copy.Errors;
             _warnings = copy.Warnings;
         }
