@@ -84,7 +84,6 @@ namespace ThermoRawFileParser.Query
                             value: ((int) scanFilter.MSOrder).ToString(CultureInfo.InvariantCulture));
 
                         // trailer extra data list
-                        //TODO Switch to Trailer object; check for empty trailerst
                         ScanTrailer trailerData;
                         try
                         {

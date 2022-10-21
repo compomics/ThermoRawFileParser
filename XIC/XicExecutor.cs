@@ -9,7 +9,7 @@ namespace ThermoRawFileParser.XIC
 {
     public static class XicExecutor
     {
-        public static void run(XicParameters parameters)
+        public static void Run(XicParameters parameters)
         {
             var jsonString = File.ReadAllText(parameters.jsonFilePath, Encoding.UTF8);
             var validationErrors = JSONParser.ValidateJson(jsonString);
@@ -35,7 +35,7 @@ namespace ThermoRawFileParser.XIC
             foreach (string rawFile in parameters.rawFileList)
             {
                 var dataInstance = new XicData(xicData);
-                XicReader.ReadXic(rawFile, parameters.base64, dataInstance);
+                XicReader.ReadXic(rawFile, parameters.base64, dataInstance, ref parameters);
 
                 if (parameters.stdout)
                 {

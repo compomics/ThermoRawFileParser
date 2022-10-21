@@ -32,7 +32,10 @@ namespace ThermoRawFileParserTest
                     }
                 }
             };
-            XicReader.ReadXic(testRawFile, false, xicData);
+
+            XicParameters xicparams = new XicParameters();
+
+            XicReader.ReadXic(testRawFile, false, xicData, ref xicparams);
             XicUnit xicUnit = xicData.Content[0];
             Assert.AreEqual(14, ((Array) xicUnit.RetentionTimes).Length);
             Assert.AreEqual(14, ((Array) xicUnit.Intensities).Length);
@@ -63,7 +66,10 @@ namespace ThermoRawFileParserTest
                     }
                 }
             };
-            XicReader.ReadXic(testRawFile, false, xicData);
+
+            XicParameters xicparams = new XicParameters();
+
+            XicReader.ReadXic(testRawFile, false, xicData, ref xicparams);
             XicUnit xicUnit = xicData.Content[0];
             Assert.AreEqual(46, ((Array) xicUnit.RetentionTimes).Length);
             Assert.AreEqual(46, ((Array) xicUnit.Intensities).Length);
@@ -89,7 +95,7 @@ namespace ThermoRawFileParserTest
                     }
                 }
             };
-            XicReader.ReadXic(testRawFile, false, xicData);
+            XicReader.ReadXic(testRawFile, false, xicData, ref xicparams);
             xicUnit = xicData.Content[0];
             Assert.AreEqual(1, ((Array) xicUnit.RetentionTimes).Length);
             Assert.AreEqual(1, ((Array) xicUnit.Intensities).Length);

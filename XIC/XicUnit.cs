@@ -41,6 +41,11 @@ namespace ThermoRawFileParser.XIC
             return valid;
         }
 
+        public string GetMeta()
+        {
+            return string.Format("Filter: \"{0}\"; m/z: [{1} - {2}]; RT: [{3} - {4}]", Meta.Filter, Meta.MzStart, Meta.MzEnd, Meta.RtStart, Meta.RtEnd);
+        }
+
         public XicUnit(XicUnit copy)
         {
             Meta = new XicMeta(copy.Meta);
