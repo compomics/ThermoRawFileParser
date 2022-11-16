@@ -341,14 +341,21 @@ namespace ThermoRawFileParser.Writer
                         }
                     }
 
-                    
 
-                    var spectrum = ConstructMSSpectrum(scanNumber);
+                    SpectrumType spectrum = null;
 
-                    var level = int.Parse(spectrum.cvParam.Where(p => p.accession == "MS:1000511").First().value);
-                    
-                    
+                    try
+                    {
+                        spectrum = ConstructMSSpectrum(scanNumber);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"Scan #{scanNumber} cannot be processed because of the following exception: {ex.Message}\n{ex.StackTrace}");
+                        ParseInput.NewError();
+                    }
 
+                    var level = spectrum != null ? int.Parse(spectrum.cvParam.Where(p => p.accession == "MS:1000511").First().value) : 0;
+                    
                     if (spectrum != null && ParseInput.MsLevel.Contains(level)) //applying MS level filter
                     {
                         spectrum.index = index.ToString();
@@ -409,7 +416,18 @@ namespace ThermoRawFileParser.Writer
                                 }
                             }
 
-                            var spectrum = ConstructPDASpectrum(scanNumber, nrI);
+                            SpectrumType spectrum = null;
+
+                            try
+                            {
+                                spectrum = ConstructPDASpectrum(scanNumber, nrI);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error($"Scan #{scanNumber} cannot be processed because of the following exception: {ex.Message}\n{ex.StackTrace}");
+                                ParseInput.NewError();
+                            }
+
                             if (spectrum != null)
                             {
                                 spectrum.index = index.ToString();
@@ -1312,13 +1330,25 @@ namespace ThermoRawFileParser.Writer
 
                 if (_precursorScanNumber > 0)
                 {
-                    // Construct and set the precursor list element of the spectrum                  
-                    spectrum.precursorList =
-                        ConstructPrecursorList(_precursorScanNumber, scanEvent, charge, monoisotopicMz, isolationWidth,
-                            SPSMasses, out var reactionCount);
+                    
+                    try
+                    {
+                        // Construct and set the precursor list element of the spectrum
+                        spectrum.precursorList =
+                            ConstructPrecursorList(_precursorScanNumber, scanEvent, charge, monoisotopicMz, isolationWidth,
+                                SPSMasses, out var reactionCount);
 
-                    //save precursor information for later reference
-                    _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, reactionCount, spectrum.precursorList.precursor);
+                        //save precursor information for later reference
+                        _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, reactionCount, spectrum.precursorList.precursor);
+                    }
+                    catch (RawFileParserException e)
+                    {
+                        Log.Warn($"Failed creating precursor list for scan# {scanNumber}; {e.Message}; precursor information for this and dependent scans will be empty");
+                        ParseInput.NewWarn();
+
+                        _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, 0, new PrecursorType[0]);
+                    }
+                    
                 }
                 else
                 {
@@ -2133,8 +2163,7 @@ namespace ThermoRawFileParser.Writer
             }
             catch (ArgumentOutOfRangeException)
             {
-                Log.Warn($"Failed to get reaction when parsing precursor {precursorScanNumber}");
-                ParseInput.NewWarn();
+                throw new RawFileParserException($"Cannot get reaction at index {reactionCount} from {scanEvent.ToString()}");
             }
 
             var precursor = new PrecursorType
