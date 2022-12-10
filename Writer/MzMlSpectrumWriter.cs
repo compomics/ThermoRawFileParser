@@ -1309,44 +1309,51 @@ namespace ThermoRawFileParser.Writer
                 }
                 else //try getting it from the scan filter
                 {
-                    var parts = Regex.Split(result.Groups[1].Value, " ");
-
-                    //find the position of the first (from the end) precursor with a different mass 
-                    //to account for possible supplementary activations written in the filter
-                    var lastIonMass = parts.Last().Split('@').First();
-                    int last = parts.Length;
-                    while (last > 0 && 
-                           parts[last - 1].Split('@').First() == lastIonMass)
-                    {
-                        last--;
-                    }
-
-                    string parentFilter = String.Join(" ", parts.Take(last));
-                    if (_precursorScanNumbers.ContainsKey(parentFilter))
-                    {
-                        _precursorScanNumber = _precursorScanNumbers[parentFilter];
-                    }
+                    _precursorScanNumber = GetParentFromScanString(result.Groups[1].Value);
                 }
 
                 if (_precursorScanNumber > 0)
                 {
-                    
+
                     try
                     {
+                        try //since there is no direct way to get the number of reactions available, it is necessary to try and fail
+                        {
+                            scanEvent.GetReaction(_precursorTree[_precursorScanNumber].ReactionCount);
+                        }
+                        catch (ArgumentOutOfRangeException ex)
+                        {
+                            Log.Debug($"Using Tribrid decision tree fix for scan# {scanNumber}");
+                            //Is it a decision tree scheduled scan on tribrid?
+                            if (msLevel == _precursorTree[_precursorScanNumber].MSLevel)
+                            {
+                                _precursorScanNumber = GetParentFromScanString(result.Groups[1].Value);
+                            }
+                            else
+                            {
+                                throw new RawFileParserException(
+                                    $"Tribrid decision tree fix failed - cannot get reaction# {_precursorTree[_precursorScanNumber].ReactionCount} from {scanEvent.ToString()}",
+                                    ex);
+                            }
+                        }
+
                         // Construct and set the precursor list element of the spectrum
                         spectrum.precursorList =
                             ConstructPrecursorList(_precursorScanNumber, scanEvent, charge, monoisotopicMz, isolationWidth,
                                 SPSMasses, out var reactionCount);
 
                         //save precursor information for later reference
-                        _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, reactionCount, spectrum.precursorList.precursor);
+                        _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, msLevel, reactionCount, spectrum.precursorList.precursor);
                     }
-                    catch (RawFileParserException e)
+                    catch (Exception e)
                     {
-                        Log.Warn($"Failed creating precursor list for scan# {scanNumber}; {e.Message}; precursor information for this and dependent scans will be empty");
+                        var extra = (e.InnerException is null) ? "" : $"\n{e.InnerException.StackTrace}";
+
+                        Log.Warn($"Failed creating precursor list for scan# {scanNumber} - precursor information for this and dependent scans will be empty\nException details:{e.Message}\n{e.StackTrace}\n{extra}");
                         ParseInput.NewWarn();
 
-                        _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, 0, new PrecursorType[0]);
+                        _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, 1, 0, new PrecursorType[0]);
+
                     }
                     
                 }
@@ -2151,21 +2158,15 @@ namespace ThermoRawFileParser.Writer
             IReaction reaction = null;
             var precursorMz = 0.0;
             reactionCount = prevPrecursors.ReactionCount;
-            try
-            {
-                spectrumRef = ConstructSpectrumTitle((int)Device.MS, 1, precursorScanNumber);
-                reaction = scanEvent.GetReaction(reactionCount);
+
+            spectrumRef = ConstructSpectrumTitle((int)Device.MS, 1, precursorScanNumber);
+            reaction = scanEvent.GetReaction(reactionCount);
                 
-                precursorMz = reaction.PrecursorMass;
+            precursorMz = reaction.PrecursorMass;
 
-                //if isolation width was not found in the trailer, try to get one from the reaction
-                if (isolationWidth == null) isolationWidth = reaction.IsolationWidth;
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-                throw new RawFileParserException($"Cannot get reaction at index {reactionCount} from {scanEvent.ToString()}");
-            }
-
+            //if isolation width was not found in the trailer, try to get one from the reaction
+            if (isolationWidth == null) isolationWidth = reaction.IsolationWidth;
+            
             var precursor = new PrecursorType
             {
                 selectedIonList =
@@ -2421,6 +2422,30 @@ namespace ThermoRawFileParser.Writer
                 precursor = precursors.ToArray()
             };
 
+        }
+
+        private int GetParentFromScanString(string scanString)
+        {
+            var result = _filterStringIsolationMzPattern.Match(scanString);
+            var parts = Regex.Split(result.Groups[1].Value, " ");
+
+            //find the position of the first (from the end) precursor with a different mass 
+            //to account for possible supplementary activations written in the filter
+            var lastIonMass = parts.Last().Split('@').First();
+            int last = parts.Length;
+            while (last > 0 &&
+                   parts[last - 1].Split('@').First() == lastIonMass)
+            {
+                last--;
+            }
+
+            string parentFilter = String.Join(" ", parts.Take(last));
+            if (_precursorScanNumbers.ContainsKey(parentFilter))
+            {
+                return _precursorScanNumbers[parentFilter];
+            }
+
+            return -1; //unsuccessful parsing
         }
 
         /// <summary>

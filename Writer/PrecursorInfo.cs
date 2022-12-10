@@ -25,9 +25,10 @@
             Precursors = new MzML.PrecursorType[0];
         }
 
-        public PrecursorInfo(int scan, int reactionCount, MzML.PrecursorType[] precursors)
+        public PrecursorInfo(int scan, int level, int reactionCount, MzML.PrecursorType[] precursors)
         {
             Scan = scan;
+            MSLevel = level;
             ReactionCount = reactionCount;
             Precursors = precursors;
         }
