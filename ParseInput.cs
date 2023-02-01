@@ -14,6 +14,8 @@ namespace ThermoRawFileParser
         /// </summary>
         private string _rawFilePath;
 
+        private string _userProvidedFilePath;
+
         private int _errors;
 
         private int _warnings;
@@ -29,11 +31,16 @@ namespace ThermoRawFileParser
             set
             {
                 _rawFilePath = value;
+                _userProvidedFilePath = value;
                 if (value != null)
                 {
                     RawFileNameWithoutExtension = Path.GetFileNameWithoutExtension(value);
                 }
             }
+        }
+        public string UserProvidedPath
+        {
+            get => _userProvidedFilePath;
         }
 
         public int Errors
@@ -154,6 +161,16 @@ namespace ThermoRawFileParser
         public void NewWarn()
         {
             _warnings++;
+        }
+
+        public void UpdateRealPath(string path)
+        {
+            if (path != null)
+            {
+                _userProvidedFilePath = _rawFilePath;
+                _rawFilePath = path;
+                
+            }
         }
     }
 }

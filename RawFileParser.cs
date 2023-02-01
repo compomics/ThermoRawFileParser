@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
 using ThermoRawFileParser.Writer;
+using ThermoRawFileParser.Util;
 
 namespace ThermoRawFileParser
 {
@@ -93,6 +95,26 @@ namespace ThermoRawFileParser
         {
             // Create the IRawDataPlus object for accessing the RAW file
             IRawDataPlus rawFile;
+
+            //checking for symlinks
+            var fileInfo = new FileInfo(parseInput.RawFilePath);
+
+            if (fileInfo.Attributes.HasFlag(FileAttributes.ReparsePoint)) //detected path is a symlink
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    var realPath = NativeMethods.GetFinalPathName(parseInput.RawFilePath);
+                    Log.DebugFormat("Detected reparse point, real path: {0}", realPath);
+                    parseInput.UpdateRealPath(realPath);
+                }
+                else //Mono should handle all non-windows platforms
+                {
+                    var realPath = Path.Combine(Path.GetDirectoryName(parseInput.RawFilePath), Mono.Unix.UnixPath.ReadLink(parseInput.RawFilePath));
+                    Log.DebugFormat("Detected reparse point, real path: {0}", realPath);
+                    parseInput.UpdateRealPath(realPath);
+                }
+            }
+            
             using (rawFile = RawFileReaderFactory.ReadFile(parseInput.RawFilePath))
             {
                 if (!rawFile.IsOpen)
@@ -155,7 +177,7 @@ namespace ThermoRawFileParser
                     }
                 }
 
-                Log.Info("Finished parsing " + parseInput.RawFilePath);
+                Log.Info("Finished parsing " + parseInput.UserProvidedPath);
             }
         }
     }

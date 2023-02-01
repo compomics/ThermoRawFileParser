@@ -96,6 +96,9 @@
       <HintPath>packages\Mono.Options.6.6.0.161\lib\net40\Mono.Options.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Mono.Unix, Version=7.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\Mono.Unix.7.1.0-final.1.21458.1\lib\net45\Mono.Unix.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="Namotion.Reflection, Version=1.0.18.0, Culture=neutral, PublicKeyToken=c2f9c3bdfae56102">
       <HintPath>packages\Namotion.Reflection.1.0.18\lib\net45\Namotion.Reflection.dll</HintPath>
@@ -198,6 +201,7 @@
     <Compile Include="RawFileParser.cs" />
     <Compile Include="Util\LimitedSizeDictionary.cs" />
     <Compile Include="Util\MZArray.cs" />
+    <Compile Include="Util\NativeMethods.cs" />
     <Compile Include="Util\Peptide.cs" />
     <Compile Include="Writer\PrecursorInfo.cs" />
     <Compile Include="Writer\ScanTrailer.cs" />
@@ -248,7 +252,9 @@
     </PropertyGroup>
     <Error Condition="!Exists('packages\NUnit.3.13.1\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\NUnit.3.13.1\build\NUnit.props'))" />
     <Error Condition="!Exists('packages\NUnit3TestAdapter.4.1.0\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\NUnit3TestAdapter.4.1.0\build\net35\NUnit3TestAdapter.props'))" />
+    <Error Condition="!Exists('packages\Mono.Unix.7.1.0-final.1.21458.1\build\Mono.Unix.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Mono.Unix.7.1.0-final.1.21458.1\build\Mono.Unix.targets'))" />
   </Target>
+  <Import Project="packages\Mono.Unix.7.1.0-final.1.21458.1\build\Mono.Unix.targets" Condition="Exists('packages\Mono.Unix.7.1.0-final.1.21458.1\build\Mono.Unix.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
