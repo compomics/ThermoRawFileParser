@@ -8,6 +8,7 @@ using IO.Mgf;
 using MzLibUtil;
 using NUnit.Framework;
 using ThermoRawFileParser;
+using ThermoRawFileParser.Writer;
 using ThermoRawFileParser.Writer.MzML;
 using UsefulProteomicsDatabases;
 
@@ -16,6 +17,97 @@ namespace ThermoRawFileParserTest
     [TestFixture]
     public class WriterTests
     {
+        [Test]
+        public void TestExtensionsNull()
+        {
+            // Get temp path for writing the test files
+            var tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempFilePath);
+
+            var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data/small.RAW");
+            var parseInput = new ParseInput();
+            parseInput.RawFilePath = testRawFile;
+            parseInput.OutputDirectory = tempFilePath;
+
+            //empty filename
+            parseInput.OutputFormat = OutputFormat.MGF;
+            RawFileParser.Parse(parseInput);
+            Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, "small.mgf")));
+
+            parseInput.OutputFormat = OutputFormat.MzML;
+            RawFileParser.Parse(parseInput);
+            Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, "small.mzML")));
+            File.Delete(Path.Combine(tempFilePath, "small.mzML"));
+
+            parseInput.OutputFormat = OutputFormat.IndexMzML;
+            RawFileParser.Parse(parseInput);
+            Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, "small.mzML")));
+
+            parseInput.Gzip = true;
+            RawFileParser.Parse(parseInput);
+            Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, "small.mzML.gz")));
+            File.Delete(Path.Combine(tempFilePath, "small.mzML.gz"));
+
+            parseInput.OutputFormat = OutputFormat.MGF;
+            RawFileParser.Parse(parseInput);
+            Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, "small.mgf.gz")));
+
+            parseInput.OutputFormat = OutputFormat.MzML;
+            RawFileParser.Parse(parseInput);
+            Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, "small.mzML.gz")));
+
+            Directory.Delete(tempFilePath, true);
+        }
+
+        [Test]
+        public void TestExtensionsFull()
+        {
+            // Get temp path for writing the test files
+            var tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempFilePath);
+
+            var testRawFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data/small.RAW");
+            var parseInput = new ParseInput();
+            parseInput.RawFilePath = testRawFile;
+
+            List<OutputFormat> formats = new List<OutputFormat>();
+            string userInput;
+            string expectedOutput;
+
+            foreach (string line in File.ReadLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data/ExtensionTest.tsv")).Skip(1))
+            {
+                string[] words = line.Split('\t');
+
+                switch (words[0].ToLower())
+                {
+                    case "mgf": formats = new List<OutputFormat> { OutputFormat.MGF }; break;
+                    case "mzml": formats = new List<OutputFormat> { OutputFormat.MzML, OutputFormat.IndexMzML }; break;
+                }
+
+                switch (words[1].ToLower())
+                {
+                    case "true": parseInput.Gzip = true; break;
+                    default: parseInput.Gzip = false; break;
+                }
+
+                userInput = words[2];
+                expectedOutput = words[3];
+
+                parseInput.OutputFile = Path.Combine(tempFilePath, userInput);
+
+                foreach (var format in formats)
+                {
+                    parseInput.OutputFormat = format;
+                    RawFileParser.Parse(parseInput);
+                    Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, expectedOutput)));
+                    File.Delete(Path.Combine(tempFilePath, expectedOutput));
+                }
+
+            }
+
+            Directory.Delete(tempFilePath, true);
+        }
+
         [Test]
         public void TestMgf()
         {

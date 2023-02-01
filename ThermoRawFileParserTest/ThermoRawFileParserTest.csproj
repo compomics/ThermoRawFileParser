@@ -187,6 +187,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Data\ExtensionTest.tsv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Data\TestFolderMgfs\small1.RAW">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

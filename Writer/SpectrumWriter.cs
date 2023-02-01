@@ -70,7 +70,7 @@ namespace ThermoRawFileParser.Writer
 
             if (ParseInput.OutputFile == null)
             {
-                var fullExtension = ParseInput.Gzip ? extension + ".gzip" : extension;
+                var fullExtension = ParseInput.Gzip ? extension + ".gz" : extension;
                 if (!ParseInput.Gzip || ParseInput.OutputFormat == OutputFormat.IndexMzML)
                 {
                     Writer = File.CreateText(ParseInput.OutputDirectory + "//" +
@@ -87,23 +87,43 @@ namespace ThermoRawFileParser.Writer
             }
             else
             {
+                var fileName = NormalizeFileName(ParseInput.OutputFile, extension, ParseInput.Gzip);
                 if (!ParseInput.Gzip || ParseInput.OutputFormat == OutputFormat.IndexMzML)
                 {
-                    Writer = File.CreateText(ParseInput.OutputFile);
+                    Writer = File.CreateText(fileName);
                 }
                 else
                 {
-                    var fileName = ParseInput.OutputFile;
-                    if (ParseInput.Gzip && !Path.GetExtension(fileName).Equals(".gzip"))
-                    {
-                        fileName = ParseInput.OutputFile + ".gzip";
-                    }
-
                     var fileStream = File.Create(fileName);
                     var compress = new GZipStream(fileStream, CompressionMode.Compress);
                     Writer = new StreamWriter(compress);
                 }
             }
+        }
+
+        private string NormalizeFileName(string outputFile, string extension, bool gzip)
+        {
+            string result = outputFile;
+            string tail = "";
+
+            string[] extensions;
+            if (ParseInput.Gzip)
+                extensions = new string[] { ".gz", extension };
+            else
+                extensions = new string[] { extension };
+
+            result = result.TrimEnd('.');
+
+            foreach (var ext in extensions)
+            {    
+                if (result.ToLower().EndsWith(ext.ToLower()))
+                    result = result.Substring(0, result.Length - ext.Length);
+
+                tail = ext + tail;
+                result = result.TrimEnd('.');
+            }
+
+            return result + tail;
         }
 
         /// <summary>
