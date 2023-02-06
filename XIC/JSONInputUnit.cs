@@ -45,6 +45,10 @@ namespace ThermoRawFileParser.XIC
         [DefaultValue(null)]
         public string Filter { get; set; }
 
+        [JsonProperty("comment", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue(null)]
+        public string Comment { get; set; }
+
         public bool HasMzRange()
         {
             return MzStart != null && MzEnd != null;

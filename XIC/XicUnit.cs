@@ -16,7 +16,7 @@ namespace ThermoRawFileParser.XIC
             Intensities = null;
         }
 
-        public XicUnit(double mzStart, double mzEnd, double? rtStart, double? rtEnd, string filter)
+        public XicUnit(double mzStart, double mzEnd, double? rtStart, double? rtEnd, string filter=null, string comment=null)
         {
             Meta = new XicMeta();
             Meta.MzStart = mzStart;
@@ -24,6 +24,7 @@ namespace ThermoRawFileParser.XIC
             Meta.RtStart = rtStart;
             Meta.RtEnd = rtEnd;
             Meta.Filter = filter;
+            Meta.Comment = comment;
         }
 
         public bool HasValidRanges()
@@ -43,7 +44,7 @@ namespace ThermoRawFileParser.XIC
 
         public string GetMeta()
         {
-            return string.Format("Filter: \"{0}\"; m/z: [{1} - {2}]; RT: [{3} - {4}]", Meta.Filter, Meta.MzStart, Meta.MzEnd, Meta.RtStart, Meta.RtEnd);
+            return string.Format("Filter: \"{0}\"; m/z: [{1} - {2}]; RT: [{3} - {4}]; Comment: {5}", Meta.Filter, Meta.MzStart, Meta.MzEnd, Meta.RtStart, Meta.RtEnd, Meta.Comment);
         }
 
         public XicUnit(XicUnit copy)

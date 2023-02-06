@@ -84,6 +84,11 @@ namespace ThermoRawFileParser.XIC
             '$id': '#/items/properties/scan_filter',
             'type': 'string',
             'title': 'The Filter Schema',
+         },
+         'comment': {
+            '$id': '#/items/properties/comment',
+            'type': 'string',
+            'title': 'The Comment Schema',
          }
         }
        }
@@ -136,11 +141,11 @@ namespace ThermoRawFileParser.XIC
                     }
 
                     xicUnit = new XicUnit(xic.Mz.Value - delta, xic.Mz.Value + delta, xic.RtStart,
-                        xic.RtEnd, xic.Filter);
+                        xic.RtEnd, xic.Filter, xic.Comment);
                 }
                 else if (xic.HasMzRange())
                 {
-                    xicUnit = new XicUnit(xic.MzStart.Value, xic.MzEnd.Value, xic.RtStart, xic.RtEnd, xic.Filter);
+                    xicUnit = new XicUnit(xic.MzStart.Value, xic.MzEnd.Value, xic.RtStart, xic.RtEnd, xic.Filter, xic.Comment);
                 }
 
                 if (xicUnit == null || !xicUnit.HasValidRanges())

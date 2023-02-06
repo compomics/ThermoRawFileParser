@@ -25,6 +25,10 @@ namespace ThermoRawFileParser.XIC
         [DefaultValue(null)]
         public string Filter { get; set; }
 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(null)]
+        public string Comment { get; set; }
+
 
         public XicMeta()
         {
@@ -33,6 +37,7 @@ namespace ThermoRawFileParser.XIC
             RtStart = null;
             RtEnd = null;
             Filter = null;
+            Comment = null;
         }
 
         public XicMeta(XicMeta copy)
@@ -42,6 +47,7 @@ namespace ThermoRawFileParser.XIC
             RtStart = copy.RtStart;
             RtEnd = copy.RtEnd;
             Filter = copy.Filter;
+            Comment = copy.Comment;
         }
     }
 }

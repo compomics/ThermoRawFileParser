@@ -39,10 +39,10 @@ namespace ThermoRawFileParserTest
             XicUnit xicUnit = xicData.Content[0];
             Assert.AreEqual(14, ((Array) xicUnit.RetentionTimes).Length);
             Assert.AreEqual(14, ((Array) xicUnit.Intensities).Length);
-            Assert.AreEqual(140, xicUnit.Meta.MzStart, 0.01);
-            Assert.AreEqual(2000, xicUnit.Meta.MzEnd, 0.01);
-            Assert.AreEqual(0.004935, xicUnit.Meta.RtStart, 0.01);
-            Assert.AreEqual(0.4872366666, xicUnit.Meta.RtEnd, 0.01);
+            Assert.AreEqual(140, xicUnit.Meta.MzStart.Value, 0.01);
+            Assert.AreEqual(2000, xicUnit.Meta.MzEnd.Value, 0.01);
+            Assert.AreEqual(0.004935, xicUnit.Meta.RtStart.Value, 0.01);
+            Assert.AreEqual(0.4872366666, xicUnit.Meta.RtEnd.Value, 0.01);
         }
 
         [Test]
@@ -73,10 +73,10 @@ namespace ThermoRawFileParserTest
             XicUnit xicUnit = xicData.Content[0];
             Assert.AreEqual(46, ((Array) xicUnit.RetentionTimes).Length);
             Assert.AreEqual(46, ((Array) xicUnit.Intensities).Length);
-            Assert.AreEqual(749.786, xicUnit.Meta.MzStart, 0.01);
-            Assert.AreEqual(749.8093, xicUnit.Meta.MzEnd, 0.01);
-            Assert.AreEqual(10, xicUnit.Meta.RtStart, 0.01);
-            Assert.AreEqual(10.98, xicUnit.Meta.RtEnd, 0.01);
+            Assert.AreEqual(749.786, xicUnit.Meta.MzStart.Value, 0.01);
+            Assert.AreEqual(749.8093, xicUnit.Meta.MzEnd.Value, 0.01);
+            Assert.AreEqual(10, xicUnit.Meta.RtStart.Value, 0.01);
+            Assert.AreEqual(10.98, xicUnit.Meta.RtEnd.Value, 0.01);
             
             xicData = new XicData
             {
@@ -99,10 +99,10 @@ namespace ThermoRawFileParserTest
             xicUnit = xicData.Content[0];
             Assert.AreEqual(1, ((Array) xicUnit.RetentionTimes).Length);
             Assert.AreEqual(1, ((Array) xicUnit.Intensities).Length);
-            Assert.AreEqual(749.786, xicUnit.Meta.MzStart, 0.01);
-            Assert.AreEqual(749.8093, xicUnit.Meta.MzEnd, 0.01);
-            Assert.AreEqual(300, xicUnit.Meta.RtStart, 0.01);
-            Assert.AreEqual(400, xicUnit.Meta.RtEnd, 0.01);
+            Assert.AreEqual(749.786, xicUnit.Meta.MzStart.Value, 0.01);
+            Assert.AreEqual(749.8093, xicUnit.Meta.MzEnd.Value, 0.01);
+            Assert.AreEqual(300, xicUnit.Meta.RtStart.Value, 0.01);
+            Assert.AreEqual(400, xicUnit.Meta.RtEnd.Value, 0.01);
         }
 
         [Test]
@@ -131,6 +131,12 @@ namespace ThermoRawFileParserTest
             'tolerance':10,
             'rt_start':630,
             'rt_end':660
+        },
+        {
+            'mz':575.2413,
+            'tolerance':10,
+            'tolerance_unit':'ppm',
+            'comment': 'this is comment'
         }
         ]";
 
