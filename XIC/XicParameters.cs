@@ -10,9 +10,8 @@ namespace ThermoRawFileParser.XIC
         public bool help { get; set; }
         public ArrayList rawFileList { get; set; }
         public string jsonFilePath { get; set; }
-        public string outputDirectory { get; set; }
+        public ArrayList outputFileList { get; set; }
         public bool printJsonExample { get; set; }
-        public string outputFileName { get; set; }
         public bool base64 { get; set; }
         public bool stdout { get; set; }
         public bool Vigilant { get; set; }
@@ -25,9 +24,8 @@ namespace ThermoRawFileParser.XIC
             help = false;
             rawFileList = new ArrayList();
             jsonFilePath = null;
-            outputDirectory = null;
+            outputFileList = new ArrayList();
             printJsonExample = false;
-            outputFileName = null;
             base64 = false;
             stdout = false;
             Vigilant = false;
@@ -57,9 +55,8 @@ namespace ThermoRawFileParser.XIC
             }
 
             jsonFilePath = copy.jsonFilePath;
-            outputDirectory = copy.outputDirectory;
+            outputFileList = copy.outputFileList;
             printJsonExample = copy.printJsonExample;
-            outputFileName = copy.outputFileName;
             base64 = copy.base64;
             stdout = copy.stdout;
             LogFormat = copy.LogFormat;

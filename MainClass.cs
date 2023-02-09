@@ -11,6 +11,7 @@ using ThermoRawFileParser.XIC;
 using System.Globalization;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Data;
 
 namespace ThermoRawFileParser
 {
@@ -52,6 +53,8 @@ namespace ThermoRawFileParser
             XicParameters parameters = new XicParameters();
             string singleFile = null;
             string fileDirectory = null;
+            string outputFile = null;
+            string outputDirectory = null;
             string logFormatString = null;
 
             var optionSet = new OptionSet
@@ -82,10 +85,15 @@ namespace ThermoRawFileParser
                 {
                     "o=|output=",
                     "The output directory. If not specified, the output is written to the input directory",
-                    v => parameters.outputDirectory = v
+                    v => outputDirectory = v
                 },
                 {
-                    "b|base64",
+                    "b=|output_file",
+                    "The output file. Specify this or an output directory -o. Specifying neither writes to the input directory.",
+                    v => outputFile = v
+                },
+                {
+                    "6|base64",
                     "Encodes the content of the xic vectors as base 64 encoded string.",
                     v => parameters.base64 = v != null
                 },
@@ -163,7 +171,7 @@ namespace ThermoRawFileParser
                 }
 
 
-                if (parameters.outputDirectory != null && !Directory.Exists(parameters.outputDirectory))
+                if (outputDirectory != null && !Directory.Exists(outputDirectory))
                 {
                     throw new OptionException(
                         "specify a valid output location",
@@ -177,18 +185,55 @@ namespace ThermoRawFileParser
                         "-i, --input xor -d, --input_directory");
                 }
 
+                if (outputFile != null && outputDirectory != null)
+                {
+                    throw new OptionException(
+                        "cannot use an output file and an output directory simultaneously",
+                        "-b, --output_file; -o, --output");
+                }
+
                 if (singleFile != null)
                 {
                     parameters.rawFileList.Add(Path.GetFullPath(singleFile));
+                    
+                    if (outputFile != null)
+                    {
+                        parameters.outputFileList.Add(Path.GetFullPath(outputFile));
+                    }
+                    else if (outputDirectory != null)
+                    {
+                        parameters.outputFileList.Add(Path.Combine(outputDirectory ?? throw new NoNullAllowedException("Output directory cannot be null"),
+                                                        Path.GetFileNameWithoutExtension(singleFile) + ".json"));
+                    }
+                    else
+                    {
+                        parameters.outputFileList.Add(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(singleFile)),
+                                                        Path.GetFileNameWithoutExtension(singleFile) + ".json"));
+                    }
                 }
                 else
                 {
+                    if (outputFile != null)
+                    {
+                        throw new OptionException("Cannot use single output file to proceess a directory, use directory output instead", "-o, --output");
+                    }
+                    else if (outputDirectory != null)
+                    {
+                        outputDirectory = Path.GetFullPath(outputDirectory);
+                    }
+                    else
+                    {
+                        outputDirectory = Path.GetFullPath(fileDirectory);
+                    }
+
                     var directoryInfo = new DirectoryInfo(Path.GetFullPath(fileDirectory));
                     var files = directoryInfo.GetFiles("*", SearchOption.TopDirectoryOnly)
                         .Where(f => f.Extension.ToLower() == ".raw").ToArray<FileInfo>();
                     foreach (var file in files)
                     {
                         parameters.rawFileList.Add(file.FullName);
+                        parameters.outputFileList.Add(Path.Combine(outputDirectory ?? throw new NoNullAllowedException("Output directory cannot be null"),
+                                                    Path.GetFileNameWithoutExtension(file.Name) + ".json"));
                     }
                 }
 

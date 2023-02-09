@@ -2,15 +2,21 @@ using System;
 using System.Data;
 using System.IO;
 using System.Text;
+using System.Reflection;
 using Newtonsoft.Json;
 using ThermoFisher.CommonCore.Data;
+using log4net;
 
 namespace ThermoRawFileParser.XIC
 {
     public static class XicExecutor
     {
+        private static readonly ILog Log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         public static void Run(XicParameters parameters)
         {
+            Log.InfoFormat("Reading and validating JSON input");
             var jsonString = File.ReadAllText(parameters.jsonFilePath, Encoding.UTF8);
             var validationErrors = JSONParser.ValidateJson(jsonString);
             if (!validationErrors.IsNullOrEmpty())
@@ -32,8 +38,13 @@ namespace ThermoRawFileParser.XIC
             }
 
             var xicData = JSONParser.ParseJSON(jsonString);
-            foreach (string rawFile in parameters.rawFileList)
+
+            Log.InfoFormat("Input contains {0} XICs", xicData.Content.Count);
+
+            for (int index = 0; index < parameters.rawFileList.Count; index++)
             {
+                string rawFile = (string) parameters.rawFileList[index];
+
                 var dataInstance = new XicData(xicData);
                 XicReader.ReadXic(rawFile, parameters.base64, dataInstance, ref parameters);
 
@@ -43,20 +54,7 @@ namespace ThermoRawFileParser.XIC
                 }
                 else
                 {
-                    // if outputDirectory has been defined, put output there.
-                    string directory;
-                    if (parameters.outputDirectory != null)
-                    {
-                        directory = parameters.outputDirectory;
-                    }
-                    // otherwise put output files into the same directory as the raw file input
-                    else
-                    {
-                        directory = Path.GetDirectoryName(rawFile);
-                    }
-
-                    var outputFileName = Path.Combine(directory ?? throw new NoNullAllowedException("Output directory cannot be null"),
-                        Path.GetFileNameWithoutExtension(rawFile) + ".json");
+                    var outputFileName = (string) parameters.outputFileList[index];
 
                     OutputXicData(dataInstance, outputFileName);
                 }
