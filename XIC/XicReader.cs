@@ -19,6 +19,8 @@ namespace ThermoRawFileParser.XIC
         public static void ReadXic(string rawFilePath, bool base64, XicData xicData, ref XicParameters parameters)
         {
             IRawDataPlus rawFile;
+            int _xicCount = 0;
+
             using (rawFile = RawFileReaderFactory.ReadFile(rawFilePath))
             {
                 Log.Info($"Started parsing {rawFilePath}");
@@ -61,7 +63,15 @@ namespace ThermoRawFileParser.XIC
                 xicData.OutputMeta.base64 = base64;
                 xicData.OutputMeta.timeunit = "minutes";
 
-                foreach (var xicUnit in xicData.Content)
+
+                System.Timers.Timer tick = new System.Timers.Timer(2000);
+                if (!parameters.stdout)
+                {
+                    tick.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) => Console.Out.Write("\rCompleted XIC {0} of {1}", _xicCount, xicData.Content.Count);
+                    tick.Start();
+                }
+
+                    foreach (var xicUnit in xicData.Content)
                 {
                     IChromatogramSettings settings = null;
                     if (!xicUnit.Meta.MzStart.HasValue && !xicUnit.Meta.MzEnd.HasValue)
@@ -173,6 +183,14 @@ namespace ThermoRawFileParser.XIC
                             parameters.NewWarn();
                         }
                     }
+
+                    _xicCount++;
+                }
+
+                if (!parameters.stdout)
+                {
+                    tick.Stop();
+                    Console.Out.Write("\r");
                 }
 
                 Log.Info($"Finished parsing {rawFilePath}");
