@@ -120,6 +120,8 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
                              S3 bucket name
 ```
 
+Output file extension is determined by the used output format and (optional) gzip compression, for example, if format is MGF without gzip compression, the output file will receive `.mgf` extension, if format is mzML with gzip compression the output file will have `.mzML.gz` extension. All user input will be standardized to fulfill abovementioned requrements.
+
 A (java) graphical user interface is also available [here](https://github.com/compomics/ThermoRawFileParserGUI) that enables the selection of an input RAW directory or one ore more RAW files.
 
 ### query subcommand
@@ -159,7 +161,6 @@ mono ThermoRawFileParser.exe xic -i=/home/user/data_input/raw_file.raw -j=/home/
 
 ```
 ThermoRawFileParser.exe xic --help
-usage is:
   -h, --help                 Prints out the options.
   -i, --input=VALUE          The raw file input (Required). Specify this or an
                                input directory -d
@@ -168,9 +169,13 @@ usage is:
                                Specify this or an input file -i.
   -j, --json=VALUE           The json input file (Required).
   -p, --print_example        Show a json input file example.
-  -o, --output=VALUE         The output directory. If not specified, the output
-                               is written to the input directory
-  -b, --base64               Encodes the content of the xic vectors as base 64
+  -o, --output=VALUE         The output directory. Specify this or an output
+                               file. Specifying neither writes to the input
+                               directory.
+  -b, --output_file=VALUE    The output file. Specify this or an output
+                               directory. Specifying neither writes to the
+                               input directory.
+  -6, --base64               Encodes the content of the xic vectors as base 64
                                encoded string.
   -s, --stdout               Pipes the output into standard output. Logging is
                                being turned off.

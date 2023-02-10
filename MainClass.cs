@@ -84,12 +84,12 @@ namespace ThermoRawFileParser
                 },
                 {
                     "o=|output=",
-                    "The output directory. If not specified, the output is written to the input directory",
+                    "The output directory. Specify this or an output file. Specifying neither writes to the input directory.",
                     v => outputDirectory = v
                 },
                 {
                     "b=|output_file",
-                    "The output file. Specify this or an output directory -o. Specifying neither writes to the input directory.",
+                    "The output file. Specify this or an output directory. Specifying neither writes to the input directory.",
                     v => outputFile = v
                 },
                 {
@@ -353,7 +353,7 @@ namespace ThermoRawFileParser
                     v => parameters.stdout = v != null
                 },
                 {
-                  "w|warningsAreErrors", "Return non-zero exit code for warnings; default only for errors",
+                   "w|warningsAreErrors", "Return non-zero exit code for warnings; default only for errors",
                     v => parameters.Vigilant = v != null
                 },
                 {
