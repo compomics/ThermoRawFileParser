@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using log4net;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
+using ThermoRawFileParser.Util;
 
 namespace ThermoRawFileParser.XIC
 {
@@ -20,10 +22,29 @@ namespace ThermoRawFileParser.XIC
         {
             IRawDataPlus rawFile;
             int _xicCount = 0;
+            string _userProvidedPath = rawFilePath;
+
+            //checking for symlinks
+            var fileInfo = new FileInfo(rawFilePath);
+            if (fileInfo.Attributes.HasFlag(FileAttributes.ReparsePoint)) //detected path is a symlink
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    var realPath = NativeMethods.GetFinalPathName(rawFilePath);
+                    Log.DebugFormat("Detected reparse point, real path: {0}", realPath);
+                    rawFilePath = realPath;
+                }
+                else //Mono should handle all non-windows platforms
+                {
+                    var realPath = Path.Combine(Path.GetDirectoryName(rawFilePath), Mono.Unix.UnixPath.ReadLink(rawFilePath));
+                    Log.DebugFormat("Detected reparse point, real path: {0}", realPath);
+                    rawFilePath = realPath;
+                }
+            }
 
             using (rawFile = RawFileReaderFactory.ReadFile(rawFilePath))
             {
-                Log.Info($"Started parsing {rawFilePath}");
+                Log.Info($"Started parsing {_userProvidedPath}");
 
                 if (!rawFile.IsOpen)
                 {
@@ -136,14 +157,16 @@ namespace ThermoRawFileParser.XIC
                                  Math.Abs(data.PositionsArray[0][0] - endTime) < 0.001))
                             {
                                 Log.Warn(
-                                    $"Only the minimum or maximum retention time was returned. Does the provided retention time range [{xicUnit.Meta.RtStart}-{xicUnit.Meta.RtEnd}] lies outside the max. window [{startTime}-{endTime}]?");
+                                    $"Only the minimum or maximum retention time was returned. " +
+                                    $"Does the provided retention time range [{xicUnit.Meta.RtStart}-{xicUnit.Meta.RtEnd}] lies outside the max. window [{startTime}-{endTime}]?");
                                 parameters.NewWarn();
                             }
                         }
                         else
                         {
                             Log.Warn(
-                                $"No scans found in retention time range [{xicUnit.Meta.RtStart}-{xicUnit.Meta.RtEnd}]. Does the provided retention time window lies outside the max. window [{startTime}-{endTime}]");
+                                $"No scans found in retention time range [{xicUnit.Meta.RtStart}-{xicUnit.Meta.RtEnd}]. " +
+                                $"Does the provided retention time window lies outside the max. window [{startTime}-{endTime}]");
                             parameters.NewWarn();
                         }
                     }
@@ -193,7 +216,7 @@ namespace ThermoRawFileParser.XIC
                     Console.Out.Write("\r");
                 }
 
-                Log.Info($"Finished parsing {rawFilePath}");
+                Log.Info($"Finished parsing {_userProvidedPath}");
             }
         }
 

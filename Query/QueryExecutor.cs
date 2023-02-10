@@ -34,7 +34,7 @@ namespace ThermoRawFileParser.Query
                 // otherwise put output files into the same directory as the raw file input
                 else
                 {
-                    outputFileName = Path.GetFullPath(parameters.rawFilePath);
+                    outputFileName = Path.GetFullPath(parameters.userFilePath);
                 }
 
                 var directory = Path.GetDirectoryName(outputFileName);

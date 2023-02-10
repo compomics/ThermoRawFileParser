@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Configuration;
 
 namespace ThermoRawFileParser.Query
 {
@@ -10,8 +8,23 @@ namespace ThermoRawFileParser.Query
 
         private int _warnings;
 
+        private string _rawFilePath;
+
+        private string _userFilePath;
+
         public bool help { get; set; }
-        public string rawFilePath { get; set; }
+        public string rawFilePath
+        { 
+            get => _rawFilePath;
+            set
+            {
+                _rawFilePath = value;
+                _userFilePath = value;
+            } 
+        }
+
+        public string userFilePath { get => _userFilePath; }
+
         public string scans { get; set; }
         public string outputFile { get; set; }
         public bool noPeakPicking { get; set; }
@@ -61,6 +74,11 @@ namespace ThermoRawFileParser.Query
         public void NewWarn()
         {
             _warnings++;
+        }
+
+        public void UpdateRealPath(string realPath)
+        {
+            _rawFilePath = realPath;
         }
     }
 }

@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using log4net;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
 using ThermoRawFileParser.Writer;
+using ThermoRawFileParser.Util;
 
 namespace ThermoRawFileParser.Query
 {
@@ -26,9 +29,28 @@ namespace ThermoRawFileParser.Query
         {
             var resultList = new List<ProxiSpectrum>();
             IRawDataPlus rawFile;
+
+            //checking for symlinks
+            var fileInfo = new FileInfo(queryParameters.rawFilePath);
+            if (fileInfo.Attributes.HasFlag(FileAttributes.ReparsePoint)) //detected path is a symlink
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    var realPath = NativeMethods.GetFinalPathName(queryParameters.rawFilePath);
+                    Log.DebugFormat("Detected reparse point, real path: {0}", realPath);
+                    queryParameters.UpdateRealPath(realPath);
+                }
+                else //Mono should handle all non-windows platforms
+                {
+                    var realPath = Path.Combine(Path.GetDirectoryName(queryParameters.rawFilePath), Mono.Unix.UnixPath.ReadLink(queryParameters.rawFilePath));
+                    Log.DebugFormat("Detected reparse point, real path: {0}", realPath);
+                    queryParameters.UpdateRealPath(realPath);
+                }
+            }
+
             using (rawFile = RawFileReaderFactory.ReadFile(queryParameters.rawFilePath))
             {
-                Log.Info($"Started parsing {queryParameters.rawFilePath}");
+                Log.Info($"Started parsing {queryParameters.userFilePath}");
 
                 if (!rawFile.IsOpen)
                 {
@@ -240,7 +262,7 @@ namespace ThermoRawFileParser.Query
                 }
             }
 
-            Log.Info($"Finished processing {queryParameters.rawFilePath}");
+            Log.Info($"Finished processing {queryParameters.userFilePath}");
 
             return resultList;
         }
