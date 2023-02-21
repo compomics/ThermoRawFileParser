@@ -51,10 +51,10 @@ namespace ThermoRawFileParser
         private static void XicParametersParsing(string[] args)
         {
             XicParameters parameters = new XicParameters();
-            string singleFile = null;
+            string singleFile = "D:\\ht\\testdata\\Columbo-PM-22-291-MetIDEFatePhoto-07092022-MA-04B.raw";
             string fileDirectory = null;
             string outputFile = null;
-            string outputDirectory = null;
+            string outputDirectory = "D:\\ht\\testdata";
             string logFormatString = null;
 
             var optionSet = new OptionSet
