@@ -152,7 +152,9 @@ namespace ThermoRawFileParser.Writer
             var metadata = new Metadata();
 
             // File Properties
-            metadata.addFileProperty(new CVTerm("NCIT:C47922", "NCIT", "Pathname", rawFile.FileName));
+            string filePath = rawFile.FileName;
+            metadata.addFileProperty(new CVTerm("NCIT:C47922", "NCIT", "Pathname", filePath));
+            metadata.addFileProperty(new CVTerm("NCIT:*****************", "NCIT", "File Name", filePath.Substring(0, filePath.LastIndexOf(".")).Remove(0, filePath.LastIndexOf("\\") + 1)));
             metadata.addFileProperty(new CVTerm("NCIT:C25714", "NCIT", "Version",
                 rawFile.FileHeader.Revision.ToString()));
             metadata.addFileProperty(new CVTerm("NCIT:C69199", "NCIT", "Content Creation Date",
@@ -280,6 +282,53 @@ namespace ThermoRawFileParser.Writer
                     rawFile.SampleInformation.DilutionFactor.ToString(CultureInfo.InvariantCulture)));
             }
 
+            if (!rawFile.SampleInformation.Path.IsNullOrEmpty())
+            {
+                metadata.addSampleProperty(new CVTerm("AFQ:**********************", "AFO", "Path", rawFile.SampleInformation.Path));
+            }
+
+            if (!rawFile.SampleInformation.InstrumentMethodFile.IsNullOrEmpty())
+            {
+                metadata.addSampleProperty(new CVTerm("AFQ:******************", "AFO", "Instrument Method", rawFile.SampleInformation.InstrumentMethodFile));
+            }
+
+            if (rawFile.SampleInformation.IstdAmount != 0)
+            {
+                metadata.addSampleProperty(new CVTerm("AFQ:****************", "AFO", "Istd Amount", rawFile.SampleInformation.IstdAmount.ToString()));
+            }
+
+            if (!rawFile.SampleInformation.CalibrationLevel.IsNullOrEmpty())
+            {
+                metadata.addSampleProperty(new CVTerm("AFQ:****************", "AFO", "Calibration Level", rawFile.SampleInformation.CalibrationLevel));
+            }
+
+            if (!rawFile.SampleInformation.ProcessingMethodFile.IsNullOrEmpty())
+            {
+                metadata.addSampleProperty(new CVTerm("AFQ:****************", "AFO", "Processing Method", rawFile.SampleInformation.ProcessingMethodFile));
+            }
+
+            if (rawFile.SampleInformation.SampleWeight != 0)
+            {
+                metadata.addSampleProperty(new CVTerm("AFQ:****************", "AFO", "Processing Method", rawFile.SampleInformation.SampleWeight.ToString()));
+            }
+
+            string[] userLabels = rawFile.UserLabel;
+            string[] userTexts = rawFile.SampleInformation.UserText;
+            if (!userLabels.IsNullOrEmpty() && !userTexts.IsNullOrEmpty())
+            {
+                if (userLabels.Length > userTexts.Length)
+                {
+                    throw new RawFileParserException();
+                }
+                for (int i = 0; i < userLabels.Length; i++)
+                {
+                    if (!userTexts[i].IsNullOrEmpty())
+                    {
+                        metadata.addSampleProperty(new CVTerm("AFQ:****************", "AFO", userLabels[i], userTexts[i]));
+                    }
+                }
+            }
+
 
             // Write the meta data to file
             var json = JsonConvert.SerializeObject(metadata);
@@ -305,8 +354,8 @@ namespace ThermoRawFileParser.Writer
             var output = new List<string>
             {
                 "#FileProperties",
-                "RAW file path=" + rawFile.FileName,
-                "RAW file name=" + rawFile.FileName.Substring(0, rawFile.FileName.LastIndexOf(".")).Remove(0, rawFile.FileName.LastIndexOf("\\") + 1),
+                "RAW file path=" + filePath,
+                "RAW file name=" + filePath.Substring(0, filePath.LastIndexOf(".")).Remove(0, filePath.LastIndexOf("\\") + 1),
                 "RAW file version=" + rawFile.FileHeader.Revision,
                 "Creation date=" + rawFile.FileHeader.CreationDate
             };
