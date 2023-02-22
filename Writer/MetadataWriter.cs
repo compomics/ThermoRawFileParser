@@ -299,12 +299,14 @@ namespace ThermoRawFileParser.Writer
             // Get the start and end time from the RAW file
             var startTime = rawFile.RunHeaderEx.StartTime;
             var endTime = rawFile.RunHeaderEx.EndTime;
+            string filePath = rawFile.FileName;
 
             // File Properties
             var output = new List<string>
             {
                 "#FileProperties",
                 "RAW file path=" + rawFile.FileName,
+                "RAW file name=" + rawFile.FileName.Substring(0, rawFile.FileName.LastIndexOf(".")).Remove(0, rawFile.FileName.LastIndexOf("\\") + 1),
                 "RAW file version=" + rawFile.FileHeader.Revision,
                 "Creation date=" + rawFile.FileHeader.CreationDate
             };
@@ -413,6 +415,53 @@ namespace ThermoRawFileParser.Writer
             if (rawFile.SampleInformation.DilutionFactor != 0)
             {
                 output.Add("Sample dilution factor=" + rawFile.SampleInformation.DilutionFactor);
+            }
+
+            if (rawFile.SampleInformation.IstdAmount != 0)
+            {
+                output.Add("Istd Amount=" + rawFile.SampleInformation.IstdAmount);
+            }
+
+            if (!rawFile.SampleInformation.CalibrationLevel.IsNullOrEmpty())
+            {
+                output.Add("Calibration Level=" + rawFile.SampleInformation.CalibrationLevel);
+            }
+
+            if (!rawFile.SampleInformation.InstrumentMethodFile.IsNullOrEmpty())
+            {
+                output.Add("Instrument Method=" + rawFile.SampleInformation.InstrumentMethodFile);
+            }
+
+            if (rawFile.SampleInformation.SampleWeight != 0)
+            {
+                output.Add("Sample Weight=" + rawFile.SampleInformation.SampleWeight);
+            }
+
+            if (!rawFile.SampleInformation.ProcessingMethodFile.IsNullOrEmpty())
+            {
+                output.Add("Processing Method=" + rawFile.SampleInformation.ProcessingMethodFile);
+            }
+
+            if (!rawFile.SampleInformation.Path.IsNullOrEmpty())
+            {
+                output.Add("Path=" + rawFile.SampleInformation.Path);
+            }
+
+            string[] userLabels = rawFile.UserLabel;
+            string[] userTexts = rawFile.SampleInformation.UserText;
+            if (!userLabels.IsNullOrEmpty() && !userTexts.IsNullOrEmpty())
+            {
+                if (userLabels.Length > userTexts.Length)
+                {
+                    throw new RawFileParserException();
+                }
+                for (int i = 0; i < userLabels.Length; i++)
+                {
+                    if (!userTexts[i].IsNullOrEmpty())
+                    {
+                        output.Add(userLabels[i] + "=" + userTexts[i]);
+                    }
+                }
             }
 
             // Write the meta data to file
