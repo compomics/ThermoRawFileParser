@@ -486,7 +486,7 @@ namespace ThermoRawFileParser
             var help = false;
             var version = false;
             string outputFormatString = null;
-            string metadataFormatString = "1";
+            string metadataFormatString = null;
             string logFormatString = null;
             var parseInput = new ParseInput();
 
@@ -613,8 +613,6 @@ namespace ThermoRawFileParser
             {
                 // parse the command line
                 var extra = optionSet.Parse(args);
-                parseInput.RawDirectoryPath = "D:\\ht\\testdata";
-                parseInput.OutputDirectory = "D:\\ht\\testdata\\output";
                 if (!extra.IsNullOrEmpty())
                 {
                     throw new OptionException("Unexpected extra arguments", null);
