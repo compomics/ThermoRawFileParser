@@ -152,8 +152,7 @@ namespace ThermoRawFileParser.Writer
             var metadata = new Metadata();
 
             // File Properties
-            string filePath = rawFile.FileName;
-            metadata.addFileProperty(new CVTerm("NCIT:C47922", "NCIT", "Pathname", filePath));
+            metadata.addFileProperty(new CVTerm("NCIT:C47922", "NCIT", "Pathname", rawFile.FileName));
             metadata.addFileProperty(new CVTerm("NCIT:C25714", "NCIT", "Version",
                 rawFile.FileHeader.Revision.ToString()));
             metadata.addFileProperty(new CVTerm("NCIT:C69199", "NCIT", "Content Creation Date",
@@ -342,13 +341,12 @@ namespace ThermoRawFileParser.Writer
             // Get the start and end time from the RAW file
             var startTime = rawFile.RunHeaderEx.StartTime;
             var endTime = rawFile.RunHeaderEx.EndTime;
-            string filePath = rawFile.FileName;
 
             // File Properties
             var output = new List<string>
             {
                 "#FileProperties",
-                "RAW File Path=" + filePath,
+                "RAW File Path=" + rawFile.FileName,
                 "RAW file version=" + rawFile.FileHeader.Revision,
                 "Creation date=" + rawFile.FileHeader.CreationDate
             };

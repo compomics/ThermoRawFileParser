@@ -51,10 +51,10 @@ namespace ThermoRawFileParser
         private static void XicParametersParsing(string[] args)
         {
             XicParameters parameters = new XicParameters();
-            string singleFile = "D:\\ht\\testdata\\Columbo-PM-22-291-MetIDEFatePhoto-07092022-MA-04B.raw";
+            string singleFile = null;
             string fileDirectory = null;
             string outputFile = null;
-            string outputDirectory = "D:\\ht\\testdata";
+            string outputDirectory = null;
             string logFormatString = null;
 
             var optionSet = new OptionSet
@@ -486,7 +486,7 @@ namespace ThermoRawFileParser
             var help = false;
             var version = false;
             string outputFormatString = null;
-            string metadataFormatString = null;
+            string metadataFormatString = "1";
             string logFormatString = null;
             var parseInput = new ParseInput();
 
@@ -613,7 +613,8 @@ namespace ThermoRawFileParser
             {
                 // parse the command line
                 var extra = optionSet.Parse(args);
-
+                parseInput.RawDirectoryPath = "D:\\ht\\testdata";
+                parseInput.OutputDirectory = "D:\\ht\\testdata\\output";
                 if (!extra.IsNullOrEmpty())
                 {
                     throw new OptionException("Unexpected extra arguments", null);
