@@ -613,6 +613,7 @@ namespace ThermoRawFileParser
             {
                 // parse the command line
                 var extra = optionSet.Parse(args);
+
                 if (!extra.IsNullOrEmpty())
                 {
                     throw new OptionException("Unexpected extra arguments", null);
