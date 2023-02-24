@@ -154,7 +154,6 @@ namespace ThermoRawFileParser.Writer
             // File Properties
             string filePath = rawFile.FileName;
             metadata.addFileProperty(new CVTerm("NCIT:C47922", "NCIT", "Pathname", filePath));
-            metadata.addFileProperty(new CVTerm("NCIT:*****************", "NCIT", "File Name", filePath.Substring(0, filePath.LastIndexOf(".")).Remove(0, filePath.LastIndexOf("\\") + 1)));
             metadata.addFileProperty(new CVTerm("NCIT:C25714", "NCIT", "Version",
                 rawFile.FileHeader.Revision.ToString()));
             metadata.addFileProperty(new CVTerm("NCIT:C69199", "NCIT", "Content Creation Date",
@@ -229,20 +228,20 @@ namespace ThermoRawFileParser.Writer
             // Sample Data
             if (!rawFile.SampleInformation.SampleName.IsNullOrEmpty())
             {
-                metadata.addSampleProperty(new CVTerm("MS:1000002", "MS", "sample name",
+                metadata.addSampleProperty(new CVTerm("MS:1000002", "MS", "Sample Name",
                     rawFile.SampleInformation.SampleName));
             }
 
             if (!rawFile.SampleInformation.SampleId.IsNullOrEmpty())
             {
-                metadata.addSampleProperty(new CVTerm("MS:1000001", "MS", "sample number",
+                metadata.addSampleProperty(new CVTerm("MS:1000001", "MS", "Sample Number",
                     rawFile.SampleInformation.SampleId));
             }
 
             if (!rawFile.SampleInformation.SampleType.ToString().IsNullOrEmpty() &&
                 !rawFile.SampleInformation.SampleType.ToString().Equals("Unknown"))
             {
-                metadata.addSampleProperty(new CVTerm("NCIT:C25284", "NCIT", "Type",
+                metadata.addSampleProperty(new CVTerm("NCIT:C25284", "NCIT", "Sample Type",
                     rawFile.SampleInformation.SampleType.ToString()));
             }
 
@@ -260,13 +259,13 @@ namespace ThermoRawFileParser.Writer
 
             if (rawFile.SampleInformation.SampleVolume != 0)
             {
-                metadata.addSampleProperty(new CVTerm("MS:1000005", "MS", "sample volume",
+                metadata.addSampleProperty(new CVTerm("MS:1000005", "MS", "Sample Volume",
                     rawFile.SampleInformation.SampleVolume.ToString(CultureInfo.InvariantCulture)));
             }
 
             if (rawFile.SampleInformation.InjectionVolume != 0)
             {
-                metadata.addSampleProperty(new CVTerm("AFR:0001577", "AFO", "injection volume setting",
+                metadata.addSampleProperty(new CVTerm("AFR:0001577", "AFO", "Injection Volume",
                     rawFile.SampleInformation.InjectionVolume.ToString(CultureInfo.InvariantCulture)));
             }
 
@@ -278,38 +277,33 @@ namespace ThermoRawFileParser.Writer
 
             if (rawFile.SampleInformation.DilutionFactor != 0)
             {
-                metadata.addSampleProperty(new CVTerm("AFQ:0000178", "AFO", "dilution factor",
+                metadata.addSampleProperty(new CVTerm("AFQ:0000178", "AFO", "Dilution Factor",
                     rawFile.SampleInformation.DilutionFactor.ToString(CultureInfo.InvariantCulture)));
-            }
-
-            if (!rawFile.SampleInformation.Path.IsNullOrEmpty())
-            {
-                metadata.addSampleProperty(new CVTerm("AFQ:**********************", "AFO", "Path", rawFile.SampleInformation.Path));
             }
 
             if (!rawFile.SampleInformation.InstrumentMethodFile.IsNullOrEmpty())
             {
-                metadata.addSampleProperty(new CVTerm("AFQ:******************", "AFO", "Instrument Method", rawFile.SampleInformation.InstrumentMethodFile));
+                metadata.addSampleProperty(new CVTerm("AFR:0002045", "AFO", "Device Acquisition Method", rawFile.SampleInformation.InstrumentMethodFile));
             }
 
             if (rawFile.SampleInformation.IstdAmount != 0)
             {
-                metadata.addSampleProperty(new CVTerm("AFQ:****************", "AFO", "Istd Amount", rawFile.SampleInformation.IstdAmount.ToString()));
+                metadata.addSampleProperty(new CVTerm("", "", "Internal Standard  Amount", rawFile.SampleInformation.IstdAmount.ToString()));
             }
 
             if (!rawFile.SampleInformation.CalibrationLevel.IsNullOrEmpty())
             {
-                metadata.addSampleProperty(new CVTerm("AFQ:****************", "AFO", "Calibration Level", rawFile.SampleInformation.CalibrationLevel));
+                metadata.addSampleProperty(new CVTerm("AFR:0001849", "AFO", "Calibration Level", rawFile.SampleInformation.CalibrationLevel));
             }
 
             if (!rawFile.SampleInformation.ProcessingMethodFile.IsNullOrEmpty())
             {
-                metadata.addSampleProperty(new CVTerm("AFQ:****************", "AFO", "Processing Method", rawFile.SampleInformation.ProcessingMethodFile));
+                metadata.addSampleProperty(new CVTerm("AFR:0002175", "AFO", "Data Processing Method", rawFile.SampleInformation.ProcessingMethodFile));
             }
 
             if (rawFile.SampleInformation.SampleWeight != 0)
             {
-                metadata.addSampleProperty(new CVTerm("AFQ:****************", "AFO", "Processing Method", rawFile.SampleInformation.SampleWeight.ToString()));
+                metadata.addSampleProperty(new CVTerm("", "", "Sample Weight", rawFile.SampleInformation.SampleWeight.ToString()));
             }
 
             string[] userLabels = rawFile.UserLabel;
@@ -324,7 +318,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     if (!userTexts[i].IsNullOrEmpty())
                     {
-                        metadata.addSampleProperty(new CVTerm("AFQ:****************", "AFO", userLabels[i], userTexts[i]));
+                        metadata.addSampleProperty(new CVTerm("", "", userLabels[i], userTexts[i]));
                     }
                 }
             }
@@ -354,8 +348,7 @@ namespace ThermoRawFileParser.Writer
             var output = new List<string>
             {
                 "#FileProperties",
-                "RAW file path=" + filePath,
-                "RAW file name=" + filePath.Substring(0, filePath.LastIndexOf(".")).Remove(0, filePath.LastIndexOf("\\") + 1),
+                "RAW File Path=" + filePath,
                 "RAW file version=" + rawFile.FileHeader.Revision,
                 "Creation date=" + rawFile.FileHeader.CreationDate
             };
@@ -422,53 +415,53 @@ namespace ThermoRawFileParser.Writer
 
             if (!rawFile.SampleInformation.SampleName.IsNullOrEmpty())
             {
-                output.Add("Sample name=" + rawFile.SampleInformation.SampleName);
+                output.Add("Sample Name=" + rawFile.SampleInformation.SampleName);
             }
 
             if (!rawFile.SampleInformation.SampleId.IsNullOrEmpty())
             {
-                output.Add("Sample id=" + rawFile.SampleInformation.SampleId);
+                output.Add("Sample Number=" + rawFile.SampleInformation.SampleId);
             }
 
             if (!rawFile.SampleInformation.SampleType.ToString().IsNullOrEmpty() &&
                 !rawFile.SampleInformation.SampleType.ToString().Equals("Unknown"))
             {
-                output.Add("Sample type=" + rawFile.SampleInformation.SampleType);
+                output.Add("Sample Type=" + rawFile.SampleInformation.SampleType);
             }
 
             if (!rawFile.SampleInformation.Comment.IsNullOrEmpty())
             {
-                output.Add("Sample comment=" + rawFile.SampleInformation.Comment);
+                output.Add("Comment=" + rawFile.SampleInformation.Comment);
             }
 
             if (!rawFile.SampleInformation.Vial.IsNullOrEmpty())
             {
-                output.Add("Sample vial=" + rawFile.SampleInformation.Vial);
+                output.Add("Vial=" + rawFile.SampleInformation.Vial);
             }
 
             if (rawFile.SampleInformation.SampleVolume != 0)
             {
-                output.Add("Sample volume=" + rawFile.SampleInformation.SampleVolume);
+                output.Add("Sample Volume=" + rawFile.SampleInformation.SampleVolume);
             }
 
             if (rawFile.SampleInformation.InjectionVolume != 0)
             {
-                output.Add("Sample injection volume=" + rawFile.SampleInformation.InjectionVolume);
+                output.Add("Injection Volume=" + rawFile.SampleInformation.InjectionVolume);
             }
 
             if (rawFile.SampleInformation.RowNumber != 0)
             {
-                output.Add("Sample row number=" + rawFile.SampleInformation.RowNumber);
+                output.Add("Sample Row Number=" + rawFile.SampleInformation.RowNumber);
             }
 
             if (rawFile.SampleInformation.DilutionFactor != 0)
             {
-                output.Add("Sample dilution factor=" + rawFile.SampleInformation.DilutionFactor);
+                output.Add("Dilution Factor=" + rawFile.SampleInformation.DilutionFactor);
             }
 
             if (rawFile.SampleInformation.IstdAmount != 0)
             {
-                output.Add("Istd Amount=" + rawFile.SampleInformation.IstdAmount);
+                output.Add("Internal Standard Amount=" + rawFile.SampleInformation.IstdAmount);
             }
 
             if (!rawFile.SampleInformation.CalibrationLevel.IsNullOrEmpty())
@@ -478,7 +471,7 @@ namespace ThermoRawFileParser.Writer
 
             if (!rawFile.SampleInformation.InstrumentMethodFile.IsNullOrEmpty())
             {
-                output.Add("Instrument Method=" + rawFile.SampleInformation.InstrumentMethodFile);
+                output.Add("Device Acquisition Method=" + rawFile.SampleInformation.InstrumentMethodFile);
             }
 
             if (rawFile.SampleInformation.SampleWeight != 0)
@@ -488,12 +481,7 @@ namespace ThermoRawFileParser.Writer
 
             if (!rawFile.SampleInformation.ProcessingMethodFile.IsNullOrEmpty())
             {
-                output.Add("Processing Method=" + rawFile.SampleInformation.ProcessingMethodFile);
-            }
-
-            if (!rawFile.SampleInformation.Path.IsNullOrEmpty())
-            {
-                output.Add("Path=" + rawFile.SampleInformation.Path);
+                output.Add("Data Processing Method=" + rawFile.SampleInformation.ProcessingMethodFile);
             }
 
             string[] userLabels = rawFile.UserLabel;
