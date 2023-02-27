@@ -227,20 +227,20 @@ namespace ThermoRawFileParser.Writer
             // Sample Data
             if (!rawFile.SampleInformation.SampleName.IsNullOrEmpty())
             {
-                metadata.addSampleProperty(new CVTerm("MS:1000002", "MS", "Sample Name",
+                metadata.addSampleProperty(new CVTerm("MS:1000002", "MS", "sample name",
                     rawFile.SampleInformation.SampleName));
             }
 
             if (!rawFile.SampleInformation.SampleId.IsNullOrEmpty())
             {
-                metadata.addSampleProperty(new CVTerm("MS:1000001", "MS", "Sample Number",
+                metadata.addSampleProperty(new CVTerm("MS:1000001", "MS", "sample number",
                     rawFile.SampleInformation.SampleId));
             }
 
             if (!rawFile.SampleInformation.SampleType.ToString().IsNullOrEmpty() &&
                 !rawFile.SampleInformation.SampleType.ToString().Equals("Unknown"))
             {
-                metadata.addSampleProperty(new CVTerm("NCIT:C25284", "NCIT", "Sample Type",
+                metadata.addSampleProperty(new CVTerm("NCIT:C25284", "NCIT", "Type",
                     rawFile.SampleInformation.SampleType.ToString()));
             }
 
@@ -258,13 +258,13 @@ namespace ThermoRawFileParser.Writer
 
             if (rawFile.SampleInformation.SampleVolume != 0)
             {
-                metadata.addSampleProperty(new CVTerm("MS:1000005", "MS", "Sample Volume",
+                metadata.addSampleProperty(new CVTerm("MS:1000005", "MS", "sample volume",
                     rawFile.SampleInformation.SampleVolume.ToString(CultureInfo.InvariantCulture)));
             }
 
             if (rawFile.SampleInformation.InjectionVolume != 0)
             {
-                metadata.addSampleProperty(new CVTerm("AFR:0001577", "AFO", "Injection Volume",
+                metadata.addSampleProperty(new CVTerm("AFR:0001577", "AFO", "injection volume setting",
                     rawFile.SampleInformation.InjectionVolume.ToString(CultureInfo.InvariantCulture)));
             }
 
@@ -276,52 +276,47 @@ namespace ThermoRawFileParser.Writer
 
             if (rawFile.SampleInformation.DilutionFactor != 0)
             {
-                metadata.addSampleProperty(new CVTerm("AFQ:0000178", "AFO", "Dilution Factor",
+                metadata.addSampleProperty(new CVTerm("AFQ:0000178", "AFO", "dilution factor",
                     rawFile.SampleInformation.DilutionFactor.ToString(CultureInfo.InvariantCulture)));
             }
 
             if (!rawFile.SampleInformation.InstrumentMethodFile.IsNullOrEmpty())
             {
-                metadata.addSampleProperty(new CVTerm("AFR:0002045", "AFO", "Device Acquisition Method", rawFile.SampleInformation.InstrumentMethodFile));
+                metadata.addSampleProperty(new CVTerm("AFR:0002045", "AFO", "device acquisition method", rawFile.SampleInformation.InstrumentMethodFile));
             }
 
             if (rawFile.SampleInformation.IstdAmount != 0)
             {
-                metadata.addSampleProperty(new CVTerm("", "", "Internal Standard  Amount", rawFile.SampleInformation.IstdAmount.ToString()));
+                metadata.addSampleProperty(new CVTerm("", "", "internal standard amount", rawFile.SampleInformation.IstdAmount.ToString()));
             }
 
             if (!rawFile.SampleInformation.CalibrationLevel.IsNullOrEmpty())
             {
-                metadata.addSampleProperty(new CVTerm("AFR:0001849", "AFO", "Calibration Level", rawFile.SampleInformation.CalibrationLevel));
+                metadata.addSampleProperty(new CVTerm("AFR:0001849", "AFO", "calibration level", rawFile.SampleInformation.CalibrationLevel));
             }
 
             if (!rawFile.SampleInformation.ProcessingMethodFile.IsNullOrEmpty())
             {
-                metadata.addSampleProperty(new CVTerm("AFR:0002175", "AFO", "Data Processing Method", rawFile.SampleInformation.ProcessingMethodFile));
+                metadata.addSampleProperty(new CVTerm("AFR:0002175", "AFO", "data processing method", rawFile.SampleInformation.ProcessingMethodFile));
             }
 
             if (rawFile.SampleInformation.SampleWeight != 0)
             {
-                metadata.addSampleProperty(new CVTerm("", "", "Sample Weight", rawFile.SampleInformation.SampleWeight.ToString()));
+                metadata.addSampleProperty(new CVTerm("AFR:0001982", "AFO", "sample weight", rawFile.SampleInformation.SampleWeight.ToString()));
             }
 
             string[] userLabels = rawFile.UserLabel;
             string[] userTexts = rawFile.SampleInformation.UserText;
             if (!userLabels.IsNullOrEmpty() && !userTexts.IsNullOrEmpty())
             {
-                if (userLabels.Length > userTexts.Length)
-                {
-                    throw new RawFileParserException();
-                }
                 for (int i = 0; i < userLabels.Length; i++)
                 {
-                    if (!userTexts[i].IsNullOrEmpty())
+                    if (i < userTexts.Length && !userTexts[i].IsNullOrEmpty())
                     {
                         metadata.addSampleProperty(new CVTerm("", "", userLabels[i], userTexts[i]));
                     }
                 }
             }
-
 
             // Write the meta data to file
             var json = JsonConvert.SerializeObject(metadata);
@@ -346,7 +341,7 @@ namespace ThermoRawFileParser.Writer
             var output = new List<string>
             {
                 "#FileProperties",
-                "RAW File Path=" + rawFile.FileName,
+                "RAW file path=" + rawFile.FileName,
                 "RAW file version=" + rawFile.FileHeader.Revision,
                 "Creation date=" + rawFile.FileHeader.CreationDate
             };
@@ -413,86 +408,82 @@ namespace ThermoRawFileParser.Writer
 
             if (!rawFile.SampleInformation.SampleName.IsNullOrEmpty())
             {
-                output.Add("Sample Name=" + rawFile.SampleInformation.SampleName);
+                output.Add("Sample name=" + rawFile.SampleInformation.SampleName);
             }
 
             if (!rawFile.SampleInformation.SampleId.IsNullOrEmpty())
             {
-                output.Add("Sample Number=" + rawFile.SampleInformation.SampleId);
+                output.Add("Sample id=" + rawFile.SampleInformation.SampleId);
             }
 
             if (!rawFile.SampleInformation.SampleType.ToString().IsNullOrEmpty() &&
                 !rawFile.SampleInformation.SampleType.ToString().Equals("Unknown"))
             {
-                output.Add("Sample Type=" + rawFile.SampleInformation.SampleType);
+                output.Add("Sample type=" + rawFile.SampleInformation.SampleType);
             }
 
             if (!rawFile.SampleInformation.Comment.IsNullOrEmpty())
             {
-                output.Add("Comment=" + rawFile.SampleInformation.Comment);
+                output.Add("Sample comment=" + rawFile.SampleInformation.Comment);
             }
 
             if (!rawFile.SampleInformation.Vial.IsNullOrEmpty())
             {
-                output.Add("Vial=" + rawFile.SampleInformation.Vial);
+                output.Add("Sample vial=" + rawFile.SampleInformation.Vial);
             }
 
             if (rawFile.SampleInformation.SampleVolume != 0)
             {
-                output.Add("Sample Volume=" + rawFile.SampleInformation.SampleVolume);
+                output.Add("Sample volume=" + rawFile.SampleInformation.SampleVolume);
             }
 
             if (rawFile.SampleInformation.InjectionVolume != 0)
             {
-                output.Add("Injection Volume=" + rawFile.SampleInformation.InjectionVolume);
+                output.Add("Sample injection volume=" + rawFile.SampleInformation.InjectionVolume);
             }
 
             if (rawFile.SampleInformation.RowNumber != 0)
             {
-                output.Add("Sample Row Number=" + rawFile.SampleInformation.RowNumber);
+                output.Add("Sample row number=" + rawFile.SampleInformation.RowNumber);
             }
 
             if (rawFile.SampleInformation.DilutionFactor != 0)
             {
-                output.Add("Dilution Factor=" + rawFile.SampleInformation.DilutionFactor);
+                output.Add("Sample dilution factor=" + rawFile.SampleInformation.DilutionFactor);
             }
 
             if (rawFile.SampleInformation.IstdAmount != 0)
             {
-                output.Add("Internal Standard Amount=" + rawFile.SampleInformation.IstdAmount);
+                output.Add("Internal standard amount=" + rawFile.SampleInformation.IstdAmount);
             }
 
             if (!rawFile.SampleInformation.CalibrationLevel.IsNullOrEmpty())
             {
-                output.Add("Calibration Level=" + rawFile.SampleInformation.CalibrationLevel);
+                output.Add("Calibration level=" + rawFile.SampleInformation.CalibrationLevel);
             }
 
             if (!rawFile.SampleInformation.InstrumentMethodFile.IsNullOrEmpty())
             {
-                output.Add("Device Acquisition Method=" + rawFile.SampleInformation.InstrumentMethodFile);
+                output.Add("Device acquisition method=" + rawFile.SampleInformation.InstrumentMethodFile);
             }
 
             if (rawFile.SampleInformation.SampleWeight != 0)
             {
-                output.Add("Sample Weight=" + rawFile.SampleInformation.SampleWeight);
+                output.Add("Sample weight=" + rawFile.SampleInformation.SampleWeight);
             }
 
             if (!rawFile.SampleInformation.ProcessingMethodFile.IsNullOrEmpty())
             {
-                output.Add("Data Processing Method=" + rawFile.SampleInformation.ProcessingMethodFile);
+                output.Add("Data processing method=" + rawFile.SampleInformation.ProcessingMethodFile);
             }
 
             string[] userLabels = rawFile.UserLabel;
             string[] userTexts = rawFile.SampleInformation.UserText;
             if (!userLabels.IsNullOrEmpty() && !userTexts.IsNullOrEmpty())
             {
-                if (userLabels.Length > userTexts.Length)
-                {
-                    throw new RawFileParserException();
-                }
                 for (int i = 0; i < userLabels.Length; i++)
                 {
-                    if (!userTexts[i].IsNullOrEmpty())
+                    if (i < userTexts.Length && !userTexts[i].IsNullOrEmpty())
                     {
                         output.Add(userLabels[i] + "=" + userTexts[i]);
                     }
