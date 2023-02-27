@@ -481,13 +481,9 @@ namespace ThermoRawFileParser.Writer
             string[] userTexts = rawFile.SampleInformation.UserText;
             if (!userLabels.IsNullOrEmpty() && !userTexts.IsNullOrEmpty())
             {
-                if (userLabels.Length > userTexts.Length)
-                {
-                    throw new RawFileParserException();
-                }
                 for (int i = 0; i < userLabels.Length; i++)
                 {
-                    if (!userTexts[i].IsNullOrEmpty())
+                    if (i < userTexts.Length && !userTexts[i].IsNullOrEmpty())
                     {
                         output.Add(userLabels[i] + "=" + userTexts[i]);
                     }
