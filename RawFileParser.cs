@@ -136,18 +136,22 @@ namespace ThermoRawFileParser
 
                 // Get the number of instruments (controllers) present in the RAW file and set the 
                 // selected instrument to the MS instrument, first instance of it
-                rawFile.SelectInstrument(Device.MS, 1);
-
-                rawFile.IncludeReferenceAndExceptionData = !parseInput.ExData;
-
-                // Get the first and last scan from the RAW file
-                var firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
-                var lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
-
-                // Check for empty file
-                if (lastScanNumber < 1)
+                var firstScanNumber = -1;
+                var lastScanNumber = -1;
+                if (rawFile.GetInstrumentCountOfType(Device.MS) != 0)
                 {
-                    throw new RawFileParserException("Empty RAW file, no output will be produced");
+                    rawFile.SelectInstrument(Device.MS, 1);
+                    rawFile.IncludeReferenceAndExceptionData = !parseInput.ExData;
+
+                    // Get the first and last scan from the RAW file
+                    firstScanNumber = rawFile.RunHeaderEx.FirstSpectrum;
+                    lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
+
+                    // Check for empty file
+                    if (lastScanNumber < 1)
+                    {
+                        throw new RawFileParserException("Empty RAW file, no output will be produced");
+                    }
                 }
 
                 if (parseInput.MetadataFormat != MetadataFormat.NONE)
