@@ -161,7 +161,7 @@ namespace ThermoRawFileParser
                     metadataWriter.WriteMetadata(rawFile, firstScanNumber, lastScanNumber);
                 }
 
-                if (rawFile.SelectMsData() && parseInput.OutputFormat != OutputFormat.NONE)
+                if (parseInput.OutputFormat != OutputFormat.NONE)
                 {
                     SpectrumWriter spectrumWriter;
                     switch (parseInput.OutputFormat)
