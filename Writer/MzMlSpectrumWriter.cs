@@ -229,7 +229,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteEndElement(); // sourceFileList               
                 _writer.WriteEndElement(); // fileDescription                
 
-                if (_rawFile.SelectMsData())
+                if (_rawFile.SelectedInstrument.DeviceType != Device.None && _rawFile.SelectedInstrument.InstrumentIndex != -1)
                 {
                     var instrumentData = _rawFile.GetInstrumentData();
 
