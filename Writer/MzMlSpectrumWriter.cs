@@ -141,29 +141,32 @@ namespace ThermoRawFileParser.Writer
                 //   fileContent
                 _writer.WriteStartElement("fileContent");
                 // MS1
-                SerializeCvParam(new CVParamType
+                if (rawFile.SelectMsData())
                 {
-                    accession = "MS:1000579",
-                    name = "MS1 spectrum",
-                    cvRef = "MS",
-                    value = ""
-                });
-                // MSn
-                SerializeCvParam(new CVParamType
-                {
-                    accession = "MS:1000580",
-                    name = "MSn spectrum",
-                    cvRef = "MS",
-                    value = ""
-                });
-                // Ion current chromatogram
-                SerializeCvParam(new CVParamType
-                {
-                    accession = "MS:1000810",
-                    name = "ion current chromatogram",
-                    cvRef = "MS",
-                    value = ""
-                });
+                    SerializeCvParam(new CVParamType
+                    {
+                        accession = "MS:1000579",
+                        name = "MS1 spectrum",
+                        cvRef = "MS",
+                        value = ""
+                    });
+                    // MSn
+                    SerializeCvParam(new CVParamType
+                    {
+                        accession = "MS:1000580",
+                        name = "MSn spectrum",
+                        cvRef = "MS",
+                        value = ""
+                    });
+                    // Ion current chromatogram
+                    SerializeCvParam(new CVParamType
+                    {
+                        accession = "MS:1000810",
+                        name = "ion current chromatogram",
+                        cvRef = "MS",
+                        value = ""
+                    });
+                }
 
                 // Other detector data
                 if (ParseInput.AllDetectors)
@@ -1029,6 +1032,47 @@ namespace ThermoRawFileParser.Writer
 
                                 chromatograms.Add(chromatogram);
                             }
+                        }
+                    }
+                }
+
+                for (int nrI = 1; nrI < _rawFile.GetInstrumentCountOfType(Device.MSAnalog) + 1; nrI++)
+                {
+                    _rawFile.SelectInstrument(Device.MSAnalog, nrI);
+
+                    var instData = _rawFile.GetInstrumentData();
+
+                    for (int channel = 0; channel < instData.ChannelLabels.Length; channel++)
+                    {
+                        var channelName = instData.ChannelLabels[channel];
+
+                        var settings = new ChromatogramTraceSettings(TraceType.StartAnalogChromatogramTraces + channel +
+                                                                    1);
+
+                        var data = _rawFile.GetChromatogramData(new IChromatogramSettings[] { settings }, -1, -1);
+
+                        var trace = ChromatogramSignal.FromChromatogramData(data);
+
+                        for (var i = 0; i < trace.Length; i++)
+                        {
+                            // CV Data for Chromatogram
+                            var chroType = new CVParamType
+                            {
+                                name = channelName + " chromatogram",
+                                value = ""
+                            };
+
+                            var intensType = new CVParamType
+                            {
+                                name = channelName + " array",
+                                value = instData.Units.ToString(),
+                            };
+
+                            var chromatogram = TraceToChromatogram(trace[i],
+                                String.Format("AD#{0}_{1}_{2}", nrI, channelName, i),
+                                chroType, intensType);
+
+                            chromatograms.Add(chromatogram);
                         }
                     }
                 }
