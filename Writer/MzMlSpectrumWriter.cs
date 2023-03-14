@@ -195,6 +195,25 @@ namespace ThermoRawFileParser.Writer
                             value = ""
                         });
                     }
+
+                    // Pressure chromatogram
+                    if (_rawFile.GetInstrumentCountOfType(Device.Analog) > 0)
+                    {
+                        SerializeCvParam(new CVParamType
+                        {
+                            accession = "MS:1003019",
+                            name = "pressure chromatogram",
+                            cvRef = "MS",
+                            value = ""
+                        });
+                    }
+
+                    // MSAnalog chromatogram
+                    if (_rawFile.GetInstrumentCountOfType(Device.MSAnalog) > 0)
+                    {
+                        // TODO Write MSAnalog fileContent
+                        // e.g. Front FID or Back FID
+                    }
                 }
 
                 _writer.WriteEndElement(); // fileContent                
@@ -893,7 +912,7 @@ namespace ThermoRawFileParser.Writer
                 }
             }
 
-            // Chromatograms from other devices: UV, PDA
+            // Chromatograms from other devices: UV, PDA, Analog, MSAnalog
             if (ParseInput.AllDetectors)
             {
                 for (int nrI = 1; nrI < _rawFile.GetInstrumentCountOfType(Device.Pda) + 1; nrI++)
@@ -1006,7 +1025,7 @@ namespace ThermoRawFileParser.Writer
 
                             for (var i = 0; i < trace.Length; i++)
                             {
-                                // CV Data for Absorbance Chromatogram
+                                // CV Data for Pressure Chromatogram
                                 var chroType = new CVParamType
                                 {
                                     accession = "MS:1003019",
@@ -1069,7 +1088,7 @@ namespace ThermoRawFileParser.Writer
                             };
 
                             var chromatogram = TraceToChromatogram(trace[i],
-                                String.Format("AD#{0}_{1}_{2}", nrI, channelName.Replace(" ", "_"), i),
+                                String.Format("MSAD#{0}_{1}_{2}", nrI, channelName.Replace(" ", "_"), i),
                                 chroType, intensType);
 
                             chromatograms.Add(chromatogram);
