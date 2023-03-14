@@ -1069,7 +1069,7 @@ namespace ThermoRawFileParser.Writer
                             };
 
                             var chromatogram = TraceToChromatogram(trace[i],
-                                String.Format("AD#{0}_{1}_{2}", nrI, channelName, i),
+                                String.Format("AD#{0}_{1}_{2}", nrI, channelName.Replace(" ", "_"), i),
                                 chroType, intensType);
 
                             chromatograms.Add(chromatogram);
