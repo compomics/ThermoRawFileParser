@@ -177,39 +177,39 @@ namespace ThermoRawFileParser.Writer
                         rawFile.GetInstrumentData().HardwareVersion));
                 }
             }
-            
+
             // MS Data
-            foreach (KeyValuePair<string, int> entry in msTypes)
-            {
-                if (entry.Key.Equals(MSOrderType.Ms.ToString()))
-                    metadata.addMSData(new CVTerm("PRIDE:0000481", "PRIDE", "Number of MS1 spectra",
-                        entry.Value.ToString()));
-                if (entry.Key.Equals(MSOrderType.Ms2.ToString()))
-                    metadata.addMSData(new CVTerm("PRIDE:0000482", "PRIDE", "Number of MS2 spectra",
-                        entry.Value.ToString()));
-                if (entry.Key.Equals(MSOrderType.Ms3.ToString()))
-                    metadata.addMSData(new CVTerm("PRIDE:0000483", "PRIDE", "Number of MS3 spectra",
-                        entry.Value.ToString()));
-            }
-
-            metadata.addMSData(new CVTerm("PRIDE:0000472", "PRIDE", "MS min charge",
-                minCharge.ToString(CultureInfo.InvariantCulture)));
-            metadata.addMSData(new CVTerm("PRIDE:0000473", "PRIDE", "MS max charge",
-                maxCharge.ToString(CultureInfo.InvariantCulture)));
-
-            metadata.addMSData(new CVTerm("PRIDE:0000474", "PRIDE", "MS min RT",
-                minTime.ToString(CultureInfo.InvariantCulture)));
-            metadata.addMSData(new CVTerm("PRIDE:0000475", "PRIDE", "MS max RT",
-                maxTime.ToString(CultureInfo.InvariantCulture)));
-
-            metadata.addMSData(new CVTerm("PRIDE:0000476", "PRIDE", "MS min MZ",
-                minMz.ToString(CultureInfo.InvariantCulture)));
-            metadata.addMSData(new CVTerm("PRIDE:0000477", "PRIDE", "MS max MZ",
-                maxMz.ToString(CultureInfo.InvariantCulture)));
-
-            // Scan Settings
             if (rawFile.SelectMsData())
             {
+                foreach (KeyValuePair<string, int> entry in msTypes)
+                {
+                    if (entry.Key.Equals(MSOrderType.Ms.ToString()))
+                        metadata.addMSData(new CVTerm("PRIDE:0000481", "PRIDE", "Number of MS1 spectra",
+                            entry.Value.ToString()));
+                    if (entry.Key.Equals(MSOrderType.Ms2.ToString()))
+                        metadata.addMSData(new CVTerm("PRIDE:0000482", "PRIDE", "Number of MS2 spectra",
+                            entry.Value.ToString()));
+                    if (entry.Key.Equals(MSOrderType.Ms3.ToString()))
+                        metadata.addMSData(new CVTerm("PRIDE:0000483", "PRIDE", "Number of MS3 spectra",
+                            entry.Value.ToString()));
+                }
+
+                metadata.addMSData(new CVTerm("PRIDE:0000472", "PRIDE", "MS min charge",
+                    minCharge.ToString(CultureInfo.InvariantCulture)));
+                metadata.addMSData(new CVTerm("PRIDE:0000473", "PRIDE", "MS max charge",
+                    maxCharge.ToString(CultureInfo.InvariantCulture)));
+
+                metadata.addMSData(new CVTerm("PRIDE:0000474", "PRIDE", "MS min RT",
+                    minTime.ToString(CultureInfo.InvariantCulture)));
+                metadata.addMSData(new CVTerm("PRIDE:0000475", "PRIDE", "MS max RT",
+                    maxTime.ToString(CultureInfo.InvariantCulture)));
+
+                metadata.addMSData(new CVTerm("PRIDE:0000476", "PRIDE", "MS min MZ",
+                    minMz.ToString(CultureInfo.InvariantCulture)));
+                metadata.addMSData(new CVTerm("PRIDE:0000477", "PRIDE", "MS max MZ",
+                    maxMz.ToString(CultureInfo.InvariantCulture)));
+
+                // Scan Settings
                 // Get the start and end time from the RAW file
                 var startTime = rawFile.RunHeaderEx.StartTime;
                 var endTime = rawFile.RunHeaderEx.EndTime;
@@ -334,31 +334,31 @@ namespace ThermoRawFileParser.Writer
             }
 
             // MS Data
-            output.Add("#MsData");
-            foreach (KeyValuePair<string, int> entry in msTypes)
-            {
-                if (entry.Key.Equals(MSOrderType.Ms.ToString()))
-                    output.Add("Number of MS1 spectra=" + entry.Value);
-                if (entry.Key.Equals(MSOrderType.Ms2.ToString()))
-                    output.Add("Number of MS2 spectra=" + entry.Value);
-                if (entry.Key.Equals(MSOrderType.Ms3.ToString()))
-                    output.Add("Number of MS3 spectra=" + entry.Value);
-            }
-
-            output.AddRange(new List<string>
-                {
-                    "MS min charge=" + minCharge.ToString(CultureInfo.InvariantCulture),
-                    "MS max charge=" + maxCharge.ToString(CultureInfo.InvariantCulture),
-                    $"MS min RT={minTime.ToString(CultureInfo.InvariantCulture)}",
-                    $"MS max RT={maxTime.ToString(CultureInfo.InvariantCulture)}",
-                    $"MS min MZ={minMz.ToString(CultureInfo.InvariantCulture)}",
-                    $"MS max MZ={maxMz.ToString(CultureInfo.InvariantCulture)}"
-                }
-            );
-
-            // Scan Settings
             if (rawFile.SelectMsData())
             {
+                output.Add("#MsData");
+                foreach (KeyValuePair<string, int> entry in msTypes)
+                {
+                    if (entry.Key.Equals(MSOrderType.Ms.ToString()))
+                        output.Add("Number of MS1 spectra=" + entry.Value);
+                    if (entry.Key.Equals(MSOrderType.Ms2.ToString()))
+                        output.Add("Number of MS2 spectra=" + entry.Value);
+                    if (entry.Key.Equals(MSOrderType.Ms3.ToString()))
+                        output.Add("Number of MS3 spectra=" + entry.Value);
+                }
+
+                output.AddRange(new List<string>
+                    {
+                        "MS min charge=" + minCharge.ToString(CultureInfo.InvariantCulture),
+                        "MS max charge=" + maxCharge.ToString(CultureInfo.InvariantCulture),
+                        $"MS min RT={minTime.ToString(CultureInfo.InvariantCulture)}",
+                        $"MS max RT={maxTime.ToString(CultureInfo.InvariantCulture)}",
+                        $"MS min MZ={minMz.ToString(CultureInfo.InvariantCulture)}",
+                        $"MS max MZ={maxMz.ToString(CultureInfo.InvariantCulture)}"
+                    }
+                );
+
+                // Scan Settings
                 // Get the start and end time from the RAW file
                 var startTime = rawFile.RunHeaderEx.StartTime;
                 var endTime = rawFile.RunHeaderEx.EndTime;
