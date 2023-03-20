@@ -1086,11 +1086,25 @@ namespace ThermoRawFileParser.Writer
                                 value = ""
                             };
 
-                            var intensType = new CVParamType
+                            var intensType = new CVParamType();
+                            if (instData.Units.ToString().Equals("Volts"))
                             {
-                                name = channelName + " array",
-                                value = instData.Units.ToString(),
-                            };
+                                intensType = new CVParamType
+                                {
+                                    name = channelName + " array",
+                                    unitAccession = "UO:0000218",
+                                    unitName = "volt",
+                                    unitCvRef = "UO"
+                                };
+                            }
+                            else
+                            {
+                                intensType = new CVParamType
+                                {
+                                    name = channelName + " array",
+                                    value = instData.Units.ToString(),
+                                };
+                            }
 
                             var chromatogram = TraceToChromatogram(trace[i],
                                 String.Format("MSAD#{0}_{1}_{2}", nrI, channelName.Replace(" ", "_"), i),
