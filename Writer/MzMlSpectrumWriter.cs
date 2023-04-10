@@ -1055,7 +1055,7 @@ namespace ThermoRawFileParser.Writer
                     }
                 }
 
-                var channelNameIndex = 1
+                var channelNameIndex = 0;
                 for (int nrI = 1; nrI < _rawFile.GetInstrumentCountOfType(Device.MSAnalog) + 1; nrI++)
                 {
                     _rawFile.SelectInstrument(Device.MSAnalog, nrI);
