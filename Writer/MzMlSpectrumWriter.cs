@@ -1359,14 +1359,7 @@ namespace ThermoRawFileParser.Writer
                 }
                 else
                 {
-                    spectrum.precursorList = new PrecursorListType
-                    {
-                        count = "0",
-                        precursor = new PrecursorType[0]
-                    };
-
-                    Log.Error($"Failed finding precursor for {scanNumber}");
-                    ParseInput.NewError();
+                    spectrum.precursorList = ConstructPRMPrecursorList(scanEvent, charge, isolationWidth);
                 }
             }
             else
@@ -2415,6 +2408,152 @@ namespace ThermoRawFileParser.Writer
 
             //Add precursors from previous levels to the end of the list
             precursors.AddRange(prevPrecursors.Precursors);
+
+            return new PrecursorListType
+            {
+                count = precursors.Count.ToString(),
+                precursor = precursors.ToArray()
+            };
+
+        }
+
+        /// <summary>
+        /// Populate the precursor list element for PRM/MS2-only datasets (No MS1 scans)
+        /// </summary>
+        /// <param name="scanEvent">the scan event</param>
+        /// <param name="charge">the charge from trailer</param>
+        /// <param name="isolationWidth">the isolation width value from trailer</param>
+        /// <returns>the precursor list</returns>
+        private PrecursorListType ConstructPRMPrecursorList(IScanEventBase scanEvent, int? charge, double? isolationWidth)
+        {
+            List<PrecursorType> precursors = new List<PrecursorType>();
+
+
+            int msLevel = (int)scanEvent.MSOrder;
+            IReaction reaction = scanEvent.GetReaction(0);
+            double precursorMz = reaction.PrecursorMass;
+
+            //if isolation width was not found in the trailer, try to get one from the reaction
+            if (isolationWidth == null) isolationWidth = reaction.IsolationWidth;
+
+            var precursor = new PrecursorType
+            {
+                selectedIonList =
+                    new SelectedIonListType { count = "1", selectedIon = new ParamGroupType[1] },
+            };
+
+            precursor.selectedIonList.selectedIon[0] = new ParamGroupType();
+
+            var ionCvParams = new List<CVParamType>
+            {
+                new CVParamType
+                {
+                    name = "selected ion m/z",
+                    value = precursorMz.ToString(CultureInfo.InvariantCulture),
+                    accession = "MS:1000744",
+                    cvRef = "MS",
+                    unitCvRef = "MS",
+                    unitAccession = "MS:1000040",
+                    unitName = "m/z"
+                }
+            };
+
+            if (charge != null)
+            {
+                ionCvParams.Add(new CVParamType
+                {
+                    name = "charge state",
+                    value = charge.ToString(),
+                    accession = "MS:1000041",
+                    cvRef = "MS"
+                });
+            }
+            precursor.selectedIonList.selectedIon[0].cvParam = ionCvParams.ToArray();
+
+            precursor.isolationWindow =
+                new ParamGroupType
+                {
+                    cvParam = new CVParamType[3]
+                };
+
+            precursor.isolationWindow.cvParam[0] =
+                new CVParamType
+                {
+                    accession = "MS:1000827",
+                    name = "isolation window target m/z",
+                    value = precursorMz.ToString(CultureInfo.InvariantCulture),
+                    cvRef = "MS",
+                    unitCvRef = "MS",
+                    unitAccession = "MS:1000040",
+                    unitName = "m/z"
+                };
+            if (isolationWidth != null)
+            {
+                var offset = isolationWidth.Value / 2 + reaction.IsolationWidthOffset;
+                precursor.isolationWindow.cvParam[1] =
+                    new CVParamType
+                    {
+                        accession = "MS:1000828",
+                        name = "isolation window lower offset",
+                        value = (isolationWidth.Value - offset).ToString(CultureInfo.InvariantCulture),
+                        cvRef = "MS",
+                        unitCvRef = "MS",
+                        unitAccession = "MS:1000040",
+                        unitName = "m/z"
+                    };
+                precursor.isolationWindow.cvParam[2] =
+                    new CVParamType
+                    {
+                        accession = "MS:1000829",
+                        name = "isolation window upper offset",
+                        value = offset.ToString(CultureInfo.InvariantCulture),
+                        cvRef = "MS",
+                        unitCvRef = "MS",
+                        unitAccession = "MS:1000040",
+                        unitName = "m/z"
+                    };
+            }
+
+            // Activation            
+            var activationCvParams = new List<CVParamType>();
+            if (reaction != null)
+            {
+                if (reaction.CollisionEnergyValid)
+                {
+                    activationCvParams.Add(
+                        new CVParamType
+                        {
+                            accession = "MS:1000045",
+                            name = "collision energy",
+                            cvRef = "MS",
+                            value = reaction.CollisionEnergy.ToString(CultureInfo.InvariantCulture),
+                            unitCvRef = "UO",
+                            unitAccession = "UO:0000266",
+                            unitName = "electronvolt"
+                        });
+                }
+
+                if (!OntologyMapping.DissociationTypes.TryGetValue(reaction.ActivationType, out var activation))
+                {
+                    activation = new CVParamType
+                    {
+                        accession = "MS:1000044",
+                        name = "Activation Method",
+                        cvRef = "MS",
+                        value = ""
+                    };
+                }
+
+                activationCvParams.Add(activation);
+            }
+
+            precursor.activation =
+                new ParamGroupType
+                {
+                    cvParam = activationCvParams.ToArray()
+                };
+
+            precursors.Add(precursor);
 
             return new PrecursorListType
             {
