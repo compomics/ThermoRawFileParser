@@ -2166,6 +2166,7 @@ namespace ThermoRawFileParser.Writer
 
             //if isolation width was not found in the trailer, try to get one from the reaction
             if (isolationWidth == null) isolationWidth = reaction.IsolationWidth;
+            if (isolationWidth < 0) isolationWidth = null;
             
             var precursor = new PrecursorType
             {
@@ -2383,6 +2384,51 @@ namespace ThermoRawFileParser.Writer
                         new SelectedIonListType {count = "1", selectedIon = new ParamGroupType[1]},
                     spectrumRef = spectrumRef
                 };
+
+                //Isolation window for SPS masses is the same as for the first precursor
+                SPSPrecursor.isolationWindow =
+                new ParamGroupType
+                {
+                    cvParam = new CVParamType[3]
+                };
+
+                SPSPrecursor.isolationWindow.cvParam[0] =
+                    new CVParamType
+                    {
+                        accession = "MS:1000827",
+                        name = "isolation window target m/z",
+                        value = SPSMasses[n].ToString(CultureInfo.InvariantCulture),
+                        cvRef = "MS",
+                        unitCvRef = "MS",
+                        unitAccession = "MS:1000040",
+                        unitName = "m/z"
+                    };
+                if (isolationWidth != null)
+                {
+                    var offset = isolationWidth.Value / 2 + reaction.IsolationWidthOffset;
+                    SPSPrecursor.isolationWindow.cvParam[1] =
+                        new CVParamType
+                        {
+                            accession = "MS:1000828",
+                            name = "isolation window lower offset",
+                            value = (isolationWidth.Value - offset).ToString(CultureInfo.InvariantCulture),
+                            cvRef = "MS",
+                            unitCvRef = "MS",
+                            unitAccession = "MS:1000040",
+                            unitName = "m/z"
+                        };
+                    SPSPrecursor.isolationWindow.cvParam[2] =
+                        new CVParamType
+                        {
+                            accession = "MS:1000829",
+                            name = "isolation window upper offset",
+                            value = offset.ToString(CultureInfo.InvariantCulture),
+                            cvRef = "MS",
+                            unitCvRef = "MS",
+                            unitAccession = "MS:1000040",
+                            unitName = "m/z"
+                        };
+                }
 
                 // Selected ion MZ only
                 SPSPrecursor.selectedIonList.selectedIon[0] =
