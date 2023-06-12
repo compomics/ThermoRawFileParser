@@ -68,6 +68,8 @@ namespace ThermoRawFileParser.Writer
             _mzMlNamespace.Add(string.Empty, "http://psi.hupo.org/ms/mzml");
             _doIndexing = ParseInput.OutputFormat == OutputFormat.IndexMzML;
             _osOffset = Environment.NewLine == "\n" ? 0 : 1;
+            _precursorScanNumbers[""] = -1;
+            _precursorTree[-1] = new PrecursorInfo();
         }
 
         /// <inheritdoc />
@@ -1275,7 +1277,7 @@ namespace ThermoRawFileParser.Writer
                 });
 
                 // Keep track of scan number for precursor reference
-                _precursorScanNumbers[""] = scanNumber;
+                _precursorScanNumbers[""] = -1;
                 _precursorTree[scanNumber] = new PrecursorInfo();
 
             }
@@ -1312,61 +1314,52 @@ namespace ThermoRawFileParser.Writer
                     _precursorScanNumber = GetParentFromScanString(result.Groups[1].Value);
                 }
 
-                if (_precursorScanNumber > 0)
+                //finding precursor scan failed
+                if (_precursorScanNumber == -2)
                 {
-
-                    try
-                    {
-                        try //since there is no direct way to get the number of reactions available, it is necessary to try and fail
-                        {
-                            scanEvent.GetReaction(_precursorTree[_precursorScanNumber].ReactionCount);
-                        }
-                        catch (ArgumentOutOfRangeException ex)
-                        {
-                            Log.Debug($"Using Tribrid decision tree fix for scan# {scanNumber}");
-                            //Is it a decision tree scheduled scan on tribrid?
-                            if (msLevel == _precursorTree[_precursorScanNumber].MSLevel)
-                            {
-                                _precursorScanNumber = GetParentFromScanString(result.Groups[1].Value);
-                            }
-                            else
-                            {
-                                throw new RawFileParserException(
-                                    $"Tribrid decision tree fix failed - cannot get reaction# {_precursorTree[_precursorScanNumber].ReactionCount} from {scanEvent.ToString()}",
-                                    ex);
-                            }
-                        }
-
-                        // Construct and set the precursor list element of the spectrum
-                        spectrum.precursorList =
-                            ConstructPrecursorList(_precursorScanNumber, scanEvent, charge, monoisotopicMz, isolationWidth,
-                                SPSMasses, out var reactionCount);
-
-                        //save precursor information for later reference
-                        _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, msLevel, reactionCount, spectrum.precursorList.precursor);
-                    }
-                    catch (Exception e)
-                    {
-                        var extra = (e.InnerException is null) ? "" : $"\n{e.InnerException.StackTrace}";
-
-                        Log.Warn($"Failed creating precursor list for scan# {scanNumber} - precursor information for this and dependent scans will be empty\nException details:{e.Message}\n{e.StackTrace}\n{extra}");
-                        ParseInput.NewWarn();
-
-                        _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, 1, 0, new PrecursorType[0]);
-
-                    }
-                    
+                    Log.Warn($"Cannot find precursor scan for scan# {scanNumber}");
+                    _precursorTree[-2] = new PrecursorInfo(0, msLevel, FindLastReaction(scanEvent, msLevel), new PrecursorType[0]);
                 }
-                else
-                {
-                    spectrum.precursorList = new PrecursorListType
-                    {
-                        count = "0",
-                        precursor = new PrecursorType[0]
-                    };
 
-                    Log.Error($"Failed finding precursor for {scanNumber}");
-                    ParseInput.NewError();
+                try
+                {
+                    try //since there is no direct way to get the number of reactions available, it is necessary to try and fail
+                    {
+                        scanEvent.GetReaction(_precursorTree[_precursorScanNumber].ReactionCount);
+                    }
+                    catch (ArgumentOutOfRangeException ex)
+                    {
+                        Log.Debug($"Using Tribrid decision tree fix for scan# {scanNumber}");
+                        //Is it a decision tree scheduled scan on tribrid?
+                        if (msLevel == _precursorTree[_precursorScanNumber].MSLevel)
+                        {
+                            _precursorScanNumber = GetParentFromScanString(result.Groups[1].Value);
+                        }
+                        else
+                        {
+                            throw new RawFileParserException(
+                                $"Tribrid decision tree fix failed - cannot get reaction# {_precursorTree[_precursorScanNumber].ReactionCount} from {scanEvent.ToString()}",
+                                ex);
+                        }
+                    }
+
+                    // Construct and set the precursor list element of the spectrum
+                    spectrum.precursorList =
+                        ConstructPrecursorList(_precursorScanNumber, scanEvent, charge, monoisotopicMz, isolationWidth,
+                            SPSMasses, out var reactionCount);
+
+                    //save precursor information for later reference
+                    _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, msLevel, reactionCount, spectrum.precursorList.precursor);
+                }
+                catch (Exception e)
+                {
+                    var extra = (e.InnerException is null) ? "" : $"\n{e.InnerException.StackTrace}";
+
+                    Log.Warn($"Failed creating precursor list for scan# {scanNumber} - precursor information for this and dependent scans will be empty\nException details:{e.Message}\n{e.StackTrace}\n{extra}");
+                    ParseInput.NewWarn();
+
+                    _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, 1, 0, new PrecursorType[0]);
+
                 }
             }
             else
@@ -1891,6 +1884,45 @@ namespace ThermoRawFileParser.Writer
             return spectrum;
         }
 
+        private int FindLastReaction(IScanEvent scanEvent, int msLevel)
+        {
+            int lastReactionIndex = msLevel - 2;
+
+            //iteratively trying find the last available index for reaction
+            while(true)
+            {
+                try
+                {
+                    scanEvent.GetReaction(lastReactionIndex + 1);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    //stop trying
+                    break;
+                }
+
+                lastReactionIndex++;
+            }
+
+            //supplemental activation flag is on -> one of the levels (not necissirily the last one) used supplemental activation
+            //check last two activations
+            if (scanEvent.SupplementalActivation == TriState.On) 
+            {
+                var lastActivation = scanEvent.GetReaction(lastReactionIndex).ActivationType;
+                var beforeLastActivation = scanEvent.GetReaction(lastReactionIndex - 1).ActivationType;
+
+                if ((beforeLastActivation == ActivationType.ElectronTransferDissociation || beforeLastActivation == ActivationType.ElectronCaptureDissociation) &&
+                    (lastActivation == ActivationType.CollisionInducedDissociation || lastActivation == ActivationType.HigherEnergyCollisionalDissociation))
+                    return lastReactionIndex - 1; //ETD or ECD followed by HCD or CID -> supplemental activation in the last level (move the last reaction one step back)
+                else
+                    return lastReactionIndex;
+            }
+            else //just use the last one
+            {
+                return lastReactionIndex;
+            }
+        }
+
         private SpectrumType ConstructPDASpectrum(int scanNumber, int instrumentNumber)
         {
             // Get each scan from the RAW file
@@ -2153,21 +2185,25 @@ namespace ThermoRawFileParser.Writer
             // Get precursors from earlier levels
             var prevPrecursors = _precursorTree[precursorScanNumber];
 
-            var spectrumRef = "";
+            string spectrumRef = null;
             int msLevel = (int)scanEvent.MSOrder;
             IReaction reaction = null;
             var precursorMz = 0.0;
             reactionCount = prevPrecursors.ReactionCount;
 
-            spectrumRef = ConstructSpectrumTitle((int)Device.MS, 1, precursorScanNumber);
             reaction = scanEvent.GetReaction(reactionCount);
-                
-            precursorMz = reaction.PrecursorMass;
 
             //if isolation width was not found in the trailer, try to get one from the reaction
             if (isolationWidth == null) isolationWidth = reaction.IsolationWidth;
             if (isolationWidth < 0) isolationWidth = null;
-            
+
+            precursorMz = reaction.PrecursorMass;
+
+            if (precursorScanNumber > 0)
+            {
+                spectrumRef = ConstructSpectrumTitle((int)Device.MS, 1, precursorScanNumber);
+            }
+
             var precursor = new PrecursorType
             {
                 selectedIonList =
@@ -2204,7 +2240,7 @@ namespace ThermoRawFileParser.Writer
                 });
             }
 
-            if (selectedIonMz > ZeroDelta)
+            if (selectedIonMz > ZeroDelta && precursorScanNumber > 0)
             {
                 var selectedIonIntensity = CalculatePrecursorPeakIntensity(_rawFile, precursorScanNumber, reaction.PrecursorMass, isolationWidth,
                     ParseInput.NoPeakPicking.Contains(msLevel - 1));
@@ -2472,8 +2508,7 @@ namespace ThermoRawFileParser.Writer
 
         private int GetParentFromScanString(string scanString)
         {
-            var result = _filterStringIsolationMzPattern.Match(scanString);
-            var parts = Regex.Split(result.Groups[1].Value, " ");
+            var parts = Regex.Split(scanString, " ");
 
             //find the position of the first (from the end) precursor with a different mass 
             //to account for possible supplementary activations written in the filter
@@ -2491,7 +2526,7 @@ namespace ThermoRawFileParser.Writer
                 return _precursorScanNumbers[parentFilter];
             }
 
-            return -1; //unsuccessful parsing
+            return -2; //unsuccessful parsing
         }
 
         /// <summary>
