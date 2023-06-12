@@ -68,6 +68,8 @@ namespace ThermoRawFileParser.Writer
             _mzMlNamespace.Add(string.Empty, "http://psi.hupo.org/ms/mzml");
             _doIndexing = ParseInput.OutputFormat == OutputFormat.IndexMzML;
             _osOffset = Environment.NewLine == "\n" ? 0 : 1;
+            _precursorScanNumbers[""] = -1;
+            _precursorTree[-1] = new PrecursorInfo();
         }
 
         /// <inheritdoc />
@@ -1275,7 +1277,7 @@ namespace ThermoRawFileParser.Writer
                 });
 
                 // Keep track of scan number for precursor reference
-                _precursorScanNumbers[""] = scanNumber;
+                _precursorScanNumbers[""] = -1;
                 _precursorTree[scanNumber] = new PrecursorInfo();
 
             }
@@ -1312,54 +1314,52 @@ namespace ThermoRawFileParser.Writer
                     _precursorScanNumber = GetParentFromScanString(result.Groups[1].Value);
                 }
 
-                if (_precursorScanNumber > 0)
+                //finding precursor scan failed
+                if (_precursorScanNumber == -2)
                 {
-
-                    try
-                    {
-                        try //since there is no direct way to get the number of reactions available, it is necessary to try and fail
-                        {
-                            scanEvent.GetReaction(_precursorTree[_precursorScanNumber].ReactionCount);
-                        }
-                        catch (ArgumentOutOfRangeException ex)
-                        {
-                            Log.Debug($"Using Tribrid decision tree fix for scan# {scanNumber}");
-                            //Is it a decision tree scheduled scan on tribrid?
-                            if (msLevel == _precursorTree[_precursorScanNumber].MSLevel)
-                            {
-                                _precursorScanNumber = GetParentFromScanString(result.Groups[1].Value);
-                            }
-                            else
-                            {
-                                throw new RawFileParserException(
-                                    $"Tribrid decision tree fix failed - cannot get reaction# {_precursorTree[_precursorScanNumber].ReactionCount} from {scanEvent.ToString()}",
-                                    ex);
-                            }
-                        }
-
-                        // Construct and set the precursor list element of the spectrum
-                        spectrum.precursorList =
-                            ConstructPrecursorList(_precursorScanNumber, scanEvent, charge, monoisotopicMz, isolationWidth,
-                                SPSMasses, out var reactionCount);
-
-                        //save precursor information for later reference
-                        _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, msLevel, reactionCount, spectrum.precursorList.precursor);
-                    }
-                    catch (Exception e)
-                    {
-                        var extra = (e.InnerException is null) ? "" : $"\n{e.InnerException.StackTrace}";
-
-                        Log.Warn($"Failed creating precursor list for scan# {scanNumber} - precursor information for this and dependent scans will be empty\nException details:{e.Message}\n{e.StackTrace}\n{extra}");
-                        ParseInput.NewWarn();
-
-                        _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, 1, 0, new PrecursorType[0]);
-
-                    }
-                    
+                    Log.Warn($"Cannot find precursor scan for scan# {scanNumber}");
+                    _precursorTree[-2] = new PrecursorInfo(0, msLevel, FindLastReaction(scanEvent, msLevel), new PrecursorType[0]);
                 }
-                else
+
+                try
                 {
-                    spectrum.precursorList = ConstructPRMPrecursorList(scanEvent, charge, isolationWidth);
+                    try //since there is no direct way to get the number of reactions available, it is necessary to try and fail
+                    {
+                        scanEvent.GetReaction(_precursorTree[_precursorScanNumber].ReactionCount);
+                    }
+                    catch (ArgumentOutOfRangeException ex)
+                    {
+                        Log.Debug($"Using Tribrid decision tree fix for scan# {scanNumber}");
+                        //Is it a decision tree scheduled scan on tribrid?
+                        if (msLevel == _precursorTree[_precursorScanNumber].MSLevel)
+                        {
+                            _precursorScanNumber = GetParentFromScanString(result.Groups[1].Value);
+                        }
+                        else
+                        {
+                            throw new RawFileParserException(
+                                $"Tribrid decision tree fix failed - cannot get reaction# {_precursorTree[_precursorScanNumber].ReactionCount} from {scanEvent.ToString()}",
+                                ex);
+                        }
+                    }
+
+                    // Construct and set the precursor list element of the spectrum
+                    spectrum.precursorList =
+                        ConstructPrecursorList(_precursorScanNumber, scanEvent, charge, monoisotopicMz, isolationWidth,
+                            SPSMasses, out var reactionCount);
+
+                    //save precursor information for later reference
+                    _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, msLevel, reactionCount, spectrum.precursorList.precursor);
+                }
+                catch (Exception e)
+                {
+                    var extra = (e.InnerException is null) ? "" : $"\n{e.InnerException.StackTrace}";
+
+                    Log.Warn($"Failed creating precursor list for scan# {scanNumber} - precursor information for this and dependent scans will be empty\nException details:{e.Message}\n{e.StackTrace}\n{extra}");
+                    ParseInput.NewWarn();
+
+                    _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, 1, 0, new PrecursorType[0]);
+
                 }
             }
             else
@@ -1884,6 +1884,45 @@ namespace ThermoRawFileParser.Writer
             return spectrum;
         }
 
+        private int FindLastReaction(IScanEvent scanEvent, int msLevel)
+        {
+            int lastReactionIndex = msLevel - 2;
+
+            //iteratively trying find the last available index for reaction
+            while(true)
+            {
+                try
+                {
+                    scanEvent.GetReaction(lastReactionIndex + 1);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    //stop trying
+                    break;
+                }
+
+                lastReactionIndex++;
+            }
+
+            //supplemental activation flag is on -> one of the levels (not necissirily the last one) used supplemental activation
+            //check last two activations
+            if (scanEvent.SupplementalActivation == TriState.On) 
+            {
+                var lastActivation = scanEvent.GetReaction(lastReactionIndex).ActivationType;
+                var beforeLastActivation = scanEvent.GetReaction(lastReactionIndex - 1).ActivationType;
+
+                if ((beforeLastActivation == ActivationType.ElectronTransferDissociation || beforeLastActivation == ActivationType.ElectronCaptureDissociation) &&
+                    (lastActivation == ActivationType.CollisionInducedDissociation || lastActivation == ActivationType.HigherEnergyCollisionalDissociation))
+                    return lastReactionIndex - 1; //ETD or ECD followed by HCD or CID -> supplemental activation in the last level (move the last reaction one step back)
+                else
+                    return lastReactionIndex;
+            }
+            else //just use the last one
+            {
+                return lastReactionIndex;
+            }
+        }
+
         private SpectrumType ConstructPDASpectrum(int scanNumber, int instrumentNumber)
         {
             // Get each scan from the RAW file
@@ -2146,20 +2185,24 @@ namespace ThermoRawFileParser.Writer
             // Get precursors from earlier levels
             var prevPrecursors = _precursorTree[precursorScanNumber];
 
-            var spectrumRef = "";
+            string spectrumRef = null;
             int msLevel = (int)scanEvent.MSOrder;
             IReaction reaction = null;
             var precursorMz = 0.0;
             reactionCount = prevPrecursors.ReactionCount;
 
-            spectrumRef = ConstructSpectrumTitle((int)Device.MS, 1, precursorScanNumber);
             reaction = scanEvent.GetReaction(reactionCount);
-                
-            precursorMz = reaction.PrecursorMass;
 
             //if isolation width was not found in the trailer, try to get one from the reaction
             if (isolationWidth == null) isolationWidth = reaction.IsolationWidth;
-            
+
+            precursorMz = reaction.PrecursorMass;
+
+            if (precursorScanNumber > 0)
+            {
+                spectrumRef = ConstructSpectrumTitle((int)Device.MS, 1, precursorScanNumber);
+            }
+
             var precursor = new PrecursorType
             {
                 selectedIonList =
@@ -2196,7 +2239,7 @@ namespace ThermoRawFileParser.Writer
                 });
             }
 
-            if (selectedIonMz > ZeroDelta)
+            if (selectedIonMz > ZeroDelta && precursorScanNumber > 0)
             {
                 var selectedIonIntensity = CalculatePrecursorPeakIntensity(_rawFile, precursorScanNumber, reaction.PrecursorMass, isolationWidth,
                     ParseInput.NoPeakPicking.Contains(msLevel - 1));
@@ -2417,156 +2460,10 @@ namespace ThermoRawFileParser.Writer
 
         }
 
-        /// <summary>
-        /// Populate the precursor list element for PRM/MS2-only datasets (No MS1 scans)
-        /// </summary>
-        /// <param name="scanEvent">the scan event</param>
-        /// <param name="charge">the charge from trailer</param>
-        /// <param name="isolationWidth">the isolation width value from trailer</param>
-        /// <returns>the precursor list</returns>
-        private PrecursorListType ConstructPRMPrecursorList(IScanEventBase scanEvent, int? charge, double? isolationWidth)
-        {
-            List<PrecursorType> precursors = new List<PrecursorType>();
-
-
-            int msLevel = (int)scanEvent.MSOrder;
-            IReaction reaction = scanEvent.GetReaction(0);
-            double precursorMz = reaction.PrecursorMass;
-
-            //if isolation width was not found in the trailer, try to get one from the reaction
-            if (isolationWidth == null) isolationWidth = reaction.IsolationWidth;
-
-            var precursor = new PrecursorType
-            {
-                selectedIonList =
-                    new SelectedIonListType { count = "1", selectedIon = new ParamGroupType[1] },
-            };
-
-            precursor.selectedIonList.selectedIon[0] = new ParamGroupType();
-
-            var ionCvParams = new List<CVParamType>
-            {
-                new CVParamType
-                {
-                    name = "selected ion m/z",
-                    value = precursorMz.ToString(CultureInfo.InvariantCulture),
-                    accession = "MS:1000744",
-                    cvRef = "MS",
-                    unitCvRef = "MS",
-                    unitAccession = "MS:1000040",
-                    unitName = "m/z"
-                }
-            };
-
-            if (charge != null)
-            {
-                ionCvParams.Add(new CVParamType
-                {
-                    name = "charge state",
-                    value = charge.ToString(),
-                    accession = "MS:1000041",
-                    cvRef = "MS"
-                });
-            }
-            precursor.selectedIonList.selectedIon[0].cvParam = ionCvParams.ToArray();
-
-            precursor.isolationWindow =
-                new ParamGroupType
-                {
-                    cvParam = new CVParamType[3]
-                };
-
-            precursor.isolationWindow.cvParam[0] =
-                new CVParamType
-                {
-                    accession = "MS:1000827",
-                    name = "isolation window target m/z",
-                    value = precursorMz.ToString(CultureInfo.InvariantCulture),
-                    cvRef = "MS",
-                    unitCvRef = "MS",
-                    unitAccession = "MS:1000040",
-                    unitName = "m/z"
-                };
-            if (isolationWidth != null)
-            {
-                var offset = isolationWidth.Value / 2 + reaction.IsolationWidthOffset;
-                precursor.isolationWindow.cvParam[1] =
-                    new CVParamType
-                    {
-                        accession = "MS:1000828",
-                        name = "isolation window lower offset",
-                        value = (isolationWidth.Value - offset).ToString(CultureInfo.InvariantCulture),
-                        cvRef = "MS",
-                        unitCvRef = "MS",
-                        unitAccession = "MS:1000040",
-                        unitName = "m/z"
-                    };
-                precursor.isolationWindow.cvParam[2] =
-                    new CVParamType
-                    {
-                        accession = "MS:1000829",
-                        name = "isolation window upper offset",
-                        value = offset.ToString(CultureInfo.InvariantCulture),
-                        cvRef = "MS",
-                        unitCvRef = "MS",
-                        unitAccession = "MS:1000040",
-                        unitName = "m/z"
-                    };
-            }
-
-            // Activation            
-            var activationCvParams = new List<CVParamType>();
-            if (reaction != null)
-            {
-                if (reaction.CollisionEnergyValid)
-                {
-                    activationCvParams.Add(
-                        new CVParamType
-                        {
-                            accession = "MS:1000045",
-                            name = "collision energy",
-                            cvRef = "MS",
-                            value = reaction.CollisionEnergy.ToString(CultureInfo.InvariantCulture),
-                            unitCvRef = "UO",
-                            unitAccession = "UO:0000266",
-                            unitName = "electronvolt"
-                        });
-                }
-
-                if (!OntologyMapping.DissociationTypes.TryGetValue(reaction.ActivationType, out var activation))
-                {
-                    activation = new CVParamType
-                    {
-                        accession = "MS:1000044",
-                        name = "Activation Method",
-                        cvRef = "MS",
-                        value = ""
-                    };
-                }
-
-                activationCvParams.Add(activation);
-            }
-
-            precursor.activation =
-                new ParamGroupType
-                {
-                    cvParam = activationCvParams.ToArray()
-                };
-
-            precursors.Add(precursor);
-
-            return new PrecursorListType
-            {
-                count = precursors.Count.ToString(),
-                precursor = precursors.ToArray()
-            };
-
-        }
-
         private int GetParentFromScanString(string scanString)
         {
-            var result = _filterStringIsolationMzPattern.Match(scanString);
-            var parts = Regex.Split(result.Groups[1].Value, " ");
+            //var result = _filterStringIsolationMzPattern.Match(scanString);
+            var parts = Regex.Split(scanString, " ");
 
             //find the position of the first (from the end) precursor with a different mass 
             //to account for possible supplementary activations written in the filter
@@ -2584,7 +2481,7 @@ namespace ThermoRawFileParser.Writer
                 return _precursorScanNumbers[parentFilter];
             }
 
-            return -1; //unsuccessful parsing
+            return -2; //unsuccessful parsing
         }
 
         /// <summary>
