@@ -589,8 +589,16 @@ namespace ThermoRawFileParser.Writer
 
                 if (_doIndexing)
                 {
-                    cryptoStream.Flush();
-                    cryptoStream.Close();
+                    try
+                    {
+                        cryptoStream.Flush();
+                        cryptoStream.Close();
+                    }
+                    catch (System.ObjectDisposedException e)
+                    {
+                        // Cannot access a closed file.  CryptoStream was already closed when closing _writer
+                        Log.Warn($"Warning: {e.Message}");
+                    }
                 }
             }
 
