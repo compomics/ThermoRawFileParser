@@ -1285,7 +1285,7 @@ namespace ThermoRawFileParser.Writer
                 });
 
                 // Keep track of scan number for precursor reference
-                _precursorScanNumbers[""] = -1;
+                _precursorScanNumbers[""] = scanNumber;
                 _precursorTree[scanNumber] = new PrecursorInfo();
 
             }
