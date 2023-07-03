@@ -69,6 +69,15 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
+                    MassAnalyzerType.MassAnalyzerMRTOF, new CVParamType
+                    {
+                        accession = "MS:1003379",
+                        name = "asymmetric track lossless time-of-flight analyzer",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
                     MassAnalyzerType.Any, new CVParamType
                     {
                         accession = "MS:1000443",
@@ -544,6 +553,15 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
+                    "ORBITRAP ASCEND", new CVParamType
+                    {
+                        accession = "MS:1003356",
+                        name = "Orbitrap Ascend",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
                     "ORBITRAP EXPLORIS 120", new CVParamType
                     {
                         accession = "MS:1003095",
@@ -566,6 +584,15 @@ namespace ThermoRawFileParser.Writer
                     {
                         accession = "MS:1003028",
                         name = "Orbitrap Exploris 480",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "ORBITRAP ASTRAL", new CVParamType
+                    {
+                        accession = "MS:1003378",
+                        name = "Orbitrap Astral",
                         cvRef = "MS",
                         value = ""
                     }
@@ -730,6 +757,8 @@ namespace ThermoRawFileParser.Writer
                 case "MS:1002732":
                 // ORBITRAP ECLIPSE    
                 case "MS:1003029":
+                // ORBITRAP ASCEND    
+                case "MS:1003356":
                 // ORBITRAP ID-X
                 case "MS:1003112":
                     detectors = new List<CVParamType>
@@ -768,6 +797,8 @@ namespace ThermoRawFileParser.Writer
                 case "MS:1003094":
                 // ORBITRAP EXPLORIS 480
                 case "MS:1003028":
+                // ORBITRAP ASTRAL
+                case "MS:1003378":
                     detectors = new List<CVParamType>
                     {
                         new CVParamType
