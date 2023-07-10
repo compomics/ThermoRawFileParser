@@ -81,7 +81,7 @@ namespace ThermoRawFileParser.Writer
             ConfigureWriter(".mzML");
 
             XmlSerializer serializer;
-            var settings = new XmlWriterSettings {Indent = true, Encoding = new UTF8Encoding()};
+            var settings = new XmlWriterSettings { Indent = true, Encoding = new UTF8Encoding() };
             var sha1 = SHA1.Create();
             CryptoStream cryptoStream = null;
             if (_doIndexing)
@@ -141,29 +141,32 @@ namespace ThermoRawFileParser.Writer
                 //   fileContent
                 _writer.WriteStartElement("fileContent");
                 // MS1
-                SerializeCvParam(new CVParamType
+                if (rawFile.SelectMsData())
                 {
-                    accession = "MS:1000579",
-                    name = "MS1 spectrum",
-                    cvRef = "MS",
-                    value = ""
-                });
-                // MSn
-                SerializeCvParam(new CVParamType
-                {
-                    accession = "MS:1000580",
-                    name = "MSn spectrum",
-                    cvRef = "MS",
-                    value = ""
-                });
-                // Ion current chromatogram
-                SerializeCvParam(new CVParamType
-                {
-                    accession = "MS:1000810",
-                    name = "ion current chromatogram",
-                    cvRef = "MS",
-                    value = ""
-                });
+                    SerializeCvParam(new CVParamType
+                    {
+                        accession = "MS:1000579",
+                        name = "MS1 spectrum",
+                        cvRef = "MS",
+                        value = ""
+                    });
+                    // MSn
+                    SerializeCvParam(new CVParamType
+                    {
+                        accession = "MS:1000580",
+                        name = "MSn spectrum",
+                        cvRef = "MS",
+                        value = ""
+                    });
+                    // Ion current chromatogram
+                    SerializeCvParam(new CVParamType
+                    {
+                        accession = "MS:1000810",
+                        name = "ion current chromatogram",
+                        cvRef = "MS",
+                        value = ""
+                    });
+                }
 
                 // Other detector data
                 if (ParseInput.AllDetectors)
@@ -191,6 +194,25 @@ namespace ThermoRawFileParser.Writer
                             cvRef = "MS",
                             value = ""
                         });
+                    }
+
+                    // Pressure chromatogram
+                    if (_rawFile.GetInstrumentCountOfType(Device.Analog) > 0)
+                    {
+                        SerializeCvParam(new CVParamType
+                        {
+                            accession = "MS:1003019",
+                            name = "pressure chromatogram",
+                            cvRef = "MS",
+                            value = ""
+                        });
+                    }
+
+                    // MSAnalog chromatogram
+                    if (_rawFile.GetInstrumentCountOfType(Device.MSAnalog) > 0)
+                    {
+                        // TODO Write MSAnalog fileContent
+                        // e.g. Front FID or Back FID
                     }
                 }
 
@@ -229,27 +251,32 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteEndElement(); // sourceFileList               
                 _writer.WriteEndElement(); // fileDescription                
 
-                var instrumentData = _rawFile.GetInstrumentData();
-
-                // ReferenceableParamGroupList   
-                _writer.WriteStartElement("referenceableParamGroupList");
-                _writer.WriteAttributeString("count", "1");
-                // ReferenceableParamGroup
-                _writer.WriteStartElement("referenceableParamGroup");
-                _writer.WriteAttributeString("id", "commonInstrumentParams");
-
-                var instrumentModel = OntologyMapping.getInstrumentModel(instrumentData.Name);
-                SerializeCvParam(instrumentModel);
-
-                SerializeCvParam(new CVParamType
+                if (_rawFile.SelectedInstrument.DeviceType != Device.None && _rawFile.SelectedInstrument.InstrumentIndex != -1)
                 {
-                    cvRef = "MS",
-                    accession = "MS:1000529",
-                    name = "instrument serial number",
-                    value = instrumentData.SerialNumber
-                });
-                _writer.WriteEndElement(); // referenceableParamGroup                
-                _writer.WriteEndElement(); // referenceableParamGroupList                
+                    var instrumentData = _rawFile.GetInstrumentData();
+
+                    // ReferenceableParamGroupList   
+                    _writer.WriteStartElement("referenceableParamGroupList");
+                    _writer.WriteAttributeString("count", "1");
+                    // ReferenceableParamGroup
+                    _writer.WriteStartElement("referenceableParamGroup");
+                    _writer.WriteAttributeString("id", "commonInstrumentParams");
+
+                    var instrumentModel = OntologyMapping.getInstrumentModel(instrumentData.Name);
+                    SerializeCvParam(instrumentModel);
+
+                    SerializeCvParam(new CVParamType
+                    {
+                        cvRef = "MS",
+                        accession = "MS:1000529",
+                        name = "instrument serial number",
+                        value = instrumentData.SerialNumber
+                    });
+                    _writer.WriteEndElement(); // referenceableParamGroup                
+                    _writer.WriteEndElement(); // referenceableParamGroupList
+
+                    PopulateInstrumentConfigurationList(firstScanNumber, lastScanNumber, instrumentModel);
+                }
 
                 // SoftwareList      
                 _writer.WriteStartElement("softwareList");
@@ -267,7 +294,6 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteEndElement(); // software                
                 _writer.WriteEndElement(); // softwareList                                                                                
 
-                PopulateInstrumentConfigurationList(firstScanNumber, lastScanNumber, instrumentModel);
 
                 // DataProcessingList
                 _writer.WriteStartElement("dataProcessingList");
@@ -324,63 +350,67 @@ namespace ThermoRawFileParser.Writer
                 var index = 0;
                 var lastScanProgress = 0;
 
-                Log.Info(String.Format("Processing {0} MS scans", +(1 + lastScanNumber - firstScanNumber)));
-
-                for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
+                if (_rawFile.SelectMsData())
                 {
-                    if (ParseInput.LogFormat == LogFormat.DEFAULT)
+                    Log.Info(String.Format("Processing {0} MS scans", +(1 + lastScanNumber - firstScanNumber)));
+
+                    for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
                     {
-                        var scanProgress = (int) ((double) scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
-                        if (scanProgress % ProgressPercentageStep == 0)
+                        if (ParseInput.LogFormat == LogFormat.DEFAULT)
                         {
-                            if (scanProgress != lastScanProgress)
+                            var scanProgress = (int)((double)scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
+                            if (scanProgress % ProgressPercentageStep == 0)
                             {
-                                Console.Write("" + scanProgress + "% ");
-                                lastScanProgress = scanProgress;
-                            }
-                        }
-                    }
-
-
-                    SpectrumType spectrum = null;
-
-                    try
-                    {
-                        spectrum = ConstructMSSpectrum(scanNumber);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"Scan #{scanNumber} cannot be processed because of the following exception: {ex.Message}\n{ex.StackTrace}");
-                        ParseInput.NewError();
-                    }
-
-                    var level = spectrum != null ? int.Parse(spectrum.cvParam.Where(p => p.accession == "MS:1000511").First().value) : 0;
-                    
-                    if (spectrum != null && ParseInput.MsLevel.Contains(level)) //applying MS level filter
-                    {
-                        spectrum.index = index.ToString();
-                        if (_doIndexing)
-                        {
-                            // flush the writers before getting the position                
-                            _writer.Flush();
-                            Writer.Flush();
-                            if (spectrumOffSets.Count != 0)
-                            {
-                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 6 + _osOffset);
-                            }
-                            else
-                            {
-                                spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 7 + _osOffset);
+                                if (scanProgress != lastScanProgress)
+                                {
+                                    Console.Write("" + scanProgress + "% ");
+                                    lastScanProgress = scanProgress;
+                                }
                             }
                         }
 
-                        Serialize(serializer, spectrum);
 
-                        Log.Debug("Spectrum added to list of spectra -- ID " + spectrum.id);
+                        SpectrumType spectrum = null;
 
-                        index++;
+                        try
+                        {
+                            spectrum = ConstructMSSpectrum(scanNumber);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error($"Scan #{scanNumber} cannot be processed because of the following exception: {ex.Message}\n{ex.StackTrace}");
+                            ParseInput.NewError();
+                        }
+
+                        var level = spectrum != null ? int.Parse(spectrum.cvParam.Where(p => p.accession == "MS:1000511").First().value) : 0;
+
+                        if (spectrum != null && ParseInput.MsLevel.Contains(level)) //applying MS level filter
+                        {
+                            spectrum.index = index.ToString();
+                            if (_doIndexing)
+                            {
+                                // flush the writers before getting the position                
+                                _writer.Flush();
+                                Writer.Flush();
+                                if (spectrumOffSets.Count != 0)
+                                {
+                                    spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 6 + _osOffset);
+                                }
+                                else
+                                {
+                                    spectrumOffSets.Add(spectrum.id, Writer.BaseStream.Position + 7 + _osOffset);
+                                }
+                            }
+
+                            Serialize(serializer, spectrum);
+
+                            Log.Debug("Spectrum added to list of spectra -- ID " + spectrum.id);
+
+                            index++;
+                        }
                     }
                 }
+
 
                 if (ParseInput.LogFormat == LogFormat.DEFAULT)
                 {
@@ -405,7 +435,7 @@ namespace ThermoRawFileParser.Writer
                             if (ParseInput.LogFormat == LogFormat.DEFAULT)
                             {
                                 var scanProgress =
-                                    (int) ((double) scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
+                                    (int)((double)scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
                                 if (scanProgress % ProgressPercentageStep == 0)
                                 {
                                     if (scanProgress != lastScanProgress)
@@ -464,7 +494,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteEndElement(); // spectrumList                                                
 
                 index = 0;
-                var chromatograms = ConstructChromatograms(firstScanNumber, lastScanNumber);
+                var chromatograms = ConstructChromatograms();
                 if (!chromatograms.IsNullOrEmpty())
                 {
                     // ChromatogramList
@@ -587,8 +617,16 @@ namespace ThermoRawFileParser.Writer
 
                 if (_doIndexing)
                 {
-                    cryptoStream.Flush();
-                    cryptoStream.Close();
+                    try
+                    {
+                        cryptoStream.Flush();
+                        cryptoStream.Close();
+                    }
+                    catch (System.ObjectDisposedException e)
+                    {
+                        // Cannot access a closed file.  CryptoStream was already closed when closing _writer
+                        Log.Warn($"Warning: {e.Message}");
+                    }
                 }
             }
 
@@ -624,20 +662,21 @@ namespace ThermoRawFileParser.Writer
             var lastSelectedInstrument = _rawFile.SelectedInstrument;
             var numScans = 0;
 
-            _rawFile.SelectInstrument(Device.MS, 1);
-
-            var levelFilter = _rawFile.GetFilterFromString("");
-
-            foreach (var level in ParseInput.MsLevel)
+            if (_rawFile.GetInstrumentCountOfType(Device.MS) != 0)
             {
-                levelFilter.MSOrder = (MSOrderType) level;
+                _rawFile.SelectInstrument(Device.MS, 1);
+                var levelFilter = _rawFile.GetFilterFromString("");
 
-                var filteredScans = _rawFile.GetFilteredScansListByScanRange(levelFilter,
-                    _rawFile.RunHeader.FirstSpectrum, _rawFile.RunHeader.LastSpectrum);
+                foreach (var level in ParseInput.MsLevel)
+                {
+                    levelFilter.MSOrder = (MSOrderType)level;
 
-                numScans += filteredScans.Count;
+                    var filteredScans = _rawFile.GetFilteredScansListByScanRange(levelFilter,
+                        _rawFile.RunHeader.FirstSpectrum, _rawFile.RunHeader.LastSpectrum);
+
+                    numScans += filteredScans.Count;
+                }
             }
-
 
             if (ParseInput.AllDetectors)
             {
@@ -649,7 +688,7 @@ namespace ThermoRawFileParser.Writer
             }
 
             // Return instrument to last selected one
-            if (lastSelectedInstrument != null)
+            if (lastSelectedInstrument != null && lastSelectedInstrument.DeviceType != Device.None && lastSelectedInstrument.InstrumentIndex != -1)
                 _rawFile.SelectInstrument(lastSelectedInstrument.DeviceType, lastSelectedInstrument.InstrumentIndex);
 
             return numScans.ToString();
@@ -831,53 +870,57 @@ namespace ThermoRawFileParser.Writer
         /// <param name="firstScanNumber">the first scan number</param>
         /// <param name="lastScanNumber">the last scan number</param>
         /// <returns>a list of chromatograms</returns>
-        private List<ChromatogramType> ConstructChromatograms(int firstScanNumber, int lastScanNumber)
+        private List<ChromatogramType> ConstructChromatograms()
         {
             var chromatograms = new List<ChromatogramType>();
 
             // MS chromatograms
             // Reselect MS device
-            _rawFile.SelectInstrument(Device.MS, 1);
-            // Define the settings for getting the Base Peak chromatogram
-            var settings = new ChromatogramTraceSettings(TraceType.BasePeak);
-
-            // Get the chromatogram from the RAW file. 
-            var data = _rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, -1, -1);
-
-            // Split the data into the chromatograms
-            var trace = ChromatogramSignal.FromChromatogramData(data);
-
-            for (var i = 0; i < trace.Length; i++)
+            if (_rawFile.GetInstrumentCountOfType(Device.MS) != 0)
             {
-                if (trace[i].Length > 0)
+                _rawFile.SelectInstrument(Device.MS, 1);
+
+                // Define the settings for getting the Base Peak chromatogram
+                var settings = new ChromatogramTraceSettings(TraceType.BasePeak);
+
+                // Get the chromatogram from the RAW file. 
+                var data = _rawFile.GetChromatogramData(new IChromatogramSettings[] { settings }, -1, -1);
+
+                // Split the data into the chromatograms
+                var trace = ChromatogramSignal.FromChromatogramData(data);
+
+                for (var i = 0; i < trace.Length; i++)
                 {
-                    // CV Data for Base Peak Chromatogram
-                    var chroType = new CVParamType
+                    if (trace[i].Length > 0)
                     {
-                        accession = "MS:1000628",
-                        name = "basepeak chromatogram",
-                        cvRef = "MS",
-                        value = ""
-                    };
+                        // CV Data for Base Peak Chromatogram
+                        var chroType = new CVParamType
+                        {
+                            accession = "MS:1000628",
+                            name = "basepeak chromatogram",
+                            cvRef = "MS",
+                            value = ""
+                        };
 
-                    var intensType = new CVParamType
-                    {
-                        accession = "MS:1000515",
-                        name = "intensity array",
-                        cvRef = "MS",
-                        unitName = "number of counts",
-                        value = "",
-                        unitCvRef = "MS",
-                        unitAccession = "MS:1000131"
-                    };
+                        var intensType = new CVParamType
+                        {
+                            accession = "MS:1000515",
+                            name = "intensity array",
+                            cvRef = "MS",
+                            unitName = "number of counts",
+                            value = "",
+                            unitCvRef = "MS",
+                            unitAccession = "MS:1000131"
+                        };
 
-                    var chromatogram = TraceToChromatogram(trace[i], "BasePeak_" + i.ToString(), chroType, intensType);
+                        var chromatogram = TraceToChromatogram(trace[i], "BasePeak_" + i.ToString(), chroType, intensType);
 
-                    chromatograms.Add(chromatogram);
+                        chromatograms.Add(chromatogram);
+                    }
                 }
             }
 
-            // Chromatograms from other devices: UV, PDA
+            // Chromatograms from other devices: UV, PDA, Analog, MSAnalog
             if (ParseInput.AllDetectors)
             {
                 for (int nrI = 1; nrI < _rawFile.GetInstrumentCountOfType(Device.Pda) + 1; nrI++)
@@ -886,11 +929,11 @@ namespace ThermoRawFileParser.Writer
 
                     var instData = _rawFile.GetInstrumentData();
 
-                    settings = new ChromatogramTraceSettings(TraceType.TotalAbsorbance);
+                    var settings = new ChromatogramTraceSettings(TraceType.TotalAbsorbance);
 
-                    data = _rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, -1, -1);
+                    var data = _rawFile.GetChromatogramData(new IChromatogramSettings[] { settings }, -1, -1);
 
-                    trace = ChromatogramSignal.FromChromatogramData(data);
+                    var trace = ChromatogramSignal.FromChromatogramData(data);
 
                     for (var i = 0; i < trace.Length; i++)
                     {
@@ -932,11 +975,11 @@ namespace ThermoRawFileParser.Writer
                     {
                         var channelName = instData.ChannelLabels[channel];
 
-                        settings = new ChromatogramTraceSettings(TraceType.StartUVChromatogramTraces + channel + 1);
+                        var settings = new ChromatogramTraceSettings(TraceType.StartUVChromatogramTraces + channel + 1);
 
-                        data = _rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, -1, -1);
+                        var data = _rawFile.GetChromatogramData(new IChromatogramSettings[] { settings }, -1, -1);
 
-                        trace = ChromatogramSignal.FromChromatogramData(data);
+                        var trace = ChromatogramSignal.FromChromatogramData(data);
 
                         for (var i = 0; i < trace.Length; i++)
                         {
@@ -981,16 +1024,16 @@ namespace ThermoRawFileParser.Writer
 
                         if (channelName.ToLower().Contains("pressure"))
                         {
-                            settings = new ChromatogramTraceSettings(TraceType.StartPCA2DChromatogramTraces + channel +
+                            var settings = new ChromatogramTraceSettings(TraceType.StartPCA2DChromatogramTraces + channel +
                                                                      1);
 
-                            data = _rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, -1, -1);
+                            var data = _rawFile.GetChromatogramData(new IChromatogramSettings[] { settings }, -1, -1);
 
-                            trace = ChromatogramSignal.FromChromatogramData(data);
+                            var trace = ChromatogramSignal.FromChromatogramData(data);
 
                             for (var i = 0; i < trace.Length; i++)
                             {
-                                // CV Data for Absorbance Chromatogram
+                                // CV Data for Pressure Chromatogram
                                 var chroType = new CVParamType
                                 {
                                     accession = "MS:1003019",
@@ -1016,6 +1059,67 @@ namespace ThermoRawFileParser.Writer
 
                                 chromatograms.Add(chromatogram);
                             }
+                        }
+                    }
+                }
+
+                var channelNameIndex = 0;
+                for (int nrI = 1; nrI < _rawFile.GetInstrumentCountOfType(Device.MSAnalog) + 1; nrI++)
+                {
+                    _rawFile.SelectInstrument(Device.MSAnalog, nrI);
+
+                    var instData = _rawFile.GetInstrumentData();
+
+                    for (int channel = 0; channel < instData.ChannelLabels.Length; channel++)
+                    {
+                        var channelName = instData.ChannelLabels[channel];
+
+                        if (channelName.IsNullOrEmpty())
+                        {
+                            channelName = "Channel " + channelNameIndex++;
+                        }
+
+                        var settings = new ChromatogramTraceSettings(TraceType.StartAnalogChromatogramTraces + channel +
+                                                                    1);
+
+                        var data = _rawFile.GetChromatogramData(new IChromatogramSettings[] { settings }, -1, -1);
+
+                        var trace = ChromatogramSignal.FromChromatogramData(data);
+
+                        for (var i = 0; i < trace.Length; i++)
+                        {
+                            // CV Data for Chromatogram
+                            var chroType = new CVParamType
+                            {
+                                name = channelName + " chromatogram",
+                                value = ""
+                            };
+
+                            var intensType = new CVParamType();
+                            if (instData.Units.ToString().Equals("Volts"))
+                            {
+                                intensType = new CVParamType
+                                {
+                                    name = channelName + " array",
+                                    unitAccession = "UO:0000218",
+                                    unitName = "volt",
+                                    unitCvRef = "UO"
+                                };
+                            }
+                            else
+                            {
+                                intensType = new CVParamType
+                                {
+                                    name = channelName + " array",
+                                    value = instData.Units.ToString(),
+                                };
+                            }
+
+                            var chromatogram = TraceToChromatogram(trace[i],
+                                String.Format("MSAD#{0}_{1}_{2}", nrI, channelName.Replace(" ", "_"), i),
+                                chroType, intensType);
+
+                            chromatograms.Add(chromatogram);
                         }
                     }
                 }
@@ -1058,7 +1162,7 @@ namespace ThermoRawFileParser.Writer
                             : GetZLib64BitArray(trace.Times)
                     };
                 timesBinaryData.encodedLength =
-                    (4 * Math.Ceiling((double) timesBinaryData
+                    (4 * Math.Ceiling((double)timesBinaryData
                         .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
                 var timesBinaryDataCvParams = new List<CVParamType>
                 {
@@ -1123,7 +1227,7 @@ namespace ThermoRawFileParser.Writer
                             : GetZLib64BitArray(trace.Intensities)
                     };
                 intensitiesBinaryData.encodedLength =
-                    (4 * Math.Ceiling((double) intensitiesBinaryData
+                    (4 * Math.Ceiling((double)intensitiesBinaryData
                         .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
                 var intensitiesBinaryDataCvParams = new List<CVParamType>
                 {
@@ -1196,7 +1300,7 @@ namespace ThermoRawFileParser.Writer
             var scanEvent = _rawFile.GetScanEventForScanNumber(scanNumber);
             var spectrum = new SpectrumType
             {
-                id = ConstructSpectrumTitle((int) Device.MS, 1, scanNumber),
+                id = ConstructSpectrumTitle((int)Device.MS, 1, scanNumber),
                 defaultArrayLength = 0
             };
 
@@ -1229,7 +1333,7 @@ namespace ThermoRawFileParser.Writer
             int? charge = trailerData.AsPositiveInt("Charge State:");
             double? monoisotopicMz = trailerData.AsDouble("Monoisotopic M/Z:");
             double? ionInjectionTime = trailerData.AsDouble("Ion Injection Time (ms):");
-            double? isolationWidth = trailerData.AsDouble("MS" + (int) scanFilter.MSOrder + " Isolation Width:");
+            double? isolationWidth = trailerData.AsDouble("MS" + (int)scanFilter.MSOrder + " Isolation Width:");
             double? FAIMSCV = null;
             if (trailerData.AsBool("FAIMS Voltage On:").GetValueOrDefault(false))
                 FAIMSCV = trailerData.AsDouble("FAIMS CV:");
@@ -1241,7 +1345,7 @@ namespace ThermoRawFileParser.Writer
                 foreach (var label in trailerData.MatchKeys(_spSentry))
                 {
                     var mass = trailerData.AsDouble(label).GetValueOrDefault(0);
-                    if (mass > 0) SPSMasses.Add((double) mass); //zero means mass does not exist
+                    if (mass > 0) SPSMasses.Add((double)mass); //zero means mass does not exist
                 }
             }
 
@@ -1251,7 +1355,7 @@ namespace ThermoRawFileParser.Writer
                 foreach (var labelvalue in trailerData.MatchValues(_spSentry3))
                 {
                     foreach (var mass in labelvalue.Trim()
-                        .Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries))
+                        .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                     {
                         SPSMasses.Add(double.Parse(mass));
                     }
@@ -1280,14 +1384,14 @@ namespace ThermoRawFileParser.Writer
 
             }
             else if (msLevel > 1)
-            { 
+            {
                 spectrumCvParams.Add(new CVParamType
-                    {
-                        accession = "MS:1000580",
-                        cvRef = "MS",
-                        name = "MSn spectrum",
-                        value = ""
-                    });
+                {
+                    accession = "MS:1000580",
+                    cvRef = "MS",
+                    name = "MSn spectrum",
+                    value = ""
+                });
 
                 // Keep track of scan number and isolation m/z for precursor reference                   
                 var result = _filterStringIsolationMzPattern.Match(scanEvent.ToString());
@@ -1355,7 +1459,7 @@ namespace ThermoRawFileParser.Writer
                         _precursorTree[scanNumber] = new PrecursorInfo(_precursorScanNumber, 1, 0, new PrecursorType[0]);
 
                     }
-                    
+
                 }
                 else
                 {
@@ -1430,7 +1534,7 @@ namespace ThermoRawFileParser.Writer
             double[] masses;
             double[] intensities;
 
-            if (!ParseInput.NoPeakPicking.Contains((int) scanFilter.MSOrder))
+            if (!ParseInput.NoPeakPicking.Contains((int)scanFilter.MSOrder))
             {
                 //Spectrum will be centroided
                 spectrumCvParams.Add(new CVParamType
@@ -1593,7 +1697,7 @@ namespace ThermoRawFileParser.Writer
                         binary = ParseInput.NoZlibCompression ? Get64BitArray(masses) : GetZLib64BitArray(masses)
                     };
                 massesBinaryData.encodedLength =
-                    (4 * Math.Ceiling((double) massesBinaryData
+                    (4 * Math.Ceiling((double)massesBinaryData
                         .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
                 var massesBinaryDataCvParams = new List<CVParamType>
                 {
@@ -1655,7 +1759,7 @@ namespace ThermoRawFileParser.Writer
                             : GetZLib64BitArray(intensities)
                     };
                 intensitiesBinaryData.encodedLength =
-                    (4 * Math.Ceiling((double) intensitiesBinaryData
+                    (4 * Math.Ceiling((double)intensitiesBinaryData
                         .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
                 var intensitiesBinaryDataCvParams = new List<CVParamType>
                 {
@@ -1898,7 +2002,7 @@ namespace ThermoRawFileParser.Writer
 
             var spectrum = new SpectrumType
             {
-                id = ConstructSpectrumTitle((int) Device.Pda, instrumentNumber, scanNumber),
+                id = ConstructSpectrumTitle((int)Device.Pda, instrumentNumber, scanNumber),
                 defaultArrayLength = 0
             };
 
@@ -2017,7 +2121,7 @@ namespace ThermoRawFileParser.Writer
                         binary = ParseInput.NoZlibCompression ? Get64BitArray(positions) : GetZLib64BitArray(positions)
                     };
                 positionsBinaryData.encodedLength =
-                    (4 * Math.Ceiling((double) positionsBinaryData
+                    (4 * Math.Ceiling((double)positionsBinaryData
                         .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
                 var positionsBinaryDataCvParams = new List<CVParamType>
                 {
@@ -2078,7 +2182,7 @@ namespace ThermoRawFileParser.Writer
                             : GetZLib64BitArray(intensities)
                     };
                 intensitiesBinaryData.encodedLength =
-                    (4 * Math.Ceiling((double) intensitiesBinaryData
+                    (4 * Math.Ceiling((double)intensitiesBinaryData
                         .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
                 var intensitiesBinaryDataCvParams = new List<CVParamType>
                 {
@@ -2161,16 +2265,16 @@ namespace ThermoRawFileParser.Writer
 
             spectrumRef = ConstructSpectrumTitle((int)Device.MS, 1, precursorScanNumber);
             reaction = scanEvent.GetReaction(reactionCount);
-                
+
             precursorMz = reaction.PrecursorMass;
 
             //if isolation width was not found in the trailer, try to get one from the reaction
             if (isolationWidth == null) isolationWidth = reaction.IsolationWidth;
-            
+
             var precursor = new PrecursorType
             {
                 selectedIonList =
-                    new SelectedIonListType {count = "1", selectedIon = new ParamGroupType[1]},
+                    new SelectedIonListType { count = "1", selectedIon = new ParamGroupType[1] },
                 spectrumRef = spectrumRef
             };
 
@@ -2380,7 +2484,7 @@ namespace ThermoRawFileParser.Writer
                 var SPSPrecursor = new PrecursorType
                 {
                     selectedIonList =
-                        new SelectedIonListType {count = "1", selectedIon = new ParamGroupType[1]},
+                        new SelectedIonListType { count = "1", selectedIon = new ParamGroupType[1] },
                     spectrumRef = spectrumRef
                 };
 
@@ -2689,7 +2793,7 @@ namespace ThermoRawFileParser.Writer
                     memoryStream.Position = 0;
                     bytes = memoryStream.ToArray();
                 }
-            }    
+            }
 
             return (byte[])bytes;
         }
@@ -2709,8 +2813,8 @@ namespace ThermoRawFileParser.Writer
             using (var memoryStream = new MemoryStream())
             using (var outZStream = new ZOutputStream(memoryStream, zlibConst.Z_DEFAULT_COMPRESSION))
             {
-                    outZStream.Write(bytes, 0, bytes.Length);
-                
+                outZStream.Write(bytes, 0, bytes.Length);
+
                 outZStream.finish();
                 memoryStream.Position = 0;
                 bytes = memoryStream.ToArray();
