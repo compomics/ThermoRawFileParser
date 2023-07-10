@@ -210,6 +210,8 @@ namespace ThermoRawFileParser.Writer
             // Scan Settings
             metadata.addScanSetting(new CVTerm("MS:1000016", "MS", "scan start time",
                 startTime.ToString(CultureInfo.InvariantCulture)));
+            metadata.addScanSetting(new CVTerm("", "", "expected runtime",
+                rawFile.RunHeader.ExpectedRuntime.ToString(CultureInfo.InvariantCulture)));
             metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution",
                 rawFile.RunHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)));
             metadata.addScanSetting(new CVTerm("UO:0000002", "MS", "mass unit",
