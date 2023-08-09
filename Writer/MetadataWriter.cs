@@ -46,7 +46,7 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         public void WriteMetadata(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
-            if (rawFile.SelectMsData())
+            if(rawFile.SelectMsData())
             {
                 for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
                 {
@@ -112,8 +112,6 @@ namespace ThermoRawFileParser.Writer
                 }
             }
 
-            
-
             if (minCharge == 100000000000000)
             {
                 minCharge = 0;
@@ -177,6 +175,7 @@ namespace ThermoRawFileParser.Writer
                         rawFile.GetInstrumentData().HardwareVersion));
                 }
             }
+            
 
             // MS Data
             if (rawFile.SelectMsData())
@@ -216,7 +215,7 @@ namespace ThermoRawFileParser.Writer
                 metadata.addScanSetting(new CVTerm("MS:1000016", "MS", "scan start time",
                     startTime.ToString(CultureInfo.InvariantCulture)));
                 metadata.addScanSetting(new CVTerm("", "", "expected runtime",
-                    rawFile.RunHeader.ExpectedRuntime.ToString(CultureInfo.InvariantCulture)));            
+                    rawFile.RunHeader.ExpectedRuntime.ToString(CultureInfo.InvariantCulture)));
                 metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution",
                     rawFile.RunHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)));
                 metadata.addScanSetting(new CVTerm("UO:0000002", "MS", "mass unit",
@@ -371,7 +370,7 @@ namespace ThermoRawFileParser.Writer
                     output.Add("Firmware version=" + rawFile.GetInstrumentData().HardwareVersion);
                 }
             }
-
+            
             // MS Data
             if (rawFile.SelectMsData())
             {
