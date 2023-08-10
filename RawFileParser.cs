@@ -148,10 +148,10 @@ namespace ThermoRawFileParser
                     lastScanNumber = rawFile.RunHeaderEx.LastSpectrum;
 
                     // Check for empty file
-                    if (lastScanNumber < 1)
-                    {
-                        throw new RawFileParserException("Empty RAW file, no output will be produced");
-                    }
+                    //if (lastScanNumber < 1)
+                    //{
+                        //throw new RawFileParserException("Empty RAW file, no output will be produced");
+                    //}
                 }
 
                 if (parseInput.MetadataFormat != MetadataFormat.NONE)
