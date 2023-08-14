@@ -138,6 +138,7 @@ namespace ThermoRawFileParser
                 // selected instrument to the MS instrument, first instance of it
                 var firstScanNumber = -1;
                 var lastScanNumber = -1;
+
                 if (rawFile.GetInstrumentCountOfType(Device.MS) != 0)
                 {
                     rawFile.SelectInstrument(Device.MS, 1);

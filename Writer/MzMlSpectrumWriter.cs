@@ -240,7 +240,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteStartElement("referenceableParamGroup");
                 _writer.WriteAttributeString("id", "commonInstrumentParams");
 
-                var instrumentModel = OntologyMapping.getInstrumentModel(instrumentData.Name);
+                var instrumentModel = OntologyMapping.getInstrumentModel(instrumentData.Model);
                 SerializeCvParam(instrumentModel);
 
                 SerializeCvParam(new CVParamType
