@@ -61,9 +61,7 @@ namespace ThermoRawFileParser.Writer
                     // Keep track of the number of MS<MS level> spectra
                     if (msTypes.ContainsKey(scanFilter.MSOrder.ToString()))
                     {
-                        var value = msTypes[scanFilter.MSOrder.ToString()];
-                        value += 1;
-                        msTypes[scanFilter.MSOrder.ToString()] = value;
+                        msTypes[scanFilter.MSOrder.ToString()] += 1;
                     }
                     else
                         msTypes.Add(scanFilter.MSOrder.ToString(), 1);
@@ -95,17 +93,21 @@ namespace ThermoRawFileParser.Writer
                             }
 
                             // trailer extra data list
-                            var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
-                            for (var i = 0; i < trailerData.Length; i++)
+                            try
                             {
-                                if (trailerData.Labels[i] == "Charge State:")
-                                {
-                                    if (int.Parse(trailerData.Values[i]) > maxCharge)
-                                        maxCharge = int.Parse(trailerData.Values[i]);
+                                var trailerData = new ScanTrailer(rawFile.GetTrailerExtraInformation(scanNumber));
+                                int? charge = trailerData.AsPositiveInt("Charge State:");
 
-                                    if (int.Parse(trailerData.Values[i]) < minCharge)
-                                        minCharge = int.Parse(trailerData.Values[i]);
-                                }
+                                if (charge.HasValue && charge.Value > maxCharge)
+                                    maxCharge = charge.Value;
+
+                                if (charge.HasValue && charge.Value < minCharge)
+                                    minCharge = charge.Value;
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.WarnFormat("Cannot load trailer infromation for scan {0} due to following exception\n{1}", scanNumber, ex.Message);
+                                _parseInput.NewWarn();
                             }
                         }
                     }

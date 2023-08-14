@@ -16,7 +16,6 @@ using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
-using ThermoRawFileParser.Util;
 using ThermoRawFileParser.Writer.MzML;
 using zlib;
 
@@ -251,7 +250,7 @@ namespace ThermoRawFileParser.Writer
                     value = instrumentData.SerialNumber
                 });
                 _writer.WriteEndElement(); // referenceableParamGroup                
-                _writer.WriteEndElement(); // referenceableParamGroupList                
+                _writer.WriteEndElement(); // referenceableParamGroupList
 
                 // SoftwareList      
                 _writer.WriteStartElement("softwareList");
@@ -269,6 +268,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteEndElement(); // software                
                 _writer.WriteEndElement(); // softwareList                                                                                
 
+                Log.Debug("Populating instrument configurations");
                 PopulateInstrumentConfigurationList(firstScanNumber, lastScanNumber, instrumentModel);
 
                 // DataProcessingList
@@ -309,8 +309,7 @@ namespace ThermoRawFileParser.Writer
 
                 // Run
                 _writer.WriteStartElement("run");
-                //TODO: validate id against NCName
-                _writer.WriteAttributeString("id", ParseInput.RawFileNameWithoutExtension);
+                _writer.WriteAttributeString("id", GetNCName(ParseInput.RawFileNameWithoutExtension));
                 _writer.WriteAttributeString("defaultInstrumentConfigurationRef", "IC1");
                 _writer.WriteAttributeString("startTimeStamp",
                     XmlConvert.ToString(_rawFile.CreationDate, XmlDateTimeSerializationMode.Utc));
@@ -377,8 +376,6 @@ namespace ThermoRawFileParser.Writer
                         }
 
                         Serialize(serializer, spectrum);
-
-                        Log.Debug("Spectrum added to list of spectra -- ID " + spectrum.id);
 
                         index++;
                     }
@@ -628,6 +625,18 @@ namespace ThermoRawFileParser.Writer
             }
         }
 
+        private string GetNCName(string filename)
+        {
+            string result = Regex.Replace(filename, @"[^\d\w\.\-]+", "_");
+
+            if (Regex.IsMatch(result, @"^\d"))
+            {
+                result = $"_{result}";
+            }
+
+            return result;
+        }
+
         private string GetTotalScanNumber()
         {
             // Save the last selected instrument
@@ -674,11 +683,8 @@ namespace ThermoRawFileParser.Writer
         private void PopulateInstrumentConfigurationList(int firstScanNumber, int lastScanNumber,
             CVParamType instrumentModel)
         {
-            // Go over the first scans until an MS2 scan is encountered
-            // to collect all mass analyzer and ionization types
-            var encounteredMs2 = false;
-            var scanNumber = firstScanNumber;
-            do
+            // Go over scan filters to collect all mass analyzer and ionization types
+            for (int scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
             {
                 // Get the scan filter for this scan number
                 try
@@ -715,10 +721,6 @@ namespace ThermoRawFileParser.Writer
                         _massAnalyzers.Add(scanFilter.MassAnalyzer, "IC" + (_massAnalyzers.Count + 1));
                     }
 
-                    if (scanFilter.MSOrder == MSOrderType.Ms2)
-                    {
-                        encounteredMs2 = true;
-                    }
                 }
                 catch (Exception)
                 {
@@ -734,8 +736,7 @@ namespace ThermoRawFileParser.Writer
                     }
                 }
 
-                scanNumber++;
-            } while (!encounteredMs2 && scanNumber <= lastScanNumber);
+            }
 
             // Add a default analyzer if none were found
             if (_massAnalyzers.Count == 0)
