@@ -46,72 +46,73 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         public void WriteMetadata(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
-            // Get the start and end time from the RAW file
-            var startTime = rawFile.RunHeaderEx.StartTime;
-            var endTime = rawFile.RunHeaderEx.EndTime;
-
-            for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
+            if (rawFile.SelectMsData())
             {
-                var time = rawFile.RetentionTimeFromScanNumber(scanNumber);
-
-                // Get the scan filter for this scan number
-                var scanFilter = rawFile.GetFilterForScanNumber(scanNumber);
-
-                // Get the scan event for this scan number
-                var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
-
-                // Keep track of the number of MS<MS level> spectra
-                if (msTypes.ContainsKey(scanFilter.MSOrder.ToString()))
+                for (var scanNumber = firstScanNumber; scanNumber <= lastScanNumber; scanNumber++)
                 {
-                    var value = msTypes[scanFilter.MSOrder.ToString()];
-                    value += 1;
-                    msTypes[scanFilter.MSOrder.ToString()] = value;
-                }
-                else
-                    msTypes.Add(scanFilter.MSOrder.ToString(), 1);
+                    var time = rawFile.RetentionTimeFromScanNumber(scanNumber);
 
-                if (time > maxTime)
-                    maxTime = time;
-                if (time < minTime)
-                    minTime = time;
+                    // Get the scan filter for this scan number
+                    var scanFilter = rawFile.GetFilterForScanNumber(scanNumber);
 
-                if (scanFilter.MSOrder == MSOrderType.Ms2)
-                {
-                    fragmentationTypes.Add(ParseActivationType(scanFilter.GetActivation(0)));
+                    // Get the scan event for this scan number
+                    var scanEvent = rawFile.GetScanEventForScanNumber(scanNumber);
 
-                    if (scanEvent.ScanData == ScanDataType.Centroid || (scanEvent.ScanData == ScanDataType.Profile))
+                    // Keep track of the number of MS<MS level> spectra
+                    if (msTypes.ContainsKey(scanFilter.MSOrder.ToString()))
                     {
-                        try
-                        {
-                            var reaction = scanEvent.GetReaction(0);
-                            var precursorMass = reaction.PrecursorMass;
-                            if (precursorMass > maxMz)
-                                maxMz = precursorMass;
-                            if (precursorMass < minMz)
-                                minMz = precursorMass;
-                        }
-                        catch (ArgumentOutOfRangeException)
-                        {
-                            Log.Warn("No reaction found for scan " + scanNumber);
-                            _parseInput.NewWarn();
-                        }
+                        var value = msTypes[scanFilter.MSOrder.ToString()];
+                        value += 1;
+                        msTypes[scanFilter.MSOrder.ToString()] = value;
+                    }
+                    else
+                        msTypes.Add(scanFilter.MSOrder.ToString(), 1);
 
-                        // trailer extra data list
-                        var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
-                        for (var i = 0; i < trailerData.Length; i++)
+                    if (time > maxTime)
+                        maxTime = time;
+                    if (time < minTime)
+                        minTime = time;
+
+                    if (scanFilter.MSOrder == MSOrderType.Ms2)
+                    {
+                        fragmentationTypes.Add(ParseActivationType(scanFilter.GetActivation(0)));
+
+                        if (scanEvent.ScanData == ScanDataType.Centroid || (scanEvent.ScanData == ScanDataType.Profile))
                         {
-                            if (trailerData.Labels[i] == "Charge State:")
+                            try
                             {
-                                if (int.Parse(trailerData.Values[i]) > maxCharge)
-                                    maxCharge = int.Parse(trailerData.Values[i]);
+                                var reaction = scanEvent.GetReaction(0);
+                                var precursorMass = reaction.PrecursorMass;
+                                if (precursorMass > maxMz)
+                                    maxMz = precursorMass;
+                                if (precursorMass < minMz)
+                                    minMz = precursorMass;
+                            }
+                            catch (ArgumentOutOfRangeException)
+                            {
+                                Log.Warn("No reaction found for scan " + scanNumber);
+                                _parseInput.NewWarn();
+                            }
 
-                                if (int.Parse(trailerData.Values[i]) < minCharge)
-                                    minCharge = int.Parse(trailerData.Values[i]);
+                            // trailer extra data list
+                            var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
+                            for (var i = 0; i < trailerData.Length; i++)
+                            {
+                                if (trailerData.Labels[i] == "Charge State:")
+                                {
+                                    if (int.Parse(trailerData.Values[i]) > maxCharge)
+                                        maxCharge = int.Parse(trailerData.Values[i]);
+
+                                    if (int.Parse(trailerData.Values[i]) < minCharge)
+                                        minCharge = int.Parse(trailerData.Values[i]);
+                                }
                             }
                         }
                     }
                 }
             }
+
+            
 
             if (minCharge == 100000000000000)
             {
@@ -145,10 +146,6 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         private void WriteJsonMetada(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
-            // Get the start and end time from the RAW file
-            var startTime = rawFile.RunHeaderEx.StartTime;
-            var endTime = rawFile.RunHeaderEx.EndTime;
-
             var metadata = new Metadata();
 
             // File Properties
@@ -164,65 +161,74 @@ namespace ThermoRawFileParser.Writer
             }
 
             // Instrument Properties
-            metadata.addInstrumentProperty(new CVTerm("MS:1000494", "MS", "Thermo Scientific instrument model",
-                rawFile.GetInstrumentData().Model));
-            metadata.addInstrumentProperty(new CVTerm("MS:1000496", "MS", "instrument attribute",
-                rawFile.GetInstrumentData().Name));
-            metadata.addInstrumentProperty(new CVTerm("MS:1000529", "MS", "instrument serial number",
-                rawFile.GetInstrumentData().SerialNumber));
-            metadata.addInstrumentProperty(new CVTerm("NCIT:C111093", "NCIT", "Software Version",
-                rawFile.GetInstrumentData().SoftwareVersion));
-            if (!rawFile.GetInstrumentData().HardwareVersion.IsNullOrEmpty())
+            if (rawFile.SelectMsData())
             {
-                metadata.addInstrumentProperty(new CVTerm("AFR:0001259", "AFO", "firmware version",
-                    rawFile.GetInstrumentData().HardwareVersion));
+                metadata.addInstrumentProperty(new CVTerm("MS:1000494", "MS", "Thermo Scientific instrument model",
+                rawFile.GetInstrumentData().Model));
+                metadata.addInstrumentProperty(new CVTerm("MS:1000496", "MS", "instrument attribute",
+                    rawFile.GetInstrumentData().Name));
+                metadata.addInstrumentProperty(new CVTerm("MS:1000529", "MS", "instrument serial number",
+                    rawFile.GetInstrumentData().SerialNumber));
+                metadata.addInstrumentProperty(new CVTerm("NCIT:C111093", "NCIT", "Software Version",
+                    rawFile.GetInstrumentData().SoftwareVersion));
+                if (!rawFile.GetInstrumentData().HardwareVersion.IsNullOrEmpty())
+                {
+                    metadata.addInstrumentProperty(new CVTerm("AFR:0001259", "AFO", "firmware version",
+                        rawFile.GetInstrumentData().HardwareVersion));
+                }
             }
 
             // MS Data
-            foreach (KeyValuePair<string, int> entry in msTypes)
+            if (rawFile.SelectMsData())
             {
-                if (entry.Key.Equals(MSOrderType.Ms.ToString()))
-                    metadata.addMSData(new CVTerm("PRIDE:0000481", "PRIDE", "Number of MS1 spectra",
-                        entry.Value.ToString()));
-                if (entry.Key.Equals(MSOrderType.Ms2.ToString()))
-                    metadata.addMSData(new CVTerm("PRIDE:0000482", "PRIDE", "Number of MS2 spectra",
-                        entry.Value.ToString()));
-                if (entry.Key.Equals(MSOrderType.Ms3.ToString()))
-                    metadata.addMSData(new CVTerm("PRIDE:0000483", "PRIDE", "Number of MS3 spectra",
-                        entry.Value.ToString()));
+                foreach (KeyValuePair<string, int> entry in msTypes)
+                {
+                    if (entry.Key.Equals(MSOrderType.Ms.ToString()))
+                        metadata.addMSData(new CVTerm("PRIDE:0000481", "PRIDE", "Number of MS1 spectra",
+                            entry.Value.ToString()));
+                    if (entry.Key.Equals(MSOrderType.Ms2.ToString()))
+                        metadata.addMSData(new CVTerm("PRIDE:0000482", "PRIDE", "Number of MS2 spectra",
+                            entry.Value.ToString()));
+                    if (entry.Key.Equals(MSOrderType.Ms3.ToString()))
+                        metadata.addMSData(new CVTerm("PRIDE:0000483", "PRIDE", "Number of MS3 spectra",
+                            entry.Value.ToString()));
+                }
+
+                metadata.addMSData(new CVTerm("PRIDE:0000472", "PRIDE", "MS min charge",
+                    minCharge.ToString(CultureInfo.InvariantCulture)));
+                metadata.addMSData(new CVTerm("PRIDE:0000473", "PRIDE", "MS max charge",
+                    maxCharge.ToString(CultureInfo.InvariantCulture)));
+
+                metadata.addMSData(new CVTerm("PRIDE:0000474", "PRIDE", "MS min RT",
+                    minTime.ToString(CultureInfo.InvariantCulture)));
+                metadata.addMSData(new CVTerm("PRIDE:0000475", "PRIDE", "MS max RT",
+                    maxTime.ToString(CultureInfo.InvariantCulture)));
+
+                metadata.addMSData(new CVTerm("PRIDE:0000476", "PRIDE", "MS min MZ",
+                    minMz.ToString(CultureInfo.InvariantCulture)));
+                metadata.addMSData(new CVTerm("PRIDE:0000477", "PRIDE", "MS max MZ",
+                    maxMz.ToString(CultureInfo.InvariantCulture)));
+
+                // Scan Settings
+                // Get the start and end time from the RAW file
+                var startTime = rawFile.RunHeaderEx.StartTime;
+                var endTime = rawFile.RunHeaderEx.EndTime;
+                metadata.addScanSetting(new CVTerm("MS:1000016", "MS", "scan start time",
+                    startTime.ToString(CultureInfo.InvariantCulture)));
+                metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution",
+                    rawFile.RunHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)));
+                metadata.addScanSetting(new CVTerm("UO:0000002", "MS", "mass unit",
+                    rawFile.GetInstrumentData().Units.ToString()));
+                metadata.addScanSetting(new CVTerm("PRIDE:0000478", "PRIDE", "Number of scans",
+                    rawFile.RunHeaderEx.SpectraCount.ToString()));
+                metadata.addScanSetting(new CVTerm("PRIDE:0000479", "PRIDE", "MS scan range",
+                    firstScanNumber + ":" + lastScanNumber));
+                metadata.addScanSetting(new CVTerm("PRIDE:0000484", "PRIDE", "Retention time range",
+                    startTime + ":" + endTime));
+                metadata.addScanSetting(new CVTerm("PRIDE:0000485", "PRIDE", "Mz range",
+                    rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass));
+                metadata.addScanSetting(fragmentationTypes);
             }
-
-            metadata.addMSData(new CVTerm("PRIDE:0000472", "PRIDE", "MS min charge",
-                minCharge.ToString(CultureInfo.InvariantCulture)));
-            metadata.addMSData(new CVTerm("PRIDE:0000473", "PRIDE", "MS max charge",
-                maxCharge.ToString(CultureInfo.InvariantCulture)));
-
-            metadata.addMSData(new CVTerm("PRIDE:0000474", "PRIDE", "MS min RT",
-                minTime.ToString(CultureInfo.InvariantCulture)));
-            metadata.addMSData(new CVTerm("PRIDE:0000475", "PRIDE", "MS max RT",
-                maxTime.ToString(CultureInfo.InvariantCulture)));
-
-            metadata.addMSData(new CVTerm("PRIDE:0000476", "PRIDE", "MS min MZ",
-                minMz.ToString(CultureInfo.InvariantCulture)));
-            metadata.addMSData(new CVTerm("PRIDE:0000477", "PRIDE", "MS max MZ",
-                maxMz.ToString(CultureInfo.InvariantCulture)));
-
-            // Scan Settings
-            metadata.addScanSetting(new CVTerm("MS:1000016", "MS", "scan start time",
-                startTime.ToString(CultureInfo.InvariantCulture)));
-            metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution",
-                rawFile.RunHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)));
-            metadata.addScanSetting(new CVTerm("UO:0000002", "MS", "mass unit",
-                rawFile.GetInstrumentData().Units.ToString()));
-            metadata.addScanSetting(new CVTerm("PRIDE:0000478", "PRIDE", "Number of scans",
-                rawFile.RunHeaderEx.SpectraCount.ToString()));
-            metadata.addScanSetting(new CVTerm("PRIDE:0000479", "PRIDE", "MS scan range",
-                firstScanNumber + ":" + lastScanNumber));
-            metadata.addScanSetting(new CVTerm("PRIDE:0000484", "PRIDE", "Retention time range",
-                startTime + ":" + endTime));
-            metadata.addScanSetting(new CVTerm("PRIDE:0000485", "PRIDE", "Mz range",
-                rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass));
-            metadata.addScanSetting(fragmentationTypes);
 
             // Sample Data
             if (!rawFile.SampleInformation.SampleName.IsNullOrEmpty())
@@ -296,10 +302,6 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         private void WriteTextMetadata(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
-            // Get the start and end time from the RAW file
-            var startTime = rawFile.RunHeaderEx.StartTime;
-            var endTime = rawFile.RunHeaderEx.EndTime;
-
             // File Properties
             var output = new List<string>
             {
@@ -314,57 +316,66 @@ namespace ThermoRawFileParser.Writer
             }
 
             // Instrument Properties
-            output.Add("#InstrumentProperties");
-            output.AddRange(new List<string>
+            if (rawFile.SelectMsData())
+            {
+                output.Add("#InstrumentProperties");
+                output.AddRange(new List<string>
                 {
                     $"Instrument model=[MS, MS:1000494, Thermo Scientific instrument model, {rawFile.GetInstrumentData().Model}]",
                     "Instrument name=" + rawFile.GetInstrumentData().Name,
                     $"Instrument serial number=[MS, MS:1000529, instrument serial number, {rawFile.GetInstrumentData().SerialNumber}]",
                     $"Software version=[NCIT, NCIT:C111093, Software Version, {rawFile.GetInstrumentData().SoftwareVersion}]",
                 }
-            );
-            if (!rawFile.GetInstrumentData().HardwareVersion.IsNullOrEmpty())
-            {
-                output.Add("Firmware version=" + rawFile.GetInstrumentData().HardwareVersion);
+                );
+                if (!rawFile.GetInstrumentData().HardwareVersion.IsNullOrEmpty())
+                {
+                    output.Add("Firmware version=" + rawFile.GetInstrumentData().HardwareVersion);
+                }
             }
 
             // MS Data
-            output.Add("#MsData");
-            foreach (KeyValuePair<string, int> entry in msTypes)
+            if (rawFile.SelectMsData())
             {
-                if (entry.Key.Equals(MSOrderType.Ms.ToString()))
-                    output.Add("Number of MS1 spectra=" + entry.Value);
-                if (entry.Key.Equals(MSOrderType.Ms2.ToString()))
-                    output.Add("Number of MS2 spectra=" + entry.Value);
-                if (entry.Key.Equals(MSOrderType.Ms3.ToString()))
-                    output.Add("Number of MS3 spectra=" + entry.Value);
+                output.Add("#MsData");
+                foreach (KeyValuePair<string, int> entry in msTypes)
+                {
+                    if (entry.Key.Equals(MSOrderType.Ms.ToString()))
+                        output.Add("Number of MS1 spectra=" + entry.Value);
+                    if (entry.Key.Equals(MSOrderType.Ms2.ToString()))
+                        output.Add("Number of MS2 spectra=" + entry.Value);
+                    if (entry.Key.Equals(MSOrderType.Ms3.ToString()))
+                        output.Add("Number of MS3 spectra=" + entry.Value);
+                }
+
+                output.AddRange(new List<string>
+                    {
+                        "MS min charge=" + minCharge.ToString(CultureInfo.InvariantCulture),
+                        "MS max charge=" + maxCharge.ToString(CultureInfo.InvariantCulture),
+                        $"MS min RT={minTime.ToString(CultureInfo.InvariantCulture)}",
+                        $"MS max RT={maxTime.ToString(CultureInfo.InvariantCulture)}",
+                        $"MS min MZ={minMz.ToString(CultureInfo.InvariantCulture)}",
+                        $"MS max MZ={maxMz.ToString(CultureInfo.InvariantCulture)}"
+                    }
+                );
+
+                // Scan Settings
+                // Get the start and end time from the RAW file
+                var startTime = rawFile.RunHeaderEx.StartTime;
+                var endTime = rawFile.RunHeaderEx.EndTime;
+                output.AddRange(new List<string>
+                    {
+                        "#ScanSettings",
+                        $"Scan start time={startTime.ToString(CultureInfo.InvariantCulture)}",
+                        $"Mass resolution=[MS, MS:1000011, mass resolution, {rawFile.RunHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)}]",
+                        "Units=" + rawFile.GetInstrumentData().Units,
+                        $"Number of scans={rawFile.RunHeaderEx.SpectraCount}",
+                        $"Scan range={firstScanNumber};{lastScanNumber}",
+                        $"Time range={startTime.ToString(CultureInfo.InvariantCulture)};{endTime.ToString(CultureInfo.InvariantCulture)}",
+                        $"Mass range={rawFile.RunHeaderEx.LowMass.ToString(CultureInfo.InvariantCulture)};{rawFile.RunHeaderEx.HighMass.ToString(CultureInfo.InvariantCulture)}",
+                        "Fragmentation types=" + String.Join(", ", fragmentationTypes.Select(f => f.value))
+                    }
+                );
             }
-
-            output.AddRange(new List<string>
-                {
-                    "MS min charge=" + minCharge.ToString(CultureInfo.InvariantCulture),
-                    "MS max charge=" + maxCharge.ToString(CultureInfo.InvariantCulture),
-                    $"MS min RT={minTime.ToString(CultureInfo.InvariantCulture)}",
-                    $"MS max RT={maxTime.ToString(CultureInfo.InvariantCulture)}",
-                    $"MS min MZ={minMz.ToString(CultureInfo.InvariantCulture)}",
-                    $"MS max MZ={maxMz.ToString(CultureInfo.InvariantCulture)}"
-                }
-            );
-
-            // Scan Settings
-            output.AddRange(new List<string>
-                {
-                    "#ScanSettings",
-                    $"Scan start time={startTime.ToString(CultureInfo.InvariantCulture)}",
-                    $"Mass resolution=[MS, MS:1000011, mass resolution, {rawFile.RunHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)}]",
-                    "Units=" + rawFile.GetInstrumentData().Units,
-                    $"Number of scans={rawFile.RunHeaderEx.SpectraCount}",
-                    $"Scan range={firstScanNumber};{lastScanNumber}",
-                    $"Time range={startTime.ToString(CultureInfo.InvariantCulture)};{endTime.ToString(CultureInfo.InvariantCulture)}",
-                    $"Mass range={rawFile.RunHeaderEx.LowMass.ToString(CultureInfo.InvariantCulture)};{rawFile.RunHeaderEx.HighMass.ToString(CultureInfo.InvariantCulture)}",
-                    "Fragmentation types=" + String.Join(", ", fragmentationTypes.Select(f => f.value))
-                }
-            );
 
             // Sample Data
             output.Add("#SampleData");
