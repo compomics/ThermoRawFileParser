@@ -213,12 +213,13 @@ namespace ThermoRawFileParser.Writer
             
             if (rawFile.SelectMsData())
             {
-                var runHeader = rawFile.RunHeader;
                 var runHeaderEx = rawFile.RunHeaderEx;
                 var startTime = runHeaderEx.StartTime;
                 var endTime = runHeaderEx.EndTime;
                 metadata.addScanSetting(new CVTerm("MS:1000016", "MS", "scan start time",
                     startTime.ToString(CultureInfo.InvariantCulture)));
+                metadata.addScanSetting(new CVTerm("", "", "expected runtime",
+                    runHeaderEx.ExpectedRunTime.ToString(CultureInfo.InvariantCulture)));
                 metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution",
                     runHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)));
                 metadata.addScanSetting(new CVTerm("UO:0000002", "MS", "mass unit",
@@ -388,8 +389,8 @@ namespace ThermoRawFileParser.Writer
 
             output.AddRange(new List<string>
                 {
-                    "MS min charge=" + minCharge.ToString(CultureInfo.InvariantCulture),
-                    "MS max charge=" + maxCharge.ToString(CultureInfo.InvariantCulture),
+                    $"MS min charge={minCharge.ToString(CultureInfo.InvariantCulture)}",
+                    $"MS max charge={maxCharge.ToString(CultureInfo.InvariantCulture)}",
                     $"MS min RT={minTime.ToString(CultureInfo.InvariantCulture)}",
                     $"MS max RT={maxTime.ToString(CultureInfo.InvariantCulture)}",
                     $"MS min MZ={minMz.ToString(CultureInfo.InvariantCulture)}",
@@ -407,6 +408,7 @@ namespace ThermoRawFileParser.Writer
                     {
                         "#ScanSettings",
                         $"Scan start time={startTime.ToString(CultureInfo.InvariantCulture)}",
+                        $"Expected runtime={rawFile.RunHeaderEx.ExpectedRunTime.ToString(CultureInfo.InvariantCulture)}",
                         $"Mass resolution=[MS, MS:1000011, mass resolution, {rawFile.RunHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)}]",
                         "Units=" + rawFile.GetInstrumentData().Units,
                         $"Number of scans={rawFile.RunHeaderEx.SpectraCount}",
