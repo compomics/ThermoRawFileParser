@@ -176,11 +176,11 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="ThermoFisher.CommonCore.Data, Version=5.0.0.88, Culture=neutral, PublicKeyToken=1aef06afb5abd953, processorArchitecture=MSIL">
-      <HintPath>packages\ThermoFisher.CommonCore.Data.5.0.0.88\lib\ThermoFisher.CommonCore.Data.dll</HintPath>
+    <Reference Include="ThermoFisher.CommonCore.Data, Version=5.0.0.93, Culture=neutral, PublicKeyToken=1aef06afb5abd953, processorArchitecture=MSIL">
+      <HintPath>packages\ThermoFisher.CommonCore.Data.5.0.0.93\lib\netstandard2.0\ThermoFisher.CommonCore.Data.dll</HintPath>
     </Reference>
-    <Reference Include="ThermoFisher.CommonCore.RawFileReader, Version=5.0.0.88, Culture=neutral, PublicKeyToken=1aef06afb5abd953, processorArchitecture=MSIL">
-      <HintPath>packages\ThermoFisher.CommonCore.RawFileReader.5.0.0.88\lib\ThermoFisher.CommonCore.RawFileReader.dll</HintPath>
+    <Reference Include="ThermoFisher.CommonCore.RawFileReader, Version=5.0.0.93, Culture=neutral, PublicKeyToken=1aef06afb5abd953, processorArchitecture=MSIL">
+      <HintPath>packages\ThermoFisher.CommonCore.RawFileReader.5.0.0.93\lib\netstandard2.0\ThermoFisher.CommonCore.RawFileReader.dll</HintPath>
     </Reference>
     <Reference Include="zlib.net, Version=1.0.3.0, Culture=neutral, PublicKeyToken=47d7877cb3620160">
       <HintPath>packages\zlib.net.1.0.4.0\lib\zlib.net.dll</HintPath>

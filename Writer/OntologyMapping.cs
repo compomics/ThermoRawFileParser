@@ -69,7 +69,7 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
-                    MassAnalyzerType.MassAnalyzerMRTOF, new CVParamType
+                    MassAnalyzerType.MassAnalyzerASTMS, new CVParamType
                     {
                         accession = "MS:1003379",
                         name = "asymmetric track lossless time-of-flight analyzer",
