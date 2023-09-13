@@ -196,7 +196,7 @@ namespace ThermoRawFileParser.Writer
                             value = ""
                         });
                     }
-                    //TODO FID chromatogram as ion current
+                    //TODO non-standard chromatograms pressure, flow, FID, etc
                 }
 
                 _writer.WriteEndElement(); // fileContent                
@@ -283,7 +283,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     PopulateInstrumentConfigurationList(firstScanNumber, lastScanNumber, instrumentModel);
                 }
-                else //TODO Fake instrument configuration
+                else 
                 {
                     _writer.WriteStartElement("instrumentConfigurationList");
                     _writer.WriteAttributeString("count", "1");
@@ -952,24 +952,9 @@ namespace ThermoRawFileParser.Writer
                     for (var i = 0; i < trace.Length; i++)
                     {
                         // CV Data for Total Absorbance Chromatogram
-                        var chroType = new CVParamType
-                        {
-                            accession = "MS:1000812",
-                            name = "absorption chromatogram",
-                            cvRef = "MS",
-                            value = ""
-                        };
-
-                        var intensType = new CVParamType
-                        {
-                            accession = "MS:1000515",
-                            name = "intensity array",
-                            cvRef = "MS",
-                            unitName = "absorbance unit",
-                            value = instData.Units.ToString(),
-                            unitCvRef = "UO",
-                            unitAccession = "UO:0000269"
-                        };
+                        var chroType = OntologyMapping.chromatogramTypes["absoption"];
+                        var intensType = OntologyMapping.dataArrayTypes["absoption"];
+                        intensType.value = instData.Units.ToString();
 
                         var chromatogram = TraceToChromatogram(trace[i],
                             String.Format("PDA#{0}_TotalAbsorbance_{1}", nrI, i),
@@ -998,25 +983,10 @@ namespace ThermoRawFileParser.Writer
                         for (var i = 0; i < trace.Length; i++)
                         {
                             // CV Data for Absorbance Chromatogram
-                            var chroType = new CVParamType
-                            {
-                                accession = "MS:1000812",
-                                name = "absorption chromatogram",
-                                cvRef = "MS",
-                                value = ""
-                            };
-
-                            var intensType = new CVParamType
-                            {
-                                accession = "MS:1000515",
-                                name = "intensity array",
-                                cvRef = "MS",
-                                unitName = "absorbance unit",
-                                value = instData.Units.ToString(),
-                                unitCvRef = "UO",
-                                unitAccession = "UO:0000269"
-                            };
-
+                            var chroType = OntologyMapping.chromatogramTypes["absorbtion"];
+                            var intensType = OntologyMapping.dataArrayTypes["absoption"];
+                            intensType.value = instData.Units.ToString();
+                            
                             var chromatogram = TraceToChromatogram(trace[i],
                                 String.Format("UV#{0}_{1}_{2}", nrI, channelName, i),
                                 chroType, intensType);
@@ -1026,48 +996,53 @@ namespace ThermoRawFileParser.Writer
                     }
                 }
 
-                for (int nrI = 1; nrI < _rawFile.GetInstrumentCountOfType(Device.Analog) + 1; nrI++)
+                //Chromatograms from (MS)Analog devices: Pressure, FID, etc
+                foreach (var deviceType in new Device[2] { Device.Analog, Device.MSAnalog })
                 {
-                    _rawFile.SelectInstrument(Device.Analog, nrI);
-
-                    var instData = _rawFile.GetInstrumentData();
-
-                    for (int channel = 0; channel < instData.ChannelLabels.Length; channel++)
+                    var channelNameIndex = 0;
+                    for (int nrI = 1; nrI < _rawFile.GetInstrumentCountOfType(deviceType) + 1; nrI++)
                     {
-                        var channelName = instData.ChannelLabels[channel];
+                        _rawFile.SelectInstrument(deviceType, nrI);
 
-                        if (channelName.ToLower().Contains("pressure"))
+                        var instData = _rawFile.GetInstrumentData();
+
+                        for (int channel = 0; channel < instData.ChannelLabels.Length; channel++)
                         {
+                            var channelName = instData.ChannelLabels[channel];
+                            if (channelName.IsNullOrEmpty())
+                            {
+                                channelName = $"Channel{channelNameIndex++}";
+                            }
+
                             settings = new ChromatogramTraceSettings(TraceType.StartAnalogChromatogramTraces + channel + 1);
-
-                            data = _rawFile.GetChromatogramData(new IChromatogramSettings[] {settings}, -1, -1);
-
+                            data = _rawFile.GetChromatogramData(new IChromatogramSettings[] { settings }, -1, -1);
                             trace = ChromatogramSignal.FromChromatogramData(data);
 
                             for (var i = 0; i < trace.Length; i++)
                             {
-                                // CV Data for Absorbance Chromatogram
-                                var chroType = new CVParamType
+                                //Default data type
+                                var chroType = OntologyMapping.chromatogramTypes["unknown"];
+                                var intensType = OntologyMapping.dataArrayTypes["unknown"];
+                                
+                                if (channelName.ToLower().Contains("pressure"))
                                 {
-                                    accession = "MS:1003019",
-                                    name = "pressure chromatogram",
-                                    cvRef = "MS",
-                                    value = ""
-                                };
-
-                                var intensType = new CVParamType
+                                    chroType = OntologyMapping.chromatogramTypes["pressure"];
+                                    intensType = OntologyMapping.dataArrayTypes["pressure"];
+                                }
+                                else if (channelName.ToLower().Contains("flow"))
                                 {
-                                    accession = "MS:1000821",
-                                    name = "pressure array",
-                                    cvRef = "MS",
-                                    unitName = "pressure unit",
-                                    value = "",
-                                    unitCvRef = "UO",
-                                    unitAccession = "UO:0000109"
-                                };
+                                    chroType = OntologyMapping.chromatogramTypes["flow"];
+                                    intensType = OntologyMapping.dataArrayTypes["flow"];
+                                }
+                                else if (channelName.ToLower().Contains("fid"))
+                                {
+                                    //FID is ion current type
+                                    chroType = OntologyMapping.chromatogramTypes["current"];
+                                    intensType = OntologyMapping.dataArrayTypes["intensity"];
+                                }
 
                                 var chromatogram = TraceToChromatogram(trace[i],
-                                    String.Format("AD#{0}_{1}_{2}", nrI, channelName, i),
+                                    String.Format("{0}#{1}_{2}_{3}", deviceType.ToString(), nrI, channelName.Replace(" ", "_"), i),
                                     chroType, intensType);
 
                                 chromatograms.Add(chromatogram);
@@ -1075,80 +1050,7 @@ namespace ThermoRawFileParser.Writer
                         }
                     }
                 }
-
-                var channelNameIndex = 0;
-
-                for (int nrI = 1; nrI < _rawFile.GetInstrumentCountOfType(Device.MSAnalog) + 1; nrI++)
-                {
-                    _rawFile.SelectInstrument(Device.MSAnalog, nrI);
-
-                    var instData = _rawFile.GetInstrumentData();
-
-                    for (int channel = 0; channel < instData.ChannelLabels.Length; channel++)
-                    {
-                        var channelName = instData.ChannelLabels[channel];
-
-                        if (channelName.IsNullOrEmpty())
-                        {
-                            channelName = $"Channel{channelNameIndex++}";
-                        }
-                                                
-                        settings = new ChromatogramTraceSettings(TraceType.StartAnalogChromatogramTraces + channel + 1);
-                        data = _rawFile.GetChromatogramData(new IChromatogramSettings[] { settings }, -1, -1);
-                        trace = ChromatogramSignal.FromChromatogramData(data);
-
-                        for (var i = 0; i < trace.Length; i++)
-                        {
-                            // CV Data for Chromatogram
-                            var chroType = new CVParamType
-                            {
-                                accession = "MS:1000626",
-                                name = "chromatogram type",
-                                cvRef = "MS",
-                                value = $"{channelName} chromatogram"
-                            };
-
-                            var intensType = new CVParamType
-                            {
-                                accession = "MS:1000786",
-                                name = "non-standard data array",
-                                cvRef = "MS",
-                                unitName = "unit",
-                                value = instData.Units.ToString(),
-                                unitCvRef = "UO",
-                                unitAccession = "UO:0000000"
-                            };
-                            
-                            if (instData.Units.ToString().ToLower().Contains("absorbance"))
-                            {
-                                chroType = new CVParamType
-                                {
-                                    accession = "MS:1000812",
-                                    name = "absorption chromatogram",
-                                    cvRef = "MS",
-                                    value = $"{channelName} chromatogram"
-                                };
-
-                                intensType = new CVParamType
-                                {
-                                    accession = "MS:1000515",
-                                    name = "intensity array",
-                                    cvRef = "MS",
-                                    unitName = "absorbance unit",
-                                    value = instData.Units.ToString(),
-                                    unitCvRef = "UO",
-                                    unitAccession = "UO:0000269"
-                                };
-                            }
-
-                            var chromatogram = TraceToChromatogram(trace[i],
-                                String.Format("MSAD#{0}_{1}_{2}", nrI, channelName.Replace(" ", "_"), i),
-                                chroType, intensType);
-
-                            chromatograms.Add(chromatogram);
-                        }
-                    }
-                }
+                
             }
 
             return chromatograms;
@@ -1192,16 +1094,7 @@ namespace ThermoRawFileParser.Writer
                         .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
                 var timesBinaryDataCvParams = new List<CVParamType>
                 {
-                    new CVParamType
-                    {
-                        accession = "MS:1000595",
-                        name = "time array",
-                        cvRef = "MS",
-                        unitName = "minute",
-                        value = "",
-                        unitCvRef = "UO",
-                        unitAccession = "UO:0000031"
-                    },
+                    OntologyMapping.dataArrayTypes["time"],
                     new CVParamType
                     {
                         accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""
