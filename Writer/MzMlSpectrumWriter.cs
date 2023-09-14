@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -141,10 +143,17 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteStartElement("fileDescription");
                 //   fileContent
                 _writer.WriteStartElement("fileContent");
+
+                //accumulating different types of file content
+                HashSet<CVParamType> content = new HashSet<CVParamType>();
+
                 if (_rawFile.HasMsData)
                 {
+                    var nMS1 = rawFile.GetFilteredScanEnumerator("ms").Count();
+                    var nMS = rawFile.RunHeaderEx.SpectraCount;
                     // MS1
-                    SerializeCvParam(new CVParamType
+                    if(ParseInput.MsLevel.Contains(1) && nMS1 > 0)
+                    content.Add(new CVParamType
                     {
                         accession = "MS:1000579",
                         name = "MS1 spectrum",
@@ -152,7 +161,8 @@ namespace ThermoRawFileParser.Writer
                         value = ""
                     });
                     // MSn
-                    SerializeCvParam(new CVParamType
+                    if(ParseInput.MsLevel.Any(n => n > 1) && nMS > nMS1)
+                    content.Add(new CVParamType
                     {
                         accession = "MS:1000580",
                         name = "MSn spectrum",
@@ -160,13 +170,7 @@ namespace ThermoRawFileParser.Writer
                         value = ""
                     });
                     // Ion current chromatogram
-                    SerializeCvParam(new CVParamType
-                    {
-                        accession = "MS:1000810",
-                        name = "ion current chromatogram",
-                        cvRef = "MS",
-                        value = ""
-                    });
+                    content.Add(OntologyMapping.chromatogramTypes["current"]);
                 }
 
                 // Other detector data
@@ -175,7 +179,7 @@ namespace ThermoRawFileParser.Writer
                     // PDA spectrum
                     if (_rawFile.GetInstrumentCountOfType(Device.Pda) > 0)
                     {
-                        SerializeCvParam(new CVParamType
+                        content.Add(new CVParamType
                         {
                             accession = "MS:1000806",
                             name = "absorption spectrum",
@@ -188,15 +192,39 @@ namespace ThermoRawFileParser.Writer
                     if (_rawFile.GetInstrumentCountOfType(Device.Pda) > 0 ||
                         _rawFile.GetInstrumentCountOfType(Device.UV) > 0)
                     {
-                        SerializeCvParam(new CVParamType
-                        {
-                            accession = "MS:1000812",
-                            name = "absorption chromatogram",
-                            cvRef = "MS",
-                            value = ""
-                        });
+                        content.Add(OntologyMapping.chromatogramTypes["absorption"]); 
                     }
-                    //TODO non-standard chromatograms pressure, flow, FID, etc
+                    //non-standard chromatograms pressure, flow, FID, etc
+                    foreach (var deviceType in new Device[2] { Device.Analog, Device.MSAnalog })
+                    {
+                        for (int nrI = 1; nrI < _rawFile.GetInstrumentCountOfType(deviceType) + 1; nrI++)
+                        {
+                            _rawFile.SelectInstrument(deviceType, nrI);
+
+                            var instData = _rawFile.GetInstrumentData();
+
+                            for (int channel = 0; channel < instData.ChannelLabels.Length; channel++)
+                            {
+                                var channelName = instData.ChannelLabels[channel];
+                                if (channelName.ToLower().Contains("pressure"))
+                                    content.Add(OntologyMapping.chromatogramTypes["pressure"]);
+                                else if (channelName.ToLower().Contains("flow"))
+                                    content.Add(OntologyMapping.chromatogramTypes["flow"]);
+
+                                else if (channelName.ToLower().Contains("fid"))
+                                    content.Add(OntologyMapping.chromatogramTypes["current"]);
+                                else
+                                    content.Add(OntologyMapping.chromatogramTypes["unknown"]);
+                            }
+                        }
+                    }
+                    _rawFile.SelectMsData();
+                }
+
+                //write content
+                foreach (var item in content)
+                {
+                    SerializeCvParam(item);
                 }
 
                 _writer.WriteEndElement(); // fileContent                
