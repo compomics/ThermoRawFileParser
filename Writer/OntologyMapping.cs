@@ -3,6 +3,7 @@ using System.Linq;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoRawFileParser.Writer.MzML;
+using ThermoRawFileParser.Util;
 
 namespace ThermoRawFileParser.Writer
 {
@@ -685,7 +686,7 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         /// <param name="instrumentName">the instrument name</param>
         /// <returns>the instrument CV param</returns>
-        public static CVParamType getInstrumentModel(string instrumentName)
+        public static CVParamType GetInstrumentModel(string instrumentName)
         {
             CVParamType instrumentModel;
             instrumentName = instrumentName.ToUpper();
@@ -852,7 +853,7 @@ namespace ThermoRawFileParser.Writer
             return detectors;
         }
 
-        public static readonly Dictionary<string, CVParamType> chromatogramTypes =
+        private static readonly Dictionary<string, CVParamType> chromatogramTypes =
             new Dictionary<string, CVParamType>
             {
                 {
@@ -946,7 +947,12 @@ namespace ThermoRawFileParser.Writer
                 },
             };
 
-        public static readonly Dictionary<string, CVParamType> dataArrayTypes =
+        public static CVParamType GetChromatogramType(string key)
+        {
+            return CVHelpers.Copy(chromatogramTypes[key]);
+        }
+
+        private static readonly Dictionary<string, CVParamType> dataArrayTypes =
             new Dictionary<string, CVParamType>
             {
                 {
@@ -1044,5 +1050,10 @@ namespace ThermoRawFileParser.Writer
                 }
                 }
             };
+
+        public static CVParamType GetDataArrayType(string key)
+        {
+            return CVHelpers.Copy(dataArrayTypes[key]);
+        }
     }
 }

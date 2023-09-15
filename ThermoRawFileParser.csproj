@@ -199,6 +199,7 @@
     <Compile Include="Query\ProxiSpectrumReader.cs" />
     <Compile Include="RawFileParserException.cs" />
     <Compile Include="RawFileParser.cs" />
+    <Compile Include="Util\CVHelpers.cs" />
     <Compile Include="Util\LimitedSizeDictionary.cs" />
     <Compile Include="Util\MZArray.cs" />
     <Compile Include="Util\NativeMethods.cs" />

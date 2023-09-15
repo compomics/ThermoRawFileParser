@@ -170,7 +170,7 @@ namespace ThermoRawFileParser.Writer
                         value = ""
                     });
                     // Ion current chromatogram
-                    content.Add(OntologyMapping.chromatogramTypes["current"]);
+                    content.Add(OntologyMapping.GetChromatogramType("current"));
                 }
 
                 // Other detector data
@@ -192,7 +192,7 @@ namespace ThermoRawFileParser.Writer
                     if (_rawFile.GetInstrumentCountOfType(Device.Pda) > 0 ||
                         _rawFile.GetInstrumentCountOfType(Device.UV) > 0)
                     {
-                        content.Add(OntologyMapping.chromatogramTypes["absorption"]); 
+                        content.Add(OntologyMapping.GetChromatogramType("absorption")); 
                     }
                     //non-standard chromatograms pressure, flow, FID, etc
                     foreach (var deviceType in new Device[2] { Device.Analog, Device.MSAnalog })
@@ -207,14 +207,14 @@ namespace ThermoRawFileParser.Writer
                             {
                                 var channelName = instData.ChannelLabels[channel];
                                 if (channelName.ToLower().Contains("pressure"))
-                                    content.Add(OntologyMapping.chromatogramTypes["pressure"]);
+                                    content.Add(OntologyMapping.GetChromatogramType("pressure"));
                                 else if (channelName.ToLower().Contains("flow"))
-                                    content.Add(OntologyMapping.chromatogramTypes["flow"]);
+                                    content.Add(OntologyMapping.GetChromatogramType("flow"));
 
                                 else if (channelName.ToLower().Contains("fid"))
-                                    content.Add(OntologyMapping.chromatogramTypes["current"]);
+                                    content.Add(OntologyMapping.GetChromatogramType("current"));
                                 else
-                                    content.Add(OntologyMapping.chromatogramTypes["unknown"]);
+                                    content.Add(OntologyMapping.GetChromatogramType("unknown"));
                             }
                         }
                     }
@@ -276,7 +276,7 @@ namespace ThermoRawFileParser.Writer
                     _writer.WriteStartElement("referenceableParamGroup");
                     _writer.WriteAttributeString("id", "commonInstrumentParams");
 
-                    instrumentModel = OntologyMapping.getInstrumentModel(instrumentData.Model);
+                    instrumentModel = OntologyMapping.GetInstrumentModel(instrumentData.Model);
                     SerializeCvParam(instrumentModel);
 
                     SerializeCvParam(new CVParamType
@@ -980,8 +980,8 @@ namespace ThermoRawFileParser.Writer
                     for (var i = 0; i < trace.Length; i++)
                     {
                         // CV Data for Total Absorbance Chromatogram
-                        var chroType = OntologyMapping.chromatogramTypes["absoption"];
-                        var intensType = OntologyMapping.dataArrayTypes["absoption"];
+                        var chroType = OntologyMapping.GetChromatogramType("absorption");
+                        var intensType = OntologyMapping.GetDataArrayType("absorption");
                         intensType.value = instData.Units.ToString();
 
                         var chromatogram = TraceToChromatogram(trace[i],
@@ -1011,8 +1011,8 @@ namespace ThermoRawFileParser.Writer
                         for (var i = 0; i < trace.Length; i++)
                         {
                             // CV Data for Absorbance Chromatogram
-                            var chroType = OntologyMapping.chromatogramTypes["absorbtion"];
-                            var intensType = OntologyMapping.dataArrayTypes["absoption"];
+                            var chroType = OntologyMapping.GetChromatogramType("absorption");
+                            var intensType = OntologyMapping.GetDataArrayType("absorption");
                             intensType.value = instData.Units.ToString();
                             
                             var chromatogram = TraceToChromatogram(trace[i],
@@ -1049,24 +1049,24 @@ namespace ThermoRawFileParser.Writer
                             for (var i = 0; i < trace.Length; i++)
                             {
                                 //Default data type
-                                var chroType = OntologyMapping.chromatogramTypes["unknown"];
-                                var intensType = OntologyMapping.dataArrayTypes["unknown"];
+                                var chroType = OntologyMapping.GetChromatogramType("unknown");
+                                var intensType = OntologyMapping.GetDataArrayType("unknown");
                                 
                                 if (channelName.ToLower().Contains("pressure"))
                                 {
-                                    chroType = OntologyMapping.chromatogramTypes["pressure"];
-                                    intensType = OntologyMapping.dataArrayTypes["pressure"];
+                                    chroType = OntologyMapping.GetChromatogramType("pressure");
+                                    intensType = OntologyMapping.GetDataArrayType("pressure");
                                 }
                                 else if (channelName.ToLower().Contains("flow"))
                                 {
-                                    chroType = OntologyMapping.chromatogramTypes["flow"];
-                                    intensType = OntologyMapping.dataArrayTypes["flow"];
+                                    chroType = OntologyMapping.GetChromatogramType("flow");
+                                    intensType = OntologyMapping.GetDataArrayType("flow");
                                 }
                                 else if (channelName.ToLower().Contains("fid"))
                                 {
                                     //FID is ion current type
-                                    chroType = OntologyMapping.chromatogramTypes["current"];
-                                    intensType = OntologyMapping.dataArrayTypes["intensity"];
+                                    chroType = OntologyMapping.GetChromatogramType("current");
+                                    intensType = OntologyMapping.GetDataArrayType("intensity");
                                 }
 
                                 var chromatogram = TraceToChromatogram(trace[i],
@@ -1122,7 +1122,7 @@ namespace ThermoRawFileParser.Writer
                         .binary.Length / 3)).ToString(CultureInfo.InvariantCulture);
                 var timesBinaryDataCvParams = new List<CVParamType>
                 {
-                    OntologyMapping.dataArrayTypes["time"],
+                    OntologyMapping.GetDataArrayType("time"),
                     new CVParamType
                     {
                         accession = "MS:1000523", name = "64-bit float", cvRef = "MS", value = ""
