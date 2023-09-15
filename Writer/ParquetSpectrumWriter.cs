@@ -35,8 +35,15 @@ namespace ThermoRawFileParser.Writer
         public override void Write(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
             _rawFile = rawFile;
-            List<PScan> pScans = new List<PScan>();
-            WritePScans(ParseInput.OutputDirectory, rawFile.FileName, rawFile, pScans);
+            if (rawFile.HasMsData)
+            {
+                List<PScan> pScans = new List<PScan>();
+                WritePScans(ParseInput.OutputDirectory, rawFile.FileName, rawFile, pScans);
+            }
+            else
+            {
+                throw new RawFileParserException("No MS data in RAW file, no output will be produced");
+            }
         }
 
         private static void WritePScans(string outputDirectory, string fileName,

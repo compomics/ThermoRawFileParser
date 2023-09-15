@@ -38,9 +38,15 @@ namespace ThermoRawFileParser.Writer
         /// <inheritdoc />       
         public override void Write(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
+            if (!rawFile.HasMsData)
+            {
+                throw new RawFileParserException("No MS data in RAW file, no output will be produced");
+            }
+
             ConfigureWriter(".mgf");
             using (Writer)
             {
+
                 Log.Info("Processing " + (lastScanNumber - firstScanNumber + 1) + " scans");
 
                 var lastScanProgress = 0;
@@ -48,7 +54,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     if (ParseInput.LogFormat == LogFormat.DEFAULT)
                     {
-                        var scanProgress = (int) ((double) scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
+                        var scanProgress = (int)((double)scanNumber / (lastScanNumber - firstScanNumber + 1) * 100);
                         if (scanProgress % ProgressPercentageStep == 0)
                         {
                             if (scanProgress != lastScanProgress)
@@ -160,12 +166,12 @@ namespace ThermoRawFileParser.Writer
                         Writer.WriteLine("BEGIN IONS");
                         if (!ParseInput.MgfPrecursor)
                         {
-                            Writer.WriteLine($"TITLE={ConstructSpectrumTitle((int) Device.MS, 1, scanNumber)}");
+                            Writer.WriteLine($"TITLE={ConstructSpectrumTitle((int)Device.MS, 1, scanNumber)}");
                         }
                         else
                         {
                             Writer.WriteLine(
-                                $"TITLE={ConstructSpectrumTitle((int) Device.MS, 1, scanNumber)} [PRECURSOR={precursorReference}]");
+                                $"TITLE={ConstructSpectrumTitle((int)Device.MS, 1, scanNumber)} [PRECURSOR={precursorReference}]");
                         }
 
                         Writer.WriteLine($"SCANS={scanNumber}");
@@ -250,6 +256,7 @@ namespace ThermoRawFileParser.Writer
                 {
                     Console.WriteLine();
                 }
+
             }
         }
     }
