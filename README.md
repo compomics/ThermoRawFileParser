@@ -192,7 +192,8 @@ Provide one of the following filters:
  * M/Z start and end
  * sequence and tolerance (tolerance unit optional, defaults to `ppm`)
 
-optionally one can define starting and ending retention times and thermo filter string (defaults to `ms`)
+optionally one can define starting and ending retention times, provide filter string (defaults to `ms`, i.e. only MS1 scans), and a comment (free text) field; any valid filter string is supported,
+however only basic validation is performed, see [issue #158](https://github.com/compomics/ThermoRawFileParser/issues/158) for details. Comment can contain any text and will be preserved in the output.
 
 An example input JSON file:
 
@@ -219,7 +220,17 @@ An example input JSON file:
         {
             "sequence":"TRANNEL",
             "tolerance":10
+        },
+        {
+            "mz":1014.5099732499732,
+            "rt_start":14.0600881872,
+            "rt_end":14.4167198290667,
+            "tolerance":5,
+            "tolerance_unit":"ppm",
+            "comment":"Only ion trap scans"
+            "scan_filter":"ITMS"
         }
+   }
 ]
 
 ```

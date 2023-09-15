@@ -3,6 +3,7 @@ using System.Linq;
 using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoRawFileParser.Writer.MzML;
+using ThermoRawFileParser.Util;
 
 namespace ThermoRawFileParser.Writer
 {
@@ -64,6 +65,15 @@ namespace ThermoRawFileParser.Writer
                     {
                         accession = "MS:1000081",
                         name = "quadrupole",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    MassAnalyzerType.MassAnalyzerASTMS, new CVParamType
+                    {
+                        accession = "MS:1003379",
+                        name = "asymmetric track lossless time-of-flight analyzer",
                         cvRef = "MS",
                         value = ""
                     }
@@ -544,6 +554,15 @@ namespace ThermoRawFileParser.Writer
                     }
                 },
                 {
+                    "ORBITRAP ASCEND", new CVParamType
+                    {
+                        accession = "MS:1003356",
+                        name = "Orbitrap Ascend",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
                     "ORBITRAP EXPLORIS 120", new CVParamType
                     {
                         accession = "MS:1003095",
@@ -566,6 +585,15 @@ namespace ThermoRawFileParser.Writer
                     {
                         accession = "MS:1003028",
                         name = "Orbitrap Exploris 480",
+                        cvRef = "MS",
+                        value = ""
+                    }
+                },
+                {
+                    "ORBITRAP ASTRAL", new CVParamType
+                    {
+                        accession = "MS:1003378",
+                        name = "Orbitrap Astral",
                         cvRef = "MS",
                         value = ""
                     }
@@ -658,7 +686,7 @@ namespace ThermoRawFileParser.Writer
         /// </summary>
         /// <param name="instrumentName">the instrument name</param>
         /// <returns>the instrument CV param</returns>
-        public static CVParamType getInstrumentModel(string instrumentName)
+        public static CVParamType GetInstrumentModel(string instrumentName)
         {
             CVParamType instrumentModel;
             instrumentName = instrumentName.ToUpper();
@@ -730,6 +758,8 @@ namespace ThermoRawFileParser.Writer
                 case "MS:1002732":
                 // ORBITRAP ECLIPSE    
                 case "MS:1003029":
+                // ORBITRAP ASCEND    
+                case "MS:1003356":
                 // ORBITRAP ID-X
                 case "MS:1003112":
                     detectors = new List<CVParamType>
@@ -768,6 +798,8 @@ namespace ThermoRawFileParser.Writer
                 case "MS:1003094":
                 // ORBITRAP EXPLORIS 480
                 case "MS:1003028":
+                // ORBITRAP ASTRAL
+                case "MS:1003378":
                     detectors = new List<CVParamType>
                     {
                         new CVParamType
@@ -819,6 +851,209 @@ namespace ThermoRawFileParser.Writer
             }
 
             return detectors;
+        }
+
+        private static readonly Dictionary<string, CVParamType> chromatogramTypes =
+            new Dictionary<string, CVParamType>
+            {
+                {
+                    "basepeak", new CVParamType
+                {
+                    accession = "MS:1000628",
+                    name = "basepeak chromatogram",
+                    cvRef = "MS",
+                    value = ""
+                }
+                },
+
+                {
+                    "tic", new CVParamType
+                {
+                    accession = "MS:1000235",
+                    name = "total ion current chromatogram",
+                    cvRef = "MS",
+                    value = ""
+                }
+                },
+
+                {
+                    "current", new CVParamType
+                {
+                    accession = "MS:1000810",
+                    name = "ion current chromatogram",
+                    cvRef = "MS",
+                    value = ""
+                }
+                },
+
+                {
+                    "radiation", new CVParamType
+                {
+                    accession = "MS:1000811",
+                    name = "electromagnetic radiation chromatogram",
+                    cvRef = "MS",
+                    value = ""
+                }
+                },
+
+                {
+                    "absorption", new CVParamType
+                {
+                    accession = "MS:1000812",
+                    name = "absorption chromatogram",
+                    cvRef = "MS",
+                    value = ""
+                }
+                },
+
+                {
+                    "emission", new CVParamType
+                {
+                    accession = "MS:1000813",
+                    name = "emission chromatogram",
+                    cvRef = "MS",
+                    value = ""
+                }
+                },
+
+                {
+                    "pressure", new CVParamType
+                {
+                    accession = "MS:1003019",
+                    name = "pressure chromatogram",
+                    cvRef = "MS",
+                    value = ""
+                }
+                },
+
+                {
+                    "flow", new CVParamType
+                {
+                    accession = "MS:1003020",
+                    name = "flow rate chromatogram",
+                    cvRef = "MS",
+                    value = ""
+                }
+                },
+
+                {
+                    "unknown", new CVParamType
+                {
+                    accession = "MS:1000626",
+                    name = "chromatogram type",
+                    cvRef = "MS",
+                    value = ""
+                }
+                },
+            };
+
+        public static CVParamType GetChromatogramType(string key)
+        {
+            return CVHelpers.Copy(chromatogramTypes[key]);
+        }
+
+        private static readonly Dictionary<string, CVParamType> dataArrayTypes =
+            new Dictionary<string, CVParamType>
+            {
+                {
+                    "mz", new CVParamType
+                {
+                    accession = "MS:1000514",
+                    name = "m/z array",
+                    cvRef = "MS",
+                    value = ""
+                }
+                },
+
+                {
+                    "intensity", new CVParamType
+                {
+                    accession = "MS:1000515",
+                    name = "intensity array",
+                    cvRef = "MS",
+                    value = ""
+                }
+                },
+
+                {
+                    "absorption", new CVParamType
+                {
+                    accession = "MS:1000515",
+                    name = "intensity array",
+                    cvRef = "MS",
+                    value = "",
+                    unitName = "absorbance unit",
+                    unitCvRef = "UO",
+                    unitAccession = "UO:0000269"
+                }
+                },
+
+                {
+                    "time", new CVParamType
+                {
+                    accession = "MS:1000595",
+                    name = "time array",
+                    cvRef = "MS",
+                    value = "",
+                    unitName = "minute",
+                    unitCvRef = "UO",
+                    unitAccession = "UO:0000031"
+                }
+                },
+
+                {
+                    "wavelength", new CVParamType
+                {
+                    accession = "MS:1000617",
+                    name = "wavelength array",
+                    cvRef = "MS",
+                    value = ""
+                }
+                },
+
+                {
+                    "flow", new CVParamType
+                {
+                    accession = "MS:1000820",
+                    name = "flow rate array",
+                    cvRef = "MS",
+                    value = "",
+                    unitName = "volumetric flow rate unit",
+                    unitCvRef = "UO",
+                    unitAccession = "UO:0000270 "
+                }
+                },
+
+                {
+                    "pressure", new CVParamType
+                {
+                    accession = "MS:1000821",
+                    name = "pressure array",
+                    cvRef = "MS",
+                    value = "",
+                    unitName = "pressure unit",
+                    unitCvRef = "UO",
+                    unitAccession = "UO:0000109"
+                }
+                },
+
+                {
+                    "unknown", new CVParamType
+                {
+                    accession = "MS:1000786",
+                    name = "non-standard data array",
+                    cvRef = "MS",
+                    value = "",
+                    unitName = "unit",
+                    unitCvRef = "UO",
+                    unitAccession = "UO:0000000"
+                }
+                }
+            };
+
+        public static CVParamType GetDataArrayType(string key)
+        {
+            return CVHelpers.Copy(dataArrayTypes[key]);
         }
     }
 }
