@@ -120,7 +120,7 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
                              S3 bucket name
 ```
 
-Output file extension is determined by the used output format and (optional) gzip compression, for example, if format is MGF without gzip compression, the output file will receive `.mgf` extension, if format is mzML with gzip compression the output file will have `.mzML.gz` extension. All user input will be standardized to fulfill abovementioned requrements.
+Output file extension is determined by the used output format and (optional) gzip compression, for example, if format is MGF without gzip compression, the output file will receive `.mgf` extension, if format is mzML with gzip compression the output file will have `.mzML.gz` extension. All user input will be standardized to fulfill abovementioned requirements.
 
 A (java) graphical user interface is also available [here](https://github.com/compomics/ThermoRawFileParserGUI) that enables the selection of an input RAW directory or one ore more RAW files.
 
