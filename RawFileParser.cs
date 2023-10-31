@@ -155,13 +155,13 @@ namespace ThermoRawFileParser
                     }
                 }
 
-                if (parseInput.MetadataFormat != MetadataFormat.NONE)
+                if (parseInput.MetadataFormat != MetadataFormat.None)
                 {
                     MetadataWriter metadataWriter = new MetadataWriter(parseInput);
                     metadataWriter.WriteMetadata(rawFile, firstScanNumber, lastScanNumber);
                 }
 
-                if (parseInput.OutputFormat != OutputFormat.NONE)
+                if (parseInput.OutputFormat != OutputFormat.None)
                 {
                     SpectrumWriter spectrumWriter;
                     switch (parseInput.OutputFormat)

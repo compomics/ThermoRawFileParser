@@ -526,11 +526,11 @@ namespace ThermoRawFileParser
                 },
                 {
                     "f=|format=",
-                    "The spectra output format: 0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet; both numeric and text (case insensitive) value recognized. Defaults to indexed mzML if no format is specified.",
+                    "The spectra output format: 0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet, 4 for None (no output); both numeric and text (case insensitive) value recognized. Defaults to indexed mzML if no format is specified.",
                     v => outputFormatString = v
                 },
                 {
-                    "m=|metadata=", "The metadata output format: 0 for JSON, 1 for TXT; both numeric and text (case insensitive) value recognized",
+                    "m=|metadata=", "The metadata output format: 0 for JSON, 1 for TXT, 2 for None (no output); both numeric and text (case insensitive) value recognized. Defaults to None",
                     v => metadataFormatString = v
                 },
                 {
@@ -740,7 +740,7 @@ namespace ThermoRawFileParser
                         "-c, --metadata_output_file");
                 }
 
-                if (parseInput.MetadataOutputFile != null && parseInput.MetadataFormat == MetadataFormat.NONE)
+                if (parseInput.MetadataOutputFile != null && parseInput.MetadataFormat == MetadataFormat.None)
                 {
                     throw new OptionException("specify a metadata format (0 for JSON, 1 for TXT)",
                         "-m, --metadata");
