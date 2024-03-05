@@ -766,6 +766,8 @@ namespace ThermoRawFileParser
                     if (parseInput.OutputFormat == OutputFormat.IndexMzML) parseInput.OutputFormat = OutputFormat.MzML;
                 }
 
+                parseInput.MaxLevel = parseInput.MsLevel.Max();
+
                 if (parseInput.S3Url != null && parseInput.S3AccessKeyId != null &&
                     parseInput.S3SecretAccessKey != null && parseInput.BucketName != null)
                     if (Uri.IsWellFormedUriString(parseInput.S3Url, UriKind.Absolute))

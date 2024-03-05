@@ -401,10 +401,13 @@ namespace ThermoRawFileParser.Writer
 
 
                         SpectrumType spectrum = null;
+                        int level;
 
                         try
                         {
-                            spectrum = ConstructMSSpectrum(scanNumber);
+                            level = (int) _rawFile.GetScanEventForScanNumber(scanNumber).MSOrder; //applying MS level pre filter
+                            if (level <= ParseInput.MaxLevel)
+                                spectrum = ConstructMSSpectrum(scanNumber);
                         }
                         catch (Exception ex)
                         {
@@ -412,9 +415,9 @@ namespace ThermoRawFileParser.Writer
                             ParseInput.NewError();
                         }
 
-                        var level = spectrum != null ? int.Parse(spectrum.cvParam.Where(p => p.accession == "MS:1000511").First().value) : 0;
+                        level = spectrum != null ? int.Parse(spectrum.cvParam.Where(p => p.accession == "MS:1000511").First().value) : 0;
 
-                        if (spectrum != null && ParseInput.MsLevel.Contains(level)) //applying MS level filter
+                        if (spectrum != null && ParseInput.MsLevel.Contains(level)) //applying final MS filter
                         {
                             spectrum.index = index.ToString();
                             if (_doIndexing)
