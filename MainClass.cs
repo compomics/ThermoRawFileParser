@@ -64,13 +64,13 @@ namespace ThermoRawFileParser
                     h => parameters.help = h != null
                 },
                 {
-                    "i=|input=", "The raw file input (Required). Specify this or an input directory -d",
-                    v => singleFile = v
-                },
-                {
                     "d=|input_directory=",
                     "The directory containing the raw files (Required). Specify this or an input file -i.",
                     v => fileDirectory = v
+                },
+                {
+                    "i=|input=", "The raw file input (Required). Specify this or an input directory -d",
+                    v => singleFile = v
                 },
                 {
                     "j=|json=",
@@ -83,12 +83,12 @@ namespace ThermoRawFileParser
                     v => parameters.printJsonExample = v != null
                 },
                 {
-                    "o=|output=",
+                    "o=|output_directory=",
                     "The output directory. Specify this or an output file. Specifying neither writes to the input directory.",
                     v => outputDirectory = v
                 },
                 {
-                    "b=|output_file",
+                    "b=|output=",
                     "The output file. Specify this or an output directory. Specifying neither writes to the input directory.",
                     v => outputFile = v
                 },
