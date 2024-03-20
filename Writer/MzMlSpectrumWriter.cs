@@ -2393,66 +2393,64 @@ namespace ThermoRawFileParser.Writer
             //increase reaction count after successful parsing
             reactionCount++;
 
-            if (scanEvent.SupplementalActivation == TriState.On)
-            //the property is On if *at least* one of the levels had SA (i.e. not necissirily the last one), thus we need to try (and posibly fail)
+            //Sometimes the property of supplemental activation is not set (Tune v4 on Tribrid),
+            //or is On if *at least* one of the levels had SA (i.e. not necissirily the last one), thus we need to try (and posibly fail)
+            try
             {
-                try
-                {
-                    reaction = scanEvent.GetReaction(reactionCount);
+                reaction = scanEvent.GetReaction(reactionCount);
 
-                    if (reaction != null)
+                if (reaction != null)
+                {
+                    if (reaction.CollisionEnergyValid)
                     {
-                        if (reaction.CollisionEnergyValid)
-                        {
-                            activationCvParams.Add(
-                                new CVParamType
-                                {
-                                    accession = "MS:1002680",
-                                    name = "supplemental collision energy",
-                                    cvRef = "MS",
-                                    value = reaction.CollisionEnergy.ToString(CultureInfo.InvariantCulture),
-                                    unitCvRef = "UO",
-                                    unitAccession = "UO:0000266",
-                                    unitName = "electronvolt"
-                                });
-                        }
-
-                        // Add the supplemental CV term
-                        switch (reaction.ActivationType)
-                        {
-                            case ActivationType.HigherEnergyCollisionalDissociation:
-                                activationCvParams.Add(new CVParamType
-                                {
-                                    accession = "MS:1002678",
-                                    name = "supplemental beam-type collision-induced dissociation",
-                                    cvRef = "MS",
-                                    value = ""
-                                }); break;
-
-                            case ActivationType.CollisionInducedDissociation:
-                                activationCvParams.Add(new CVParamType
-                                {
-                                    accession = "MS:1002679",
-                                    name = "supplemental collision-induced dissociation",
-                                    cvRef = "MS",
-                                    value = ""
-                                }); break;
-
-                            default:
-                                Log.Warn($"Unknown supplemental activation type: {reaction.ActivationType}");
-                                ParseInput.NewWarn();
-                                break;
-
-                        }
-
-                        //increase reaction count after successful parsing
-                        reactionCount++;
+                        activationCvParams.Add(
+                            new CVParamType
+                            {
+                                accession = "MS:1002680",
+                                name = "supplemental collision energy",
+                                cvRef = "MS",
+                                value = reaction.CollisionEnergy.ToString(CultureInfo.InvariantCulture),
+                                unitCvRef = "UO",
+                                unitAccession = "UO:0000266",
+                                unitName = "electronvolt"
+                            });
                     }
+
+                    // Add the supplemental CV term
+                    switch (reaction.ActivationType)
+                    {
+                        case ActivationType.HigherEnergyCollisionalDissociation:
+                            activationCvParams.Add(new CVParamType
+                            {
+                                accession = "MS:1002678",
+                                name = "supplemental beam-type collision-induced dissociation",
+                                cvRef = "MS",
+                                value = ""
+                            }); break;
+
+                        case ActivationType.CollisionInducedDissociation:
+                            activationCvParams.Add(new CVParamType
+                            {
+                                accession = "MS:1002679",
+                                name = "supplemental collision-induced dissociation",
+                                cvRef = "MS",
+                                value = ""
+                            }); break;
+
+                        default:
+                            Log.Warn($"Unknown supplemental activation type: {reaction.ActivationType}");
+                            ParseInput.NewWarn();
+                            break;
+
+                    }
+
+                    //increase reaction count after successful parsing
+                    reactionCount++;
                 }
-                catch (ArgumentOutOfRangeException)
-                {
-                    // If we failed do nothing
-                }
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                // If we failed do nothing
             }
 
             precursor.activation =
