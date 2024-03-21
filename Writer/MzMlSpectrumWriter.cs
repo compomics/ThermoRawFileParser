@@ -279,6 +279,9 @@ namespace ThermoRawFileParser.Writer
                     instrumentModel = OntologyMapping.GetInstrumentModel(instrumentData.Model);
                     SerializeCvParam(instrumentModel);
 
+                    //Update the definition of FTMS
+                    OntologyMapping.UpdateFTMSDefinition(instrumentData.Model);
+
                     SerializeCvParam(new CVParamType
                     {
                         cvRef = "MS",
