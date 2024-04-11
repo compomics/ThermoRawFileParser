@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -527,7 +525,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteEndElement(); // spectrumList                                                
 
                 index = 0;
-                var chromatograms = ConstructChromatograms(firstScanNumber, lastScanNumber);
+                var chromatograms = ConstructChromatograms();
                 if (!chromatograms.IsNullOrEmpty())
                 {
                     // ChromatogramList
@@ -914,7 +912,7 @@ namespace ThermoRawFileParser.Writer
         /// <param name="firstScanNumber">the first scan number</param>
         /// <param name="lastScanNumber">the last scan number</param>
         /// <returns>a list of chromatograms</returns>
-        private List<ChromatogramType> ConstructChromatograms(int firstScanNumber, int lastScanNumber)
+        private List<ChromatogramType> ConstructChromatograms()
         {
             var chromatograms = new List<ChromatogramType>();
 
@@ -2470,15 +2468,14 @@ namespace ThermoRawFileParser.Writer
                 var SPSPrecursor = new PrecursorType
                 {
                     selectedIonList =
-                        new SelectedIonListType {count = "1", selectedIon = new ParamGroupType[1]},
-                    spectrumRef = spectrumRef
-                };
-
-                //Isolation window for SPS masses is the same as for the first precursor
-                SPSPrecursor.isolationWindow =
+                        new SelectedIonListType { count = "1", selectedIon = new ParamGroupType[1] },
+                    spectrumRef = spectrumRef,
+                    //Isolation window for SPS masses is the same as for the first precursor
+                    isolationWindow =
                 new ParamGroupType
                 {
                     cvParam = new CVParamType[3]
+                }
                 };
 
                 SPSPrecursor.isolationWindow.cvParam[0] =
@@ -2755,14 +2752,13 @@ namespace ThermoRawFileParser.Writer
 
             var scanType = new ScanType
             {
-                cvParam = scanTypeCvParams.ToArray()
-            };
-
-            // Scan window list
-            scanType.scanWindowList = new ScanWindowListType
-            {
-                count = 1,
-                scanWindow = new ParamGroupType[1]
+                cvParam = scanTypeCvParams.ToArray(),
+                // Scan window list
+                scanWindowList = new ScanWindowListType
+                {
+                    count = 1,
+                    scanWindow = new ParamGroupType[1]
+                }
             };
             var scanWindow = new ParamGroupType
             {
@@ -2851,22 +2847,6 @@ namespace ThermoRawFileParser.Writer
             }
 
             return bytes;
-        }
-
-        /// <summary>
-        /// Calculate the RAW file checksum
-        /// </summary>
-        /// <returns>the checksum string</returns>
-        private string CalculateMD5Checksum()
-        {
-            using (var md5 = MD5.Create())
-            {
-                using (var stream = File.OpenRead(ParseInput.RawFilePath))
-                {
-                    var hash = md5.ComputeHash(stream);
-                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
-                }
-            }
         }
 
         /// <summary>

@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Web.WebSockets;
 using log4net;
 using Newtonsoft.Json;
 using ThermoFisher.CommonCore.Data;
@@ -122,16 +121,14 @@ namespace ThermoRawFileParser.Writer
             switch (_parseInput.MetadataFormat)
             {
                 case MetadataFormat.JSON:
-                    _metadataFileName = _parseInput.MetadataOutputFile != null
-                        ? _parseInput.MetadataOutputFile
-                        : Path.Combine(_parseInput.OutputDirectory, _parseInput.RawFileNameWithoutExtension) +
+                    _metadataFileName = _parseInput.MetadataOutputFile ?? 
+                        Path.Combine(_parseInput.OutputDirectory, _parseInput.RawFileNameWithoutExtension) +
                           "-metadata.json";
                     WriteJsonMetada(rawFile, firstScanNumber, lastScanNumber);
                     break;
                 case MetadataFormat.TXT:
-                    _metadataFileName = _parseInput.MetadataOutputFile != null
-                        ? _parseInput.MetadataOutputFile
-                        : Path.Combine(_parseInput.OutputDirectory, _parseInput.RawFileNameWithoutExtension) +
+                    _metadataFileName = _parseInput.MetadataOutputFile ??
+                        Path.Combine(_parseInput.OutputDirectory, _parseInput.RawFileNameWithoutExtension) +
                           "-metadata.txt";
                     WriteTextMetadata(rawFile, firstScanNumber, lastScanNumber);
                     break;
@@ -370,7 +367,6 @@ namespace ThermoRawFileParser.Writer
                 {
                     output.Add("Firmware version=" + rawFile.GetInstrumentData().HardwareVersion);
                 }
-
 
                 // MS Data
                 output.Add("#MsData");
