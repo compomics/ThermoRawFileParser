@@ -16,6 +16,7 @@ using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
+using ThermoRawFileParser.Util;
 using ThermoRawFileParser.Writer.MzML;
 using zlib;
 
@@ -143,7 +144,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteStartElement("fileContent");
 
                 //accumulating different types of file content
-                HashSet<CVParamType> content = new HashSet<CVParamType>();
+                HashSet<CVParamType> content = new HashSet<CVParamType>(new CVComparer());
 
                 if (_rawFile.HasMsData)
                 {
