@@ -719,6 +719,38 @@ namespace ThermoRawFileParser.Writer
         }
 
         /// <summary>
+        /// Changes the mapping of `MassAnalyserFTMS` for Orbitrap-based instruments
+        /// updates OntologyMapping dictionarty in place
+        /// </summary>
+        /// <param name="instrumentName">the instrument name</param>
+        /// <returns>Void</returns>
+        public static void UpdateFTMSDefinition(string instrumentName)
+        {
+            instrumentName = instrumentName.ToUpper();
+
+            if (instrumentName.Contains("ORBITRAP") || instrumentName.Contains("EXACTIVE"))
+            {
+                MassAnalyzerTypes[MassAnalyzerType.MassAnalyzerFTMS] = new CVParamType
+                {
+                    accession = "MS:1000484",
+                    name = "orbitrap",
+                    cvRef = "MS",
+                    value = ""
+                };
+            }
+            else
+            {
+                MassAnalyzerTypes[MassAnalyzerType.MassAnalyzerFTMS] = new CVParamType
+                {
+                    accession = "MS:1000079",
+                    name = "fourier transform ion cyclotron resonance mass spectrometer",
+                    cvRef = "MS",
+                    value = ""
+                };
+            }
+        }
+
+        /// <summary>
         /// Get a list of detectors for the given instrument
         /// </summary>
         /// <param name="instrumentAccession">the instrument accession</param>

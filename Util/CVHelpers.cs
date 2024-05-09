@@ -1,4 +1,5 @@
-﻿using ThermoRawFileParser.Writer.MzML;
+﻿using System.Collections.Generic;
+using ThermoRawFileParser.Writer.MzML;
 
 namespace ThermoRawFileParser.Util
 {
@@ -16,6 +17,19 @@ namespace ThermoRawFileParser.Util
                 unitName = old.unitName,
                 value = old.value
             };
+        }
+    }
+
+    public class CVComparer : IEqualityComparer<CVParamType>
+    {
+        public bool Equals(CVParamType cv1, CVParamType cv2)
+        {
+            return cv1.accession == cv2.accession;
+        }
+
+        public int GetHashCode(CVParamType cv)
+        {
+            return cv.accession.GetHashCode();
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -18,6 +16,7 @@ using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
+using ThermoRawFileParser.Util;
 using ThermoRawFileParser.Writer.MzML;
 using zlib;
 
@@ -145,7 +144,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteStartElement("fileContent");
 
                 //accumulating different types of file content
-                HashSet<CVParamType> content = new HashSet<CVParamType>();
+                HashSet<CVParamType> content = new HashSet<CVParamType>(new CVComparer());
 
                 if (_rawFile.HasMsData)
                 {
@@ -279,6 +278,9 @@ namespace ThermoRawFileParser.Writer
                     instrumentModel = OntologyMapping.GetInstrumentModel(instrumentData.Model);
                     SerializeCvParam(instrumentModel);
 
+                    //Update the definition of FTMS
+                    OntologyMapping.UpdateFTMSDefinition(instrumentData.Model);
+
                     SerializeCvParam(new CVParamType
                     {
                         cvRef = "MS",
@@ -401,10 +403,13 @@ namespace ThermoRawFileParser.Writer
 
 
                         SpectrumType spectrum = null;
+                        int level;
 
                         try
                         {
-                            spectrum = ConstructMSSpectrum(scanNumber);
+                            level = (int) _rawFile.GetScanEventForScanNumber(scanNumber).MSOrder; //applying MS level pre filter
+                            if (level <= ParseInput.MaxLevel)
+                                spectrum = ConstructMSSpectrum(scanNumber);
                         }
                         catch (Exception ex)
                         {
@@ -412,9 +417,9 @@ namespace ThermoRawFileParser.Writer
                             ParseInput.NewError();
                         }
 
-                        var level = spectrum != null ? int.Parse(spectrum.cvParam.Where(p => p.accession == "MS:1000511").First().value) : 0;
+                        level = spectrum != null ? int.Parse(spectrum.cvParam.Where(p => p.accession == "MS:1000511").First().value) : 0;
 
-                        if (spectrum != null && ParseInput.MsLevel.Contains(level)) //applying MS level filter
+                        if (spectrum != null && ParseInput.MsLevel.Contains(level)) //applying final MS filter
                         {
                             spectrum.index = index.ToString();
                             if (_doIndexing)
@@ -521,7 +526,7 @@ namespace ThermoRawFileParser.Writer
                 _writer.WriteEndElement(); // spectrumList                                                
 
                 index = 0;
-                var chromatograms = ConstructChromatograms(firstScanNumber, lastScanNumber);
+                var chromatograms = ConstructChromatograms();
                 if (!chromatograms.IsNullOrEmpty())
                 {
                     // ChromatogramList
@@ -908,7 +913,7 @@ namespace ThermoRawFileParser.Writer
         /// <param name="firstScanNumber">the first scan number</param>
         /// <param name="lastScanNumber">the last scan number</param>
         /// <returns>a list of chromatograms</returns>
-        private List<ChromatogramType> ConstructChromatograms(int firstScanNumber, int lastScanNumber)
+        private List<ChromatogramType> ConstructChromatograms()
         {
             var chromatograms = new List<ChromatogramType>();
 
@@ -2390,66 +2395,64 @@ namespace ThermoRawFileParser.Writer
             //increase reaction count after successful parsing
             reactionCount++;
 
-            if (scanEvent.SupplementalActivation == TriState.On)
-            //the property is On if *at least* one of the levels had SA (i.e. not necissirily the last one), thus we need to try (and posibly fail)
+            //Sometimes the property of supplemental activation is not set (Tune v4 on Tribrid),
+            //or is On if *at least* one of the levels had SA (i.e. not necissirily the last one), thus we need to try (and posibly fail)
+            try
             {
-                try
-                {
-                    reaction = scanEvent.GetReaction(reactionCount);
+                reaction = scanEvent.GetReaction(reactionCount);
 
-                    if (reaction != null)
+                if (reaction != null)
+                {
+                    if (reaction.CollisionEnergyValid)
                     {
-                        if (reaction.CollisionEnergyValid)
-                        {
-                            activationCvParams.Add(
-                                new CVParamType
-                                {
-                                    accession = "MS:1002680",
-                                    name = "supplemental collision energy",
-                                    cvRef = "MS",
-                                    value = reaction.CollisionEnergy.ToString(CultureInfo.InvariantCulture),
-                                    unitCvRef = "UO",
-                                    unitAccession = "UO:0000266",
-                                    unitName = "electronvolt"
-                                });
-                        }
-
-                        // Add the supplemental CV term
-                        switch (reaction.ActivationType)
-                        {
-                            case ActivationType.HigherEnergyCollisionalDissociation:
-                                activationCvParams.Add(new CVParamType
-                                {
-                                    accession = "MS:1002678",
-                                    name = "supplemental beam-type collision-induced dissociation",
-                                    cvRef = "MS",
-                                    value = ""
-                                }); break;
-
-                            case ActivationType.CollisionInducedDissociation:
-                                activationCvParams.Add(new CVParamType
-                                {
-                                    accession = "MS:1002679",
-                                    name = "supplemental collision-induced dissociation",
-                                    cvRef = "MS",
-                                    value = ""
-                                }); break;
-
-                            default:
-                                Log.Warn($"Unknown supplemental activation type: {reaction.ActivationType}");
-                                ParseInput.NewWarn();
-                                break;
-
-                        }
-
-                        //increase reaction count after successful parsing
-                        reactionCount++;
+                        activationCvParams.Add(
+                            new CVParamType
+                            {
+                                accession = "MS:1002680",
+                                name = "supplemental collision energy",
+                                cvRef = "MS",
+                                value = reaction.CollisionEnergy.ToString(CultureInfo.InvariantCulture),
+                                unitCvRef = "UO",
+                                unitAccession = "UO:0000266",
+                                unitName = "electronvolt"
+                            });
                     }
+
+                    // Add the supplemental CV term
+                    switch (reaction.ActivationType)
+                    {
+                        case ActivationType.HigherEnergyCollisionalDissociation:
+                            activationCvParams.Add(new CVParamType
+                            {
+                                accession = "MS:1002678",
+                                name = "supplemental beam-type collision-induced dissociation",
+                                cvRef = "MS",
+                                value = ""
+                            }); break;
+
+                        case ActivationType.CollisionInducedDissociation:
+                            activationCvParams.Add(new CVParamType
+                            {
+                                accession = "MS:1002679",
+                                name = "supplemental collision-induced dissociation",
+                                cvRef = "MS",
+                                value = ""
+                            }); break;
+
+                        default:
+                            Log.Warn($"Unknown supplemental activation type: {reaction.ActivationType}");
+                            ParseInput.NewWarn();
+                            break;
+
+                    }
+
+                    //increase reaction count after successful parsing
+                    reactionCount++;
                 }
-                catch (ArgumentOutOfRangeException)
-                {
-                    // If we failed do nothing
-                }
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                // If we failed do nothing
             }
 
             precursor.activation =
@@ -2466,15 +2469,14 @@ namespace ThermoRawFileParser.Writer
                 var SPSPrecursor = new PrecursorType
                 {
                     selectedIonList =
-                        new SelectedIonListType {count = "1", selectedIon = new ParamGroupType[1]},
-                    spectrumRef = spectrumRef
-                };
-
-                //Isolation window for SPS masses is the same as for the first precursor
-                SPSPrecursor.isolationWindow =
+                        new SelectedIonListType { count = "1", selectedIon = new ParamGroupType[1] },
+                    spectrumRef = spectrumRef,
+                    //Isolation window for SPS masses is the same as for the first precursor
+                    isolationWindow =
                 new ParamGroupType
                 {
                     cvParam = new CVParamType[3]
+                }
                 };
 
                 SPSPrecursor.isolationWindow.cvParam[0] =
@@ -2751,14 +2753,13 @@ namespace ThermoRawFileParser.Writer
 
             var scanType = new ScanType
             {
-                cvParam = scanTypeCvParams.ToArray()
-            };
-
-            // Scan window list
-            scanType.scanWindowList = new ScanWindowListType
-            {
-                count = 1,
-                scanWindow = new ParamGroupType[1]
+                cvParam = scanTypeCvParams.ToArray(),
+                // Scan window list
+                scanWindowList = new ScanWindowListType
+                {
+                    count = 1,
+                    scanWindow = new ParamGroupType[1]
+                }
             };
             var scanWindow = new ParamGroupType
             {
@@ -2847,22 +2848,6 @@ namespace ThermoRawFileParser.Writer
             }
 
             return bytes;
-        }
-
-        /// <summary>
-        /// Calculate the RAW file checksum
-        /// </summary>
-        /// <returns>the checksum string</returns>
-        private string CalculateMD5Checksum()
-        {
-            using (var md5 = MD5.Create())
-            {
-                using (var stream = File.OpenRead(ParseInput.RawFilePath))
-                {
-                    var hash = md5.ComputeHash(stream);
-                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
-                }
-            }
         }
 
         /// <summary>

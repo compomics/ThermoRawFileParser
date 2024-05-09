@@ -59,12 +59,13 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
   -d, --input_directory=VALUE
                              The directory containing the raw files (Required).
                                Specify this or an input raw file -i.
-  -o, --output=VALUE         The output directory. Specify this or an output
-                               file -b. Specifying neither writes to the input
-                               directory.
-  -b, --output_file=VALUE    The output file. Specify this or an output
+  -b, --output=VALUE    	 The output file. Specify this or an output
                                directory -o. Specifying neither writes to the
                                input directory.
+  -o, --output_directory=VALUE
+							 The output directory. Specify this or an output
+                               file -b. Specifying neither writes to the input
+                               directory.
   -s, --stdout               Write to standard output. Cannot be combined with
                                file or directory output. Implies silent logging,
                                 i.e. logging level 0
@@ -137,7 +138,7 @@ usage is:
   -h, --help                 Prints out the options.
   -i, --input=VALUE          The raw file input (Required).
   -n, --scans=VALUE          The scan numbers. e.g. "1-5, 20, 25-30"
-  -b, --output_file=VALUE    The output file. Specifying none writes the output
+  -b, --output=VALUE    	 The output file. Specifying none writes the output
                                file to the input file parent directory.
   -p, --noPeakPicking        Don't use the peak picking provided by the native
                                Thermo library. By default peak picking is
@@ -169,12 +170,13 @@ ThermoRawFileParser.exe xic --help
                                Specify this or an input file -i.
   -j, --json=VALUE           The json input file (Required).
   -p, --print_example        Show a json input file example.
-  -o, --output=VALUE         The output directory. Specify this or an output
-                               file. Specifying neither writes to the input
-                               directory.
-  -b, --output_file=VALUE    The output file. Specify this or an output
+  -b, --output=VALUE    	 The output file. Specify this or an output
                                directory. Specifying neither writes to the
                                input directory.
+  -o, --output_directory=VALUE         
+							 The output directory. Specify this or an output
+                               file. Specifying neither writes to the input
+                               directory.
   -6, --base64               Encodes the content of the xic vectors as base 64
                                encoded string.
   -s, --stdout               Pipes the output into standard output. Logging is
