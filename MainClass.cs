@@ -20,7 +20,7 @@ namespace ThermoRawFileParser
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public const string Version = "1.4.2";
+        public const string Version = "1.4.4";
         public static void Main(string[] args)
         {
             // Set Invariant culture as default for all further processing
@@ -83,14 +83,14 @@ namespace ThermoRawFileParser
                     v => parameters.printJsonExample = v != null
                 },
                 {
-                    "o=|output=",
-                    "The output directory. Specify this or an output file. Specifying neither writes to the input directory.",
-                    v => outputDirectory = v
-                },
-                {
-                    "b=|output_file",
+                    "b=|output=",
                     "The output file. Specify this or an output directory. Specifying neither writes to the input directory.",
                     v => outputFile = v
+                },
+                {
+                    "o=|output_directory=",
+                    "The output directory. Specify this or an output file. Specifying neither writes to the input directory.",
+                    v => outputDirectory = v
                 },
                 {
                     "6|base64",
@@ -103,7 +103,7 @@ namespace ThermoRawFileParser
                     v => parameters.stdout = v != null
                 },
                 {
-                  "w|warningsAreErrors", "Return non-zero exit code for warnings; default only for errors",
+                    "w|warningsAreErrors", "Return non-zero exit code for warnings; default only for errors",
                     v => parameters.Vigilant = v != null
                 },
                 {
@@ -338,7 +338,7 @@ namespace ThermoRawFileParser
                     v => parameters.scans = v
                 },
                 {
-                    "b=|output_file",
+                    "b=|output=",
                     "The output file. Specifying none writes the output file to the input file parent directory.",
                     v => parameters.outputFile = v
                 },
@@ -510,14 +510,14 @@ namespace ThermoRawFileParser
                     v => parseInput.RawDirectoryPath = v
                 },
                 {
-                    "o=|output=",
-                    "The output directory. Specify this or an output file -b. Specifying neither writes to the input directory.",
-                    v => parseInput.OutputDirectory = v
-                },
-                {
-                    "b=|output_file",
+                    "b=|output=",
                     "The output file. Specify this or an output directory -o. Specifying neither writes to the input directory.",
                     v => parseInput.OutputFile = v
+                },
+                {
+                    "o=|output_directory=",
+                    "The output directory. Specify this or an output file -b. Specifying neither writes to the input directory.",
+                    v => parseInput.OutputDirectory = v
                 },
                 {
                     "s|stdout",
@@ -526,11 +526,11 @@ namespace ThermoRawFileParser
                 },
                 {
                     "f=|format=",
-                    "The spectra output format: 0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet; both numeric and text (case insensitive) value recognized. Defaults to indexed mzML if no format is specified.",
+                    "The spectra output format: 0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet, 4 for None (no output); both numeric and text (case insensitive) value recognized. Defaults to indexed mzML if no format is specified.",
                     v => outputFormatString = v
                 },
                 {
-                    "m=|metadata=", "The metadata output format: 0 for JSON, 1 for TXT; both numeric and text (case insensitive) value recognized",
+                    "m=|metadata=", "The metadata output format: 0 for JSON, 1 for TXT, 2 for None (no output); both numeric and text (case insensitive) value recognized. Defaults to None",
                     v => metadataFormatString = v
                 },
                 {
@@ -740,7 +740,7 @@ namespace ThermoRawFileParser
                         "-c, --metadata_output_file");
                 }
 
-                if (parseInput.MetadataOutputFile != null && parseInput.MetadataFormat == MetadataFormat.NONE)
+                if (parseInput.MetadataOutputFile != null && parseInput.MetadataFormat == MetadataFormat.None)
                 {
                     throw new OptionException("specify a metadata format (0 for JSON, 1 for TXT)",
                         "-m, --metadata");
@@ -765,6 +765,8 @@ namespace ThermoRawFileParser
                     //use non-indexed mzML with stdout
                     if (parseInput.OutputFormat == OutputFormat.IndexMzML) parseInput.OutputFormat = OutputFormat.MzML;
                 }
+
+                parseInput.MaxLevel = parseInput.MsLevel.Max();
 
                 if (parseInput.S3Url != null && parseInput.S3AccessKeyId != null &&
                     parseInput.S3SecretAccessKey != null && parseInput.BucketName != null)

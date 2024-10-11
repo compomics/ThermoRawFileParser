@@ -107,7 +107,7 @@ namespace ThermoRawFileParser.Writer
             string tail = "";
 
             string[] extensions;
-            if (ParseInput.Gzip)
+            if (gzip)
                 extensions = new string[] { ".gz", extension };
             else
                 extensions = new string[] { extension };

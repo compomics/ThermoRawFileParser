@@ -5,7 +5,7 @@
     /// </summary>
     public class PrecursorInfo
     {
-        //for future use
+        //Current MSLevel
         public int MSLevel { get; }
 
         //precursor scan number, 0 - means not a precursor
