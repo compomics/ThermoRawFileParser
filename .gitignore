@@ -5,3 +5,4 @@ obj/
 *.sln.DotSettings.user
 .vs/
 *.csproj.user
+.vscode/
