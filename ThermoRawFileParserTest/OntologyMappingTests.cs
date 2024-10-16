@@ -12,13 +12,13 @@ namespace ThermoRawFileParserTest
         public void TestGetInstrumentModel()
         {
             // exact match
-            var match = OntologyMapping.getInstrumentModel("LTQ Orbitrap");
+            var match = OntologyMapping.GetInstrumentModel("LTQ Orbitrap");
             Assert.AreEqual("MS:1000449", match.accession);
             // partial match, should return the longest partial match
-            var partialMatch = OntologyMapping.getInstrumentModel("LTQ Orbitrap XXL");
+            var partialMatch = OntologyMapping.GetInstrumentModel("LTQ Orbitrap XXL");
             Assert.AreEqual("MS:1000449", partialMatch.accession);
             // no match, should return the generic thermo instrument
-            var noMatch = OntologyMapping.getInstrumentModel("non existing model");
+            var noMatch = OntologyMapping.GetInstrumentModel("non existing model");
             Assert.AreEqual("MS:1000483", noMatch.accession);
         }
     }

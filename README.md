@@ -47,10 +47,9 @@ or
 mono ThermoRawFileParser.exe -d=/home/user/data_input/
 ```
 
-For running on Windows, omit `mono`. The optional parameters only work in the -option=value format. The tool can output some RAW file metadata `-m=0|1` (0 for JSON, 1 for TXT) and the spectra file `-f=0|1|2|3` (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet) or both. Use the `-p` flag to disable the thermo native peak picking. 
+For running on Windows, omit `mono`. The optional parameters only work in the -option=value format. The tool can output some RAW file metadata `-m=0|1` (0 for JSON, 1 for TXT) and the spectra file `-f=0|1|2|3|4` (0 for MGF, 1 for mzML, 2 for indexed mzML, 3 for Parquet, 4 for no output) or both. Use the `-p` flag to disable the thermo native peak picking. 
 
 ```
-ThermoRawFileParser.exe --help
 Usage is ThermoRawFileParser.exe [subcommand] [options]
 optional subcommands are xic|query (use [subcommand] -h for more info]):
   -h, --help                 Prints out the options.
@@ -60,23 +59,25 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
   -d, --input_directory=VALUE
                              The directory containing the raw files (Required).
                                Specify this or an input raw file -i.
-  -o, --output=VALUE         The output directory. Specify this or an output
-                               file -b. Specifying neither writes to the input
-                               directory.
-  -b, --output_file=VALUE    The output file. Specify this or an output
+  -b, --output=VALUE    	 The output file. Specify this or an output
                                directory -o. Specifying neither writes to the
                                input directory.
+  -o, --output_directory=VALUE
+							 The output directory. Specify this or an output
+                               file -b. Specifying neither writes to the input
+                               directory.
   -s, --stdout               Write to standard output. Cannot be combined with
                                file or directory output. Implies silent logging,
                                 i.e. logging level 0
   -f, --format=VALUE         The spectra output format: 0 for MGF, 1 for mzML,
-                               2 for indexed mzML, 3 for Parquet; both numeric
-                               and text (case insensitive) value recognized.
-                               Defaults to indexed mzML if no format is
-                               specified.
-  -m, --metadata=VALUE       The metadata output format: 0 for JSON, 1 for TXT;
-                               both numeric and text (case insensitive) value
-                               recognized
+                               2 for indexed mzML, 3 for Parquet, 4 for None (
+                               no output); both numeric and text (case
+                               insensitive) value recognized. Defaults to
+                               indexed mzML if no format is specified.
+  -m, --metadata=VALUE       The metadata output format: 0 for JSON, 1 for TXT,
+                               2 for None (no output); both numeric and text (
+                               case insensitive) value recognized. Defaults to
+                               None
   -c, --metadata_output_file=VALUE
                              The metadata output file. By default the metadata
                                file is written to the output directory.
@@ -120,7 +121,7 @@ optional subcommands are xic|query (use [subcommand] -h for more info]):
                              S3 bucket name
 ```
 
-Output file extension is determined by the used output format and (optional) gzip compression, for example, if format is MGF without gzip compression, the output file will receive `.mgf` extension, if format is mzML with gzip compression the output file will have `.mzML.gz` extension. All user input will be standardized to fulfill abovementioned requrements.
+Output file extension is determined by the used output format and (optional) gzip compression, for example, if format is MGF without gzip compression, the output file will receive `.mgf` extension, if format is mzML with gzip compression the output file will have `.mzML.gz` extension. All user input will be standardized to fulfill abovementioned requirements.
 
 A (java) graphical user interface is also available [here](https://github.com/compomics/ThermoRawFileParserGUI) that enables the selection of an input RAW directory or one ore more RAW files.
 
@@ -137,7 +138,7 @@ usage is:
   -h, --help                 Prints out the options.
   -i, --input=VALUE          The raw file input (Required).
   -n, --scans=VALUE          The scan numbers. e.g. "1-5, 20, 25-30"
-  -b, --output_file=VALUE    The output file. Specifying none writes the output
+  -b, --output=VALUE    	 The output file. Specifying none writes the output
                                file to the input file parent directory.
   -p, --noPeakPicking        Don't use the peak picking provided by the native
                                Thermo library. By default peak picking is
@@ -169,12 +170,13 @@ ThermoRawFileParser.exe xic --help
                                Specify this or an input file -i.
   -j, --json=VALUE           The json input file (Required).
   -p, --print_example        Show a json input file example.
-  -o, --output=VALUE         The output directory. Specify this or an output
-                               file. Specifying neither writes to the input
-                               directory.
-  -b, --output_file=VALUE    The output file. Specify this or an output
+  -b, --output=VALUE    	 The output file. Specify this or an output
                                directory. Specifying neither writes to the
                                input directory.
+  -o, --output_directory=VALUE         
+							 The output directory. Specify this or an output
+                               file. Specifying neither writes to the input
+                               directory.
   -6, --base64               Encodes the content of the xic vectors as base 64
                                encoded string.
   -s, --stdout               Pipes the output into standard output. Logging is
@@ -192,7 +194,8 @@ Provide one of the following filters:
  * M/Z start and end
  * sequence and tolerance (tolerance unit optional, defaults to `ppm`)
 
-optionally one can define starting and ending retention times and thermo filter string (defaults to `ms`)
+optionally one can define starting and ending retention times, provide filter string (defaults to `ms`, i.e. only MS1 scans), and a comment (free text) field; any valid filter string is supported,
+however only basic validation is performed, see [issue #158](https://github.com/compomics/ThermoRawFileParser/issues/158) for details. Comment can contain any text and will be preserved in the output.
 
 An example input JSON file:
 
@@ -219,7 +222,17 @@ An example input JSON file:
         {
             "sequence":"TRANNEL",
             "tolerance":10
+        },
+        {
+            "mz":1014.5099732499732,
+            "rt_start":14.0600881872,
+            "rt_end":14.4167198290667,
+            "tolerance":5,
+            "tolerance_unit":"ppm",
+            "comment":"Only ion trap scans"
+            "scan_filter":"ITMS"
         }
+   }
 ]
 
 ```

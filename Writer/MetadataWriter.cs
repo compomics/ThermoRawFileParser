@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Web.WebSockets;
 using log4net;
 using Newtonsoft.Json;
 using ThermoFisher.CommonCore.Data;
@@ -61,9 +60,7 @@ namespace ThermoRawFileParser.Writer
                     // Keep track of the number of MS<MS level> spectra
                     if (msTypes.ContainsKey(scanFilter.MSOrder.ToString()))
                     {
-                        var value = msTypes[scanFilter.MSOrder.ToString()];
-                        value += 1;
-                        msTypes[scanFilter.MSOrder.ToString()] = value;
+                        msTypes[scanFilter.MSOrder.ToString()] += 1;
                     }
                     else
                         msTypes.Add(scanFilter.MSOrder.ToString(), 1);
@@ -95,23 +92,27 @@ namespace ThermoRawFileParser.Writer
                             }
 
                             // trailer extra data list
-                            var trailerData = rawFile.GetTrailerExtraInformation(scanNumber);
-                            for (var i = 0; i < trailerData.Length; i++)
+                            try
                             {
-                                if (trailerData.Labels[i] == "Charge State:")
-                                {
-                                    if (int.Parse(trailerData.Values[i]) > maxCharge)
-                                        maxCharge = int.Parse(trailerData.Values[i]);
+                                var trailerData = new ScanTrailer(rawFile.GetTrailerExtraInformation(scanNumber));
+                                int? charge = trailerData.AsPositiveInt("Charge State:");
 
-                                    if (int.Parse(trailerData.Values[i]) < minCharge)
-                                        minCharge = int.Parse(trailerData.Values[i]);
-                                }
+                                if (charge.HasValue && charge.Value > maxCharge)
+                                    maxCharge = charge.Value;
+
+                                if (charge.HasValue && charge.Value < minCharge)
+                                    minCharge = charge.Value;
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.WarnFormat("Cannot load trailer infromation for scan {0} due to following exception\n{1}", scanNumber, ex.Message);
+                                _parseInput.NewWarn();
                             }
                         }
                     }
                 }
             }
-
+            
             if (minCharge == 100000000000000)
             {
                 minCharge = 0;
@@ -120,16 +121,14 @@ namespace ThermoRawFileParser.Writer
             switch (_parseInput.MetadataFormat)
             {
                 case MetadataFormat.JSON:
-                    _metadataFileName = _parseInput.MetadataOutputFile != null
-                        ? _parseInput.MetadataOutputFile
-                        : Path.Combine(_parseInput.OutputDirectory, _parseInput.RawFileNameWithoutExtension) +
+                    _metadataFileName = _parseInput.MetadataOutputFile ?? 
+                        Path.Combine(_parseInput.OutputDirectory, _parseInput.RawFileNameWithoutExtension) +
                           "-metadata.json";
                     WriteJsonMetada(rawFile, firstScanNumber, lastScanNumber);
                     break;
                 case MetadataFormat.TXT:
-                    _metadataFileName = _parseInput.MetadataOutputFile != null
-                        ? _parseInput.MetadataOutputFile
-                        : Path.Combine(_parseInput.OutputDirectory, _parseInput.RawFileNameWithoutExtension) +
+                    _metadataFileName = _parseInput.MetadataOutputFile ??
+                        Path.Combine(_parseInput.OutputDirectory, _parseInput.RawFileNameWithoutExtension) +
                           "-metadata.txt";
                     WriteTextMetadata(rawFile, firstScanNumber, lastScanNumber);
                     break;
@@ -174,12 +173,10 @@ namespace ThermoRawFileParser.Writer
                     metadata.addInstrumentProperty(new CVTerm("AFR:0001259", "AFO", "firmware version",
                         rawFile.GetInstrumentData().HardwareVersion));
                 }
-            }
-            
 
-            // MS Data
-            if (rawFile.SelectMsData())
-            {
+
+
+                // MS Data
                 foreach (KeyValuePair<string, int> entry in msTypes)
                 {
                     if (entry.Key.Equals(MSOrderType.Ms.ToString()))
@@ -210,25 +207,26 @@ namespace ThermoRawFileParser.Writer
 
                 // Scan Settings
                 // Get the start and end time from the RAW file
-                var startTime = rawFile.RunHeaderEx.StartTime;
-                var endTime = rawFile.RunHeaderEx.EndTime;
+                var runHeaderEx = rawFile.RunHeaderEx;
+                var startTime = runHeaderEx.StartTime;
+                var endTime = runHeaderEx.EndTime;
                 metadata.addScanSetting(new CVTerm("MS:1000016", "MS", "scan start time",
                     startTime.ToString(CultureInfo.InvariantCulture)));
                 metadata.addScanSetting(new CVTerm("", "", "expected runtime",
-                    rawFile.RunHeader.ExpectedRuntime.ToString(CultureInfo.InvariantCulture)));
+                    runHeaderEx.ExpectedRunTime.ToString(CultureInfo.InvariantCulture)));
                 metadata.addScanSetting(new CVTerm("MS:1000011", "MS", "mass resolution",
-                    rawFile.RunHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)));
+                    runHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)));
                 metadata.addScanSetting(new CVTerm("UO:0000002", "MS", "mass unit",
                     rawFile.GetInstrumentData().Units.ToString()));
                 metadata.addScanSetting(new CVTerm("PRIDE:0000478", "PRIDE", "Number of scans",
-                    rawFile.RunHeaderEx.SpectraCount.ToString()));
-                metadata.addScanSetting(new CVTerm("PRIDE:0000479", "PRIDE", "MS scan range",
-                    firstScanNumber + ":" + lastScanNumber));
+                    runHeaderEx.SpectraCount.ToString()));
                 metadata.addScanSetting(new CVTerm("PRIDE:0000484", "PRIDE", "Retention time range",
                     startTime + ":" + endTime));
                 metadata.addScanSetting(new CVTerm("PRIDE:0000485", "PRIDE", "Mz range",
-                    rawFile.RunHeaderEx.LowMass + ":" + rawFile.RunHeaderEx.HighMass));
+                    runHeaderEx.LowMass + ":" + runHeaderEx.HighMass));
                 metadata.addScanSetting(fragmentationTypes);
+                metadata.addScanSetting(new CVTerm("PRIDE:0000479", "PRIDE", "MS scan range",
+                    firstScanNumber + ":" + lastScanNumber));
             }
 
             // Sample Data
@@ -369,11 +367,8 @@ namespace ThermoRawFileParser.Writer
                 {
                     output.Add("Firmware version=" + rawFile.GetInstrumentData().HardwareVersion);
                 }
-            }
-            
-            // MS Data
-            if (rawFile.SelectMsData())
-            {
+
+                // MS Data
                 output.Add("#MsData");
                 foreach (KeyValuePair<string, int> entry in msTypes)
                 {
@@ -386,14 +381,14 @@ namespace ThermoRawFileParser.Writer
                 }
 
                 output.AddRange(new List<string>
-                    {
-                        "MS min charge=" + minCharge.ToString(CultureInfo.InvariantCulture),
-                        "MS max charge=" + maxCharge.ToString(CultureInfo.InvariantCulture),
-                        $"MS min RT={minTime.ToString(CultureInfo.InvariantCulture)}",
-                        $"MS max RT={maxTime.ToString(CultureInfo.InvariantCulture)}",
-                        $"MS min MZ={minMz.ToString(CultureInfo.InvariantCulture)}",
-                        $"MS max MZ={maxMz.ToString(CultureInfo.InvariantCulture)}"
-                    }
+                {
+                    $"MS min charge={minCharge.ToString(CultureInfo.InvariantCulture)}",
+                    $"MS max charge={maxCharge.ToString(CultureInfo.InvariantCulture)}",
+                    $"MS min RT={minTime.ToString(CultureInfo.InvariantCulture)}",
+                    $"MS max RT={maxTime.ToString(CultureInfo.InvariantCulture)}",
+                    $"MS min MZ={minMz.ToString(CultureInfo.InvariantCulture)}",
+                    $"MS max MZ={maxMz.ToString(CultureInfo.InvariantCulture)}"
+                }
                 );
 
                 // Scan Settings
@@ -404,8 +399,9 @@ namespace ThermoRawFileParser.Writer
                     {
                         "#ScanSettings",
                         $"Scan start time={startTime.ToString(CultureInfo.InvariantCulture)}",
+                        $"Expected runtime={rawFile.RunHeaderEx.ExpectedRunTime.ToString(CultureInfo.InvariantCulture)}",
                         $"Mass resolution=[MS, MS:1000011, mass resolution, {rawFile.RunHeaderEx.MassResolution.ToString(CultureInfo.InvariantCulture)}]",
-                        "Units=" + rawFile.GetInstrumentData().Units,
+                        $"Units={rawFile.GetInstrumentData().Units}",
                         $"Number of scans={rawFile.RunHeaderEx.SpectraCount}",
                         $"Scan range={firstScanNumber};{lastScanNumber}",
                         $"Time range={startTime.ToString(CultureInfo.InvariantCulture)};{endTime.ToString(CultureInfo.InvariantCulture)}",

@@ -6,13 +6,13 @@
         MzML,
         IndexMzML,
         Parquet,
-        NONE
+        None
     }
 
     public enum MetadataFormat
     {
         JSON,
         TXT,
-        NONE
+        None
     }
 }

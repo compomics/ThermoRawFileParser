@@ -35,76 +35,79 @@ namespace ThermoRawFileParser.Writer
         public override void Write(IRawDataPlus rawFile, int firstScanNumber, int lastScanNumber)
         {
             _rawFile = rawFile;
-            List<PScan> pScans = new List<PScan>();
-            WritePScans(ParseInput.OutputDirectory, rawFile.FileName, rawFile, pScans);
+            if (rawFile.HasMsData)
+            {
+                List<PScan> pScans = new List<PScan>();
+                WritePScans(ParseInput.OutputDirectory, rawFile.FileName, rawFile, pScans);
+            }
+            else
+            {
+                throw new RawFileParserException("No MS data in RAW file, no output will be produced");
+            }
         }
 
         private static void WritePScans(string outputDirectory, string fileName,
             IRawDataPlus raw,
             List<PScan> scans)
         {
-            if (raw.SelectMsData())
+            var enumerator = raw.GetFilteredScanEnumerator(" ");
+
+            foreach (var scanNumber in enumerator
+            ) // note in my tests serial is faster than Parallel.Foreach() (this involves disk access, so it makes sense)
             {
-                var enumerator = raw.GetFilteredScanEnumerator(" ");
-
-                foreach (var scanNumber in enumerator
-                ) // note in my tests serial is faster than Parallel.Foreach() (this involves disk access, so it makes sense)
+                //trailer information is extracted via index
+                var trailers = raw.GetTrailerExtraValues(scanNumber);
+                var trailerLabels = raw.GetTrailerExtraInformation(scanNumber);
+                object chargeState = 0;
+                for (int i = 0; i < trailerLabels.Labels.Length; i++)
                 {
-                    //trailer information is extracted via index
-                    var trailers = raw.GetTrailerExtraValues(scanNumber);
-                    var trailerLabels = raw.GetTrailerExtraInformation(scanNumber);
-                    object chargeState = 0;
-                    for (int i = 0; i < trailerLabels.Labels.Length; i++)
+                    if (trailerLabels.Labels[i] == "Charge State:")
                     {
-                        if (trailerLabels.Labels[i] == "Charge State:")
-                        {
-                            chargeState = raw.GetTrailerExtraValue(scanNumber, i);
-                            break;
-                        }
+                        chargeState = raw.GetTrailerExtraValue(scanNumber, i);
+                        break;
                     }
-
-                    var scanFilter = raw.GetFilterForScanNumber(scanNumber);
-                    var scanStats = raw.GetScanStatsForScanNumber(scanNumber);
-
-                    CentroidStream centroidStream = new CentroidStream();
-
-                    //check for FT mass analyzer data
-                    if (scanFilter.MassAnalyzer == MassAnalyzerType.MassAnalyzerFTMS)
-                    {
-                        centroidStream = raw.GetCentroidStream(scanNumber, false);
-                    }
-
-                    //check for IT mass analyzer data
-                    if (scanFilter.MassAnalyzer == MassAnalyzerType.MassAnalyzerITMS)
-                    {
-                        var scanData = raw.GetSimplifiedScan(scanNumber);
-                        centroidStream.Masses = scanData.Masses;
-                        centroidStream.Intensities = scanData.Intensities;
-                    }
-
-                    var msOrder = raw.GetScanEventForScanNumber(scanNumber).MSOrder;
-
-                    if (msOrder == MSOrderType.Ms)
-                    {
-                        var pscan = GetPScan(scanStats, centroidStream, fileName, Convert.ToInt32(chargeState));
-                        scans.Add(pscan);
-                    }
-
-                    if (msOrder == MSOrderType.Ms2)
-                    {
-                        var precursorMz = raw.GetScanEventForScanNumber(scanNumber).GetReaction(0).PrecursorMass;
-                        var pscan = GetPScan(scanStats, centroidStream, fileName, precursorMz,
-                            Convert.ToInt32(chargeState));
-                        scans.Add(pscan);
-                    }
-
-                    var t = raw.GetTrailerExtraValues(scanNumber);
                 }
 
-                WriteScans(outputDirectory, scans, fileName);
+                var scanFilter = raw.GetFilterForScanNumber(scanNumber);
+                var scanStats = raw.GetScanStatsForScanNumber(scanNumber);
+
+                CentroidStream centroidStream = new CentroidStream();
+
+                //check for FT mass analyzer data
+                if (scanFilter.MassAnalyzer == MassAnalyzerType.MassAnalyzerFTMS)
+                {
+                    centroidStream = raw.GetCentroidStream(scanNumber, false);
+                }
+
+                //check for IT mass analyzer data
+                if (scanFilter.MassAnalyzer == MassAnalyzerType.MassAnalyzerITMS)
+                {
+                    var scanData = raw.GetSimplifiedScan(scanNumber);
+                    centroidStream.Masses = scanData.Masses;
+                    centroidStream.Intensities = scanData.Intensities;
+                }
+
+                var msOrder = raw.GetScanEventForScanNumber(scanNumber).MSOrder;
+
+                if (msOrder == MSOrderType.Ms)
+                {
+                    var pscan = GetPScan(scanStats, centroidStream, fileName, Convert.ToInt32(chargeState));
+                    scans.Add(pscan);
+                }
+
+                if (msOrder == MSOrderType.Ms2)
+                {
+                    var precursorMz = raw.GetScanEventForScanNumber(scanNumber).GetReaction(0).PrecursorMass;
+                    var pscan = GetPScan(scanStats, centroidStream, fileName, precursorMz,
+                        Convert.ToInt32(chargeState));
+                    scans.Add(pscan);
+                }
+
+                var t = raw.GetTrailerExtraValues(scanNumber);
             }
+
+            WriteScans(outputDirectory, scans, fileName);
         }
-            
 
         private static PScan GetPScan(ScanStatistics scanStats, CentroidStream centroidStream,
             string fileName, double? precursorMz = null, int? precursorCharge = null)
