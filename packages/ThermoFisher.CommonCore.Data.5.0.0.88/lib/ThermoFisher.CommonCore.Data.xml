@@ -11287,7 +11287,7 @@
         </member>
         <member name="M:ThermoFisher.CommonCore.Data.Business.Scan.SubtractProfileSegments(System.Boolean,ThermoFisher.CommonCore.Data.Business.Scan,ThermoFisher.CommonCore.Data.Business.Scan)">
             <summary>
-            subtract profile data, with segmented scans
+            The subtract profile segments.
             </summary>
             <param name="identicalFlag">
             The identical flag.
@@ -18228,10 +18228,9 @@
             Match any type
             </summary>
         </member>
-        <member name="F:ThermoFisher.CommonCore.Data.FilterEnums.MassAnalyzerType.MassAnalyzerASTMS">
+        <member name="F:ThermoFisher.CommonCore.Data.FilterEnums.MassAnalyzerType.MassAnalyzerMRTOF">
             <summary>
-            Asymmetric Track Lossless (ASTRAL)
-            AS         T 
+            MultiReflection Time of Flight
             </summary>
         </member>
         <member name="T:ThermoFisher.CommonCore.Data.FilterEnums.SectorScanType">
