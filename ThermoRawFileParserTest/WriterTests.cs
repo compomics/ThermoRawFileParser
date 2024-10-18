@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.PeerToPeer.Collaboration;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 using IO.Mgf;
-using MzLibUtil;
 using NUnit.Framework;
 using ThermoRawFileParser;
-using ThermoRawFileParser.Writer;
 using ThermoRawFileParser.Writer.MzML;
-using UsefulProteomicsDatabases;
 
 namespace ThermoRawFileParserTest
 {
@@ -32,29 +24,29 @@ namespace ThermoRawFileParserTest
             //empty filename
             parseInput.OutputFormat = OutputFormat.MGF;
             RawFileParser.Parse(parseInput);
-            Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, "small.mgf")));
+            Assert.That(File.Exists(Path.Combine(tempFilePath, "small.mgf")));
 
             parseInput.OutputFormat = OutputFormat.MzML;
             RawFileParser.Parse(parseInput);
-            Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, "small.mzML")));
+            Assert.That(File.Exists(Path.Combine(tempFilePath, "small.mzML")));
             File.Delete(Path.Combine(tempFilePath, "small.mzML"));
 
             parseInput.OutputFormat = OutputFormat.IndexMzML;
             RawFileParser.Parse(parseInput);
-            Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, "small.mzML")));
+            Assert.That(File.Exists(Path.Combine(tempFilePath, "small.mzML")));
 
             parseInput.Gzip = true;
             RawFileParser.Parse(parseInput);
-            Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, "small.mzML.gz")));
+            Assert.That(File.Exists(Path.Combine(tempFilePath, "small.mzML.gz")));
             File.Delete(Path.Combine(tempFilePath, "small.mzML.gz"));
 
             parseInput.OutputFormat = OutputFormat.MGF;
             RawFileParser.Parse(parseInput);
-            Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, "small.mgf.gz")));
+            Assert.That(File.Exists(Path.Combine(tempFilePath, "small.mgf.gz")));
 
             parseInput.OutputFormat = OutputFormat.MzML;
             RawFileParser.Parse(parseInput);
-            Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, "small.mzML.gz")));
+            Assert.That(File.Exists(Path.Combine(tempFilePath, "small.mzML.gz")));
 
             Directory.Delete(tempFilePath, true);
         }
@@ -99,7 +91,7 @@ namespace ThermoRawFileParserTest
                 {
                     parseInput.OutputFormat = format;
                     RawFileParser.Parse(parseInput);
-                    Assert.IsTrue(File.Exists(Path.Combine(tempFilePath, expectedOutput)));
+                    Assert.That(File.Exists(Path.Combine(tempFilePath, expectedOutput)));
                     File.Delete(Path.Combine(tempFilePath, expectedOutput));
                 }
 
@@ -120,7 +112,7 @@ namespace ThermoRawFileParserTest
             RawFileParser.Parse(parseInput);
 
             var mgfData = Mgf.LoadAllStaticData(Path.Combine(tempFilePath, "small.mgf"));
-            Assert.AreEqual(34, mgfData.NumSpectra);
+            Assert.Equals(34, mgfData.NumSpectra);
         }
 
         [Test]
@@ -137,13 +129,13 @@ namespace ThermoRawFileParserTest
             RawFileParser.Parse(parseInput);
 
             var numFiles = Directory.GetFiles(tempFilePath, "*.mgf");
-            Assert.AreEqual(numFiles.Length, 2);
+            Assert.Equals(numFiles.Length, 2);
 
             var mgfData = Mgf.LoadAllStaticData(Path.Combine(tempFilePath, "small1.mgf"));
-            Assert.AreEqual(34, mgfData.NumSpectra);
+            Assert.Equals(34, mgfData.NumSpectra);
 
             var mgfData2 = Mgf.LoadAllStaticData(Path.Combine(tempFilePath, "small2.mgf"));
-            Assert.AreEqual(34, mgfData2.NumSpectra);
+            Assert.Equals(34, mgfData2.NumSpectra);
 
             Directory.Delete(tempFilePath, true);
         }
@@ -164,13 +156,13 @@ namespace ThermoRawFileParserTest
             var testMzMl = (mzMLType) xmlSerializer.Deserialize(new FileStream(
                 Path.Combine(tempFilePath, "small.mzML"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
 
-            Assert.AreEqual("48", testMzMl.run.spectrumList.count);
-            Assert.AreEqual(48, testMzMl.run.spectrumList.spectrum.Length);
+            Assert.Equals("48", testMzMl.run.spectrumList.count);
+            Assert.Equals(48, testMzMl.run.spectrumList.spectrum.Length);
 
-            Assert.AreEqual("1", testMzMl.run.chromatogramList.count);
-            Assert.AreEqual(1, testMzMl.run.chromatogramList.chromatogram.Length);
+            Assert.Equals("1", testMzMl.run.chromatogramList.count);
+            Assert.Equals(1, testMzMl.run.chromatogramList.chromatogram.Length);
 
-            Assert.AreEqual(48, testMzMl.run.chromatogramList.chromatogram[0].defaultArrayLength);
+            Assert.Equals(48, testMzMl.run.chromatogramList.chromatogram[0].defaultArrayLength);
         }
 
         [Test]
@@ -191,13 +183,13 @@ namespace ThermoRawFileParserTest
             var testMzMl = (mzMLType)xmlSerializer.Deserialize(new FileStream(
                 Path.Combine(tempFilePath, "small.mzML"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
 
-            Assert.AreEqual("48", testMzMl.run.spectrumList.count);
-            Assert.AreEqual(48, testMzMl.run.spectrumList.spectrum.Length);
+            Assert.Equals("48", testMzMl.run.spectrumList.count);
+            Assert.Equals(48, testMzMl.run.spectrumList.spectrum.Length);
 
-            Assert.AreEqual("1", testMzMl.run.chromatogramList.count);
-            Assert.AreEqual(1, testMzMl.run.chromatogramList.chromatogram.Length);
+            Assert.Equals("1", testMzMl.run.chromatogramList.count);
+            Assert.Equals(1, testMzMl.run.chromatogramList.chromatogram.Length);
 
-            Assert.AreEqual(48, testMzMl.run.chromatogramList.chromatogram[0].defaultArrayLength);
+            Assert.Equals(48, testMzMl.run.chromatogramList.chromatogram[0].defaultArrayLength);
         }
 
         [Test]
@@ -218,10 +210,10 @@ namespace ThermoRawFileParserTest
             var testMzMl = (mzMLType)xmlSerializer.Deserialize(new FileStream(
                 Path.Combine(tempFilePath, "small.mzML"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
 
-            Assert.AreEqual("14", testMzMl.run.spectrumList.count);
-            Assert.AreEqual(14, testMzMl.run.spectrumList.spectrum.Length);
+            Assert.Equals("14", testMzMl.run.spectrumList.count);
+            Assert.Equals(14, testMzMl.run.spectrumList.spectrum.Length);
 
-            Assert.AreEqual(48, testMzMl.run.chromatogramList.chromatogram[0].defaultArrayLength);
+            Assert.Equals(48, testMzMl.run.chromatogramList.chromatogram[0].defaultArrayLength);
         }
 
         [Test]
@@ -242,17 +234,17 @@ namespace ThermoRawFileParserTest
             var testMzMl = (indexedmzML) xmlSerializer.Deserialize(new FileStream(
                 Path.Combine(tempFilePath, "small.mzML"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
 
-            Assert.AreEqual("48", testMzMl.mzML.run.spectrumList.count);
-            Assert.AreEqual(48, testMzMl.mzML.run.spectrumList.spectrum.Length);
+            Assert.Equals("48", testMzMl.mzML.run.spectrumList.count);
+            Assert.Equals(48, testMzMl.mzML.run.spectrumList.spectrum.Length);
 
-            Assert.AreEqual("1", testMzMl.mzML.run.chromatogramList.count);
-            Assert.AreEqual(1, testMzMl.mzML.run.chromatogramList.chromatogram.Length);
+            Assert.Equals("1", testMzMl.mzML.run.chromatogramList.count);
+            Assert.Equals(1, testMzMl.mzML.run.chromatogramList.chromatogram.Length);
 
-            Assert.AreEqual(2, testMzMl.indexList.index.Length);
-            Assert.AreEqual("spectrum", testMzMl.indexList.index[0].name.ToString());
-            Assert.AreEqual(48, testMzMl.indexList.index[0].offset.Length);
-            Assert.AreEqual("chromatogram", testMzMl.indexList.index[1].name.ToString());
-            Assert.AreEqual(1, testMzMl.indexList.index[1].offset.Length);
+            Assert.Equals(2, testMzMl.indexList.index.Length);
+            Assert.Equals("spectrum", testMzMl.indexList.index[0].name.ToString());
+            Assert.Equals(48, testMzMl.indexList.index[0].offset.Length);
+            Assert.Equals("chromatogram", testMzMl.indexList.index[1].name.ToString());
+            Assert.Equals(1, testMzMl.indexList.index[1].offset.Length);
         }
 
         [Test]
@@ -271,19 +263,19 @@ namespace ThermoRawFileParserTest
             var testMzMl = (mzMLType)xmlSerializer.Deserialize(new FileStream(
                 Path.Combine(tempFilePath, "small2.mzML"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
 
-            Assert.AreEqual(95, testMzMl.run.spectrumList.spectrum.Length);
+            Assert.Equals(95, testMzMl.run.spectrumList.spectrum.Length);
 
             var precursor = testMzMl.run.spectrumList.spectrum[16].precursorList.precursor[0].selectedIonList.selectedIon[0];
             var selectedMz = Double.Parse(precursor.cvParam.Where(cv => cv.accession == "MS:1000744").First().value);
-            Assert.IsTrue(selectedMz - 604.7592 < 0.001);
+            Assert.That(selectedMz - 604.7592 < 0.001);
 
             var selectedZ = int.Parse(precursor.cvParam.Where(cv => cv.accession == "MS:1000041").First().value);
-            Assert.AreEqual(selectedZ , 2);
+            Assert.Equals(selectedZ , 2);
 
             //var selectedI = Double.Parse(precursor.cvParam.Where(cv => cv.accession == "MS:1000042").First().value);
             //Assert.IsTrue(selectedI - 10073 < 1);
 
-            Assert.AreEqual(95, testMzMl.run.chromatogramList.chromatogram[0].defaultArrayLength);
+            Assert.Equals(95, testMzMl.run.chromatogramList.chromatogram[0].defaultArrayLength);
         }
     }
 }

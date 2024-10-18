@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using ThermoFisher.CommonCore.Data.Business;
+using ThermoFisher.CommonCore.Data.Interfaces;
 
 namespace ThermoRawFileParser.Writer
 {
@@ -25,7 +25,7 @@ namespace ThermoRawFileParser.Writer
 
         private readonly Dictionary<string, string> data;
 
-        public ScanTrailer(LogEntry trailerData)
+        public ScanTrailer(ILogEntryAccess trailerData)
         {
             data = new Dictionary<string, string>();
 

@@ -136,88 +136,92 @@ namespace ThermoRawFileParser.Writer
 
         public static void WriteScans(string outputDirectory, List<PScan> scans, string sourceRawFileName)
         {
-            var output = outputDirectory + "//" + Path.GetFileNameWithoutExtension(sourceRawFileName);
+            throw new NotImplementedException();
 
-            var ds = new DataSet(new DataField<double>("BasePeakIntensity"),
-                new DataField<double>("BasePeakMass"),
-                new DataField<double[]>("Baselines"),
-                new DataField<double[]>("Charges"),
-                new DataField<string>("FileId"),
-                new DataField<string>("FileName"),
-                new DataField<double>("HighMass"),
-                new DataField<double[]>("Intensities"),
-                new DataField<double>("LowMass"),
-                new DataField<double[]>("Masses"),
-                new DataField<int>("MsOrder"),
-                new DataField<double[]>("Noises"),
-                new DataField<int>("PacketType"),
-                new DataField<int?>("PrecursorCharge"),
-                new DataField<double?>("PrecursorMass"),
-                new DataField<double[]>("Resolutions"),
-                new DataField<double>("RetentionTime"),
-                new DataField<int>("ScanNumber"),
-                new DataField<string>("ScanType"),
-                new DataField<double>("TIC"));
+            //Needs refactoring since Parquet.NET API changed
+        
+            //var output = outputDirectory + "//" + Path.GetFileNameWithoutExtension(sourceRawFileName);
 
-            foreach (var scan in scans)
-            {
-                //we can't store null values?
-                double[] dummyVal = new double[1];
-                if (scan.Noises == null)
-                {
-                    scan.Noises = dummyVal;
-                }
+            //var ds = new DataSet(new DataField<double>("BasePeakIntensity"),
+            //    new DataField<double>("BasePeakMass"),
+            //    new DataField<double[]>("Baselines"),
+            //    new DataField<double[]>("Charges"),
+            //    new DataField<string>("FileId"),
+            //    new DataField<string>("FileName"),
+            //    new DataField<double>("HighMass"),
+            //    new DataField<double[]>("Intensities"),
+            //    new DataField<double>("LowMass"),
+            //    new DataField<double[]>("Masses"),
+            //    new DataField<int>("MsOrder"),
+            //    new DataField<double[]>("Noises"),
+            //    new DataField<int>("PacketType"),
+            //    new DataField<int?>("PrecursorCharge"),
+            //    new DataField<double?>("PrecursorMass"),
+            //    new DataField<double[]>("Resolutions"),
+            //    new DataField<double>("RetentionTime"),
+            //    new DataField<int>("ScanNumber"),
+            //    new DataField<string>("ScanType"),
+            //    new DataField<double>("TIC"));
 
-                if (scan.Charges == null)
-                {
-                    scan.Charges = dummyVal;
-                }
+            //foreach (var scan in scans)
+            //{
+            //    //we can't store null values?
+            //    double[] dummyVal = new double[1];
+            //    if (scan.Noises == null)
+            //    {
+            //        scan.Noises = dummyVal;
+            //    }
 
-                if (scan.Baselines == null)
-                {
-                    scan.Baselines = dummyVal;
-                }
+            //    if (scan.Charges == null)
+            //    {
+            //        scan.Charges = dummyVal;
+            //    }
 
-                if (scan.Resolutions == null)
-                {
-                    scan.Resolutions = dummyVal;
-                }
+            //    if (scan.Baselines == null)
+            //    {
+            //        scan.Baselines = dummyVal;
+            //    }
 
-                if (scan.PrecursorMz == null)
-                {
-                    scan.PrecursorMz = 0;
-                    scan.PrecursorCharge = 0;
-                }
+            //    if (scan.Resolutions == null)
+            //    {
+            //        scan.Resolutions = dummyVal;
+            //    }
 
-                ds.Add(scan.BasePeakIntensity,
-                    scan.BasePeakMass,
-                    scan.Baselines,
-                    scan.Charges,
-                    scan.FileId,
-                    scan.FileName,
-                    scan.HighMass,
-                    scan.Intensities,
-                    scan.LowMass,
-                    scan.Masses,
-                    scan.MsOrder,
-                    scan.Noises,
-                    scan.PacketType,
-                    scan.PrecursorCharge,
-                    scan.PrecursorMz,
-                    scan.Resolutions,
-                    scan.RetentionTime,
-                    scan.ScanNumber,
-                    scan.ScanType,
-                    scan.TIC);
-            }
+            //    if (scan.PrecursorMz == null)
+            //    {
+            //        scan.PrecursorMz = 0;
+            //        scan.PrecursorCharge = 0;
+            //    }
 
-            using (Stream fileStream = File.OpenWrite(output + ".parquet"))
-            {
-                using (var writer = new ParquetWriter(fileStream))
-                {
-                    writer.Write(ds);
-                }
-            }
+            //    ds.Add(scan.BasePeakIntensity,
+            //        scan.BasePeakMass,
+            //        scan.Baselines,
+            //        scan.Charges,
+            //        scan.FileId,
+            //        scan.FileName,
+            //        scan.HighMass,
+            //        scan.Intensities,
+            //        scan.LowMass,
+            //        scan.Masses,
+            //        scan.MsOrder,
+            //        scan.Noises,
+            //        scan.PacketType,
+            //        scan.PrecursorCharge,
+            //        scan.PrecursorMz,
+            //        scan.Resolutions,
+            //        scan.RetentionTime,
+            //        scan.ScanNumber,
+            //        scan.ScanType,
+            //        scan.TIC);
+            //}
+
+            //using (Stream fileStream = File.OpenWrite(output + ".parquet"))
+            //{
+            //    using (var writer = new ParquetWriter(fileStream))
+            //    {
+            //        writer.Write(ds);
+            //    }
+            //}
         }
     }
 

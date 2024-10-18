@@ -39,7 +39,7 @@ namespace ThermoRawFileParser.Writer
             _client = new AmazonS3Client(new BasicAWSCredentials(s3AccessKeyId, s3SecretAccessKey), s3Config);
             this._bucketName = bucketName;
 
-            var buckets = _client.ListObjects(bucketName);
+            var buckets = _client.ListObjectsAsync(bucketName);
 
             if (buckets == null)
                 throw new AmazonS3Exception("Connection to AWS url -- " + this._s3Url);

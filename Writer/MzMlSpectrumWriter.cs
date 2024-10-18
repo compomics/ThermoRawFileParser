@@ -18,7 +18,7 @@ using ThermoFisher.CommonCore.Data.FilterEnums;
 using ThermoFisher.CommonCore.Data.Interfaces;
 using ThermoRawFileParser.Util;
 using ThermoRawFileParser.Writer.MzML;
-using zlib;
+using ComponentAce.Compression.Libs.zlib;
 
 namespace ThermoRawFileParser.Writer
 {

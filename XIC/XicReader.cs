@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using log4net;
@@ -8,6 +5,7 @@ using ThermoFisher.CommonCore.Data;
 using ThermoFisher.CommonCore.Data.Business;
 using ThermoFisher.CommonCore.Data.Interfaces;
 using ThermoRawFileParser.Util;
+using Range = ThermoFisher.CommonCore.Data.Business.Range;
 
 namespace ThermoRawFileParser.XIC
 {
