@@ -13,12 +13,14 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Data;
 
+[assembly: log4net.Config.XmlConfigurator()]
+
 namespace ThermoRawFileParser
 {
     public static class MainClass
     {
         private static readonly ILog Log =
-            LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public const string Version = "1.4.5";
         public static void Main(string[] args)
@@ -125,7 +127,7 @@ namespace ThermoRawFileParser
 
                 if (parameters.help)
                 {
-                    ShowHelp("usage is:", null,
+                    ShowHelp("usage is:", new OptionException(),
                         optionSet);
                     return;
                 }
@@ -253,12 +255,12 @@ namespace ThermoRawFileParser
             {
                 if (parameters.help)
                 {
-                    ShowHelp("usage is:", null,
+                    ShowHelp("usage is:", new OptionException(),
                         optionSet);
                 }
                 else
                 {
-                    ShowHelp("Error - usage is:", null,
+                    ShowHelp("Error - usage is:", new OptionException(),
                         optionSet);
                 }
             }
@@ -374,7 +376,7 @@ namespace ThermoRawFileParser
 
                 if (parameters.help)
                 {
-                    ShowHelp("usage is:", null,
+                    ShowHelp("usage is:", new OptionException(),
                         optionSet);
                     return;
                 }
@@ -416,12 +418,12 @@ namespace ThermoRawFileParser
             {
                 if (parameters.help)
                 {
-                    ShowHelp("usage is:", null,
+                    ShowHelp("usage is:", new OptionException(),
                         optionSet);
                 }
                 else
                 {
-                    ShowHelp("Error - usage is:", null,
+                    ShowHelp("Error - usage is:", new OptionException(),
                         optionSet);
                 }
             }
@@ -623,7 +625,7 @@ namespace ThermoRawFileParser
                 {
                     var helpMessage =
                         $"Usage is {Assembly.GetExecutingAssembly().GetName().Name}.exe [subcommand] [options]\noptional subcommands are xic|query (use [subcommand] -h for more info]):";
-                    ShowHelp(helpMessage, null, optionSet);
+                    ShowHelp(helpMessage, new OptionException(), optionSet);
                     return;
                 }
 
@@ -788,12 +790,12 @@ namespace ThermoRawFileParser
             {
                 if (help)
                 {
-                    ShowHelp("usage is:", null,
+                    ShowHelp("usage is:", new OptionException(),
                         optionSet);
                 }
                 else
                 {
-                    ShowHelp("Error - usage is:", null,
+                    ShowHelp("Error - usage is:", new OptionException(),
                         optionSet);
                 }
             }

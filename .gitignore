@@ -6,3 +6,4 @@ obj/
 .vs/
 *.csproj.user
 .vscode/
+Properties/
