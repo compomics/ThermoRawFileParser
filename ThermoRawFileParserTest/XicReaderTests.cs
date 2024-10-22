@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using ThermoFisher.CommonCore.Data;
 using ThermoRawFileParser;
@@ -34,8 +37,8 @@ namespace ThermoRawFileParserTest
 
             XicReader.ReadXic(testRawFile, false, xicData, ref xicparams);
             XicUnit xicUnit = xicData.Content[0];
-            Assert.Equals(14, ((Array) xicUnit.RetentionTimes).Length);
-            Assert.Equals(14, ((Array) xicUnit.Intensities).Length);
+            Assert.That(((Array)xicUnit.RetentionTimes).Length, Is.EqualTo(14));
+            Assert.That(((Array)xicUnit.Intensities).Length, Is.EqualTo(14));
             Assert.That(Math.Abs(140 - xicUnit.Meta.MzStart.Value) < 0.01);
             Assert.That(Math.Abs(2000 - xicUnit.Meta.MzEnd.Value) < 0.01);
             Assert.That(Math.Abs(0.004935 - xicUnit.Meta.RtStart.Value) < 0.01);
@@ -68,8 +71,8 @@ namespace ThermoRawFileParserTest
 
             XicReader.ReadXic(testRawFile, false, xicData, ref xicparams);
             XicUnit xicUnit = xicData.Content[0];
-            Assert.Equals(46, ((Array) xicUnit.RetentionTimes).Length);
-            Assert.Equals(46, ((Array) xicUnit.Intensities).Length);
+            Assert.That(((Array)xicUnit.RetentionTimes).Length, Is.EqualTo(46));
+            Assert.That(((Array)xicUnit.Intensities).Length, Is.EqualTo(46));
             Assert.That(Math.Abs(749.786 - xicUnit.Meta.MzStart.Value) < 0.01);
             Assert.That(Math.Abs(749.8093 - xicUnit.Meta.MzEnd.Value) < 0.01);
             Assert.That(Math.Abs(10 - xicUnit.Meta.RtStart.Value) < 0.01);
@@ -94,8 +97,8 @@ namespace ThermoRawFileParserTest
             };
             XicReader.ReadXic(testRawFile, false, xicData, ref xicparams);
             xicUnit = xicData.Content[0];
-            Assert.Equals(1, ((Array) xicUnit.RetentionTimes).Length);
-            Assert.Equals(1, ((Array) xicUnit.Intensities).Length);
+            Assert.That(((Array)xicUnit.RetentionTimes).Length, Is.EqualTo(1));
+            Assert.That(((Array)xicUnit.Intensities).Length, Is.EqualTo(1));
             Assert.That(Math.Abs(749.786 - xicUnit.Meta.MzStart.Value) < 0.01);
             Assert.That(Math.Abs(749.8093 - xicUnit.Meta.MzEnd.Value) < 0.01);
             Assert.That(Math.Abs(300 - xicUnit.Meta.RtStart.Value) < 0.01);
@@ -167,7 +170,7 @@ namespace ThermoRawFileParserTest
             // test a json with 2 missing properties
             errors = JSONParser.ValidateJson(json);
             Assert.That(!errors.IsNullOrEmpty());
-            Assert.Equals(2, errors.Count);
+            Assert.That(errors.Count, Is.EqualTo(2));
 
             json = @"[
         {
@@ -197,7 +200,7 @@ namespace ThermoRawFileParserTest
             // test a json with 2 negative numbers
             errors = JSONParser.ValidateJson(json);
             Assert.That(!errors.IsNullOrEmpty());
-            Assert.Equals(2, errors.Count);
+            Assert.That(errors.Count, Is.EqualTo(2));
         }
 
         [Test]

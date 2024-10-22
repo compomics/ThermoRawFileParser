@@ -15,7 +15,7 @@ namespace ThermoRawFileParserTest
             Match result = Regex.Match(filterString, pattern);
             if (result.Success)
             {
-                Assert.Equals("961.8803", result.Groups[1].Value);
+                Assert.That(result.Groups[1].Value, Is.EqualTo("961.8803"));
             }
             else
             {
