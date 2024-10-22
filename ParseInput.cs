@@ -96,8 +96,6 @@ namespace ThermoRawFileParser
 
         public HashSet<int> MsLevel { get; set; }
 
-        public int MaxLevel { get; set; }
-
         public bool MgfPrecursor { get; set; }
 
         public bool NoiseData { get; set; }
@@ -123,8 +121,8 @@ namespace ThermoRawFileParser
 
         public ParseInput()
         {
-            MetadataFormat = MetadataFormat.None;
-            OutputFormat = OutputFormat.None;
+            MetadataFormat = MetadataFormat.NONE;
+            OutputFormat = OutputFormat.NONE;
             Gzip = false;
             NoPeakPicking = new HashSet<int>();
             NoZlibCompression = false;
@@ -138,7 +136,6 @@ namespace ThermoRawFileParser
             Vigilant = false;
             _errors = 0;
             _warnings = 0;
-            MaxLevel = 10;
         }
 
         public ParseInput(string rawFilePath, string rawDirectoryPath, string outputDirectory, OutputFormat outputFormat

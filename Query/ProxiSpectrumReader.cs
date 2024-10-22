@@ -100,9 +100,9 @@ namespace ThermoRawFileParser.Query
                             reaction = SpectrumWriter.GetReaction(scanEvent, scanNumber);
                         }
 
-                        proxiSpectrum.AddAttribute(accession: "MS:1003057", name: "scan number",
+                        proxiSpectrum.AddAttribute(accession: "MS:10003057", name: "scan number",
                             value: scanNumber.ToString(CultureInfo.InvariantCulture));
-                        proxiSpectrum.AddAttribute(accession: "MS:1000016", name: "scan start time",
+                        proxiSpectrum.AddAttribute(accession: "MS:10000016", name: "scan start time",
                             value: (time * 60).ToString(CultureInfo.InvariantCulture));
                         proxiSpectrum.AddAttribute(accession: "MS:1000511", name: "ms level",
                             value: ((int) scanFilter.MSOrder).ToString(CultureInfo.InvariantCulture));
@@ -128,7 +128,7 @@ namespace ThermoRawFileParser.Query
                         //injection time
                         if (ionInjectionTime != null)
                         {
-                            proxiSpectrum.AddAttribute(accession: "MS:1000927", name: "ion injection time",
+                            proxiSpectrum.AddAttribute(accession: "MS:10000927", name: "ion injection time",
                                 value: ionInjectionTime.ToString(), cvGroup: cvGroup.ToString());
                             proxiSpectrum.AddAttribute(accession: "UO:0000028", name: "millisecond",
                                 cvGroup: cvGroup.ToString());
@@ -140,7 +140,7 @@ namespace ThermoRawFileParser.Query
                             // Store the precursor information
                             var selectedIonMz =
                                 SpectrumWriter.CalculateSelectedIonMz(reaction, monoisotopicMz, isolationWidth);
-                            proxiSpectrum.AddAttribute(accession: "MS:1000744", name: "selected ion m/z",
+                            proxiSpectrum.AddAttribute(accession: "MS:10000744", name: "selected ion m/z",
                                 value: selectedIonMz.ToString(CultureInfo.InvariantCulture));
                             proxiSpectrum.AddAttribute(accession: "MS:1000827",
                                 name: "isolation window target m/z",
@@ -159,24 +159,24 @@ namespace ThermoRawFileParser.Query
                         // scan polarity
                         if (scanFilter.Polarity == PolarityType.Positive)
                         {
-                            proxiSpectrum.AddAttribute(accession: "MS:1000465", name: "scan polarity",
+                            proxiSpectrum.AddAttribute(accession: "MS:10000465", name: "scan polarity",
                                 value: "positive scan", valueAccession: "MS:1000130");
                         }
                         else
                         {
-                            proxiSpectrum.AddAttribute(accession: "MS:1000465", name: "scan polarity",
+                            proxiSpectrum.AddAttribute(accession: "MS:10000465", name: "scan polarity",
                                 value: "negative scan", valueAccession: "MS:1000129");
                         }
 
                         // charge state
                         if (charge != null)
                         {
-                            proxiSpectrum.AddAttribute(accession: "MS:1000041", name: "charge state",
+                            proxiSpectrum.AddAttribute(accession: "MS:10000041", name: "charge state",
                                 value: charge.ToString());
                         }
 
                         // write the filter string
-                        proxiSpectrum.AddAttribute(accession: "MS:1000512", name: "filter string",
+                        proxiSpectrum.AddAttribute(accession: "MS:10000512", name: "filter string",
                             value: scanEvent.ToString());
 
                         double[] masses = null;
