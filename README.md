@@ -26,10 +26,13 @@ Release page provide self-contained releases for OSX, Linux, and Windows (all ne
 
 **NOTE** In some cases **ASP.NET Core** runtime should be installed separately, check for package `aspnet-runtime` (or similar) in your package manager.
 
-On MacOS you need to bypass security quarantine by running the following:
+On MacOS it might be necessary to bypass security quarantine and sign the executable to be able to run the software
+It can be done with the following commands.
 ```
 > xattr -dr com.apple.quarantine {path_to_ThermoRawFileParser_folder}
 > xattr {path_to_ThermoRawFileParser_folder}/*
+> chmod +x {path_to_ThermoRawFileParser_folder}/ThermoRawFileParser
+> codesign --force --deep --sign - {path_to_ThermoRawFileParser_folder}/ThermoRawFileParser
 ```
 
 For developers: [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) is required to build the tool.
